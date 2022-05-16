@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+/src/main/resources/application-oauth.properties
+/src/main/resources/application-db-dev.properties
+/src/main/resources/application-db-local.properties
+/src/main/resources/application-db-prd.properties
