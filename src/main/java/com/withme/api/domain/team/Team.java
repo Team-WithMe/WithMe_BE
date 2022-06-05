@@ -56,11 +56,12 @@ public class Team extends BaseTimeEntity {
    private List<User> members;
 
    @Builder
-   public Team(String teamName, String teamCategory, String teamDesc, String teamIntroduce, String teamNotice ){
+   public Team(String teamName, String teamCategory, String teamDesc, String teamIntroduce, boolean shown, String teamNotice ){
       this.teamName = teamName;
       this.teamCategory = teamCategory;
       this.teamDesc = teamDesc;
       this.teamIntroduce = teamIntroduce;
+      this.shown = shown;
       this.teamNotice = teamNotice;
    }
 
