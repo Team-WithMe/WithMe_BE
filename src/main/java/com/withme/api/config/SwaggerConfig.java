@@ -1,4 +1,4 @@
-package com.withme.api.api.config;
+package com.withme.api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
