@@ -43,7 +43,6 @@ public class LoginTest{
 
     //given
     String email = "joinTest@withme.com";
-    String username = "위드미 테스트";
     String password = "12345";
     String nickname = "vV위드미짱짱Vv";
 
@@ -57,7 +56,6 @@ public class LoginTest{
         //로그인할 계정 회원가입
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(this.email)
-                .username(this.username)
                 .password(this.password)
                 .nickname(this.nickname)
                 .build();
@@ -71,14 +69,14 @@ public class LoginTest{
     }
 
     @Test
-    public void 로그인() throws Exception{
+    public void 로그인_성공() throws Exception{
         String url = "http://localhost:" + port + "/login";
 
         //when
         mvc.perform(post(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{" +
-                                "\"username\":\"" + this.username + "\"" +
+                                "\"email\":\"" + this.email + "\"" +
                                 ",\"password\":\"" + this.password + "\"" +
                                 "}"
                         ))
@@ -86,6 +84,23 @@ public class LoginTest{
         //then
                 .andExpect(status().isOk())
                 .andExpect(header().exists("Authorization"));
+    }
+
+    @Test
+    public void 로그인_실패() throws Exception{
+        String url = "http://localhost:" + port + "/login";
+
+        //when
+        mvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{" +
+                                "\"email\":\"" + this.email + "\"" +
+                                ",\"password\":\"" + this.password+"x" + "\"" +
+                                "}"
+                        ))
+
+                //then
+                .andExpect(status().is4xxClientError());
     }
 
 }
