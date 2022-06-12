@@ -1,12 +1,11 @@
 package com.withme.api.domain.user;
 
 import com.withme.api.domain.BaseTimeEntity;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
+@ToString
 @Getter
 @NoArgsConstructor
 @Table(name = "USER")
@@ -17,16 +16,16 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userIdx;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String email;
 
     @Column
     private String password;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String nickname;
 
     @Column(nullable = false)

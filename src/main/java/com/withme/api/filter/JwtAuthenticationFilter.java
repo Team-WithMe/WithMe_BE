@@ -30,10 +30,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
 
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, TokenProvider tokenProvider) {
+    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, TokenProvider tokenProvider, ObjectMapper objectMapper) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -45,15 +45,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        log.info("attemptAuthentication invoked.");
-        log.info("objectMapper : " + objectMapper);
+        log.debug("attemptAuthentication invoked.");
+        log.debug("objectMapper : " + objectMapper);
 
         //1. username, password를 받아서
 
         try {
             User user = objectMapper.readValue(request.getInputStream(), User.class);
 
-            log.info("user : {}", user);
+            log.debug("user : {}", user);
 
             UsernamePasswordAuthenticationToken authenticationToken
                     = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
@@ -61,7 +61,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             //PrincipalDetailsService의 loadUserByUsername() 메서드가 실행된다.
             //정상이라면 authentication이 리턴된다.
             Authentication authentication = authenticationManager.authenticate(authenticationToken);
-            log.info("authentication : {}", authentication);
+            log.debug("authentication : {}", authentication);
 
             //return하면 authentication 객체가 session 영역에 저장된다.
             //JWT 토큰을 사용하면서 세션을 만들 이유가 없지만 security가 권한 관리를 대신 해주므로 권한 처리를 목적으로 session에 저장
@@ -85,10 +85,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
      */
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        log.info("successfulAuthentication invoked.");
+        log.debug("successfulAuthentication invoked.");
 
         PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
-        log.info("principalDetails : {}", principalDetails);
+        log.debug("principalDetails : {}", principalDetails);
 
         String jwt = tokenProvider.createToken(authResult);
 

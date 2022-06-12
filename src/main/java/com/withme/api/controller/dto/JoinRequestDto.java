@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.ToString;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.validation.constraints.NotNull;
@@ -14,15 +14,16 @@ import javax.validation.constraints.Size;
 
 @Schema(description = "회원가입을 위한 DTO 객체")
 @Getter
+@ToString
 @NoArgsConstructor
 public class JoinRequestDto {
 
-    @Schema(description = "사용자 이름", example = "withMe", required = true)
+    @Schema(description = "사용자 이름", example = "위드미 테스트", required = true)
     @NotNull
     @Size(min = 3, max = 100)
     private String username;
 
-    @Schema(description = "이메일", example = "withMe@withme.com", required = true)
+    @Schema(description = "이메일", example = "joinTest@withme.com", required = true)
     @NotNull
     @Size(min = 3, max = 100)
     private String email;
@@ -38,9 +39,6 @@ public class JoinRequestDto {
     @Size(min = 3, max = 100)
     private String nickname;
 
-    @Schema(hidden = true)
-    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
     @Builder
     public JoinRequestDto(String username, String email, String password, String nickname){
         this.username = username;
@@ -53,12 +51,16 @@ public class JoinRequestDto {
         return User.builder()
                 .username(this.username)
                 .email(this.email)
-                .password(passwordEncoder.encode(this.password))
+                .password(this.password)
                 .nickname(this.nickname)
                 .activated(true)
                 .userImage(null)
                 .role("ROLE_USER")
                 .build();
+    }
+
+    public void encodePassword(PasswordEncoder passwordEncoder) {
+        this.password= passwordEncoder.encode(this.password);
     }
 
 }

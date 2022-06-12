@@ -30,7 +30,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        log.info("doFilterInternal invoked.");
+        log.debug("doFilterInternal invoked.");
 
         String jwt = resolveToken(request);
         String requestURI = request.getRequestURI();

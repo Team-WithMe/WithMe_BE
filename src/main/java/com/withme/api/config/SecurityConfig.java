@@ -1,6 +1,8 @@
 package com.withme.api.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.withme.api.filter.JwtAuthenticationFilter;
+import com.withme.api.filter.JwtAuthorizationFilter;
 import com.withme.api.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +24,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final CorsFilter corsFilter;
     private final TokenProvider tokenProvider;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -40,7 +43,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(corsFilter)  //인증이 필요한 요청에도 cors 적용
                 .formLogin().disable()  //form login 사용안함
                 .httpBasic().disable()  //header에 ID, PW를 담고 요청하는 http basic 방식 사용 안함
-                .addFilter(new JwtAuthenticationFilter(authenticationManager(), tokenProvider))
+                .addFilter(new JwtAuthenticationFilter(authenticationManager(), tokenProvider, objectMapper))
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(), tokenProvider))
 
                 .authorizeRequests()
                 .antMatchers("/api/v1/user/**")

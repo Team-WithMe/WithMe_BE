@@ -23,11 +23,12 @@ public class UserController {
     )
     @PostMapping("/join")
     public String join(@RequestBody JoinRequestDto dto) {
-        log.info("join{} invoked", dto);
+        log.debug("join{} invoked", dto);
+
         userService.join(dto);
 
         // Todo 회원 가입 후 return 어떻게 처리할지 프론트와 협의하기
 
-        return "join";
+        return "join completed";
     }
 }

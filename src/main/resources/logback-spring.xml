@@ -8,6 +8,11 @@
         <root level="INFO">
             <appender-ref ref="CONSOLE" />
         </root>
+
+        <logger name="com.withme.api" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE" />
+        </logger>
+
     </springProfile>
 
     <springProfile name="dev">

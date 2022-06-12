@@ -1,15 +1,17 @@
 package com.withme.api.config.auth;
 
 import com.withme.api.domain.user.User;
-import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-@Data
+@ToString
+@Getter
 @RequiredArgsConstructor
 public class PrincipalDetails implements UserDetails {
 
@@ -20,6 +22,26 @@ public class PrincipalDetails implements UserDetails {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(() -> user.getRole());
         return authorities;
+    }
+
+    public String getEmail() {
+        return user.getEmail();
+    }
+
+    public String getNickname() {
+        return user.getNickname();
+    }
+
+    public Long getUserIdx() {
+        return user.getUserIdx();
+    }
+
+    public boolean isActivated() {
+        return user.isActivated();
+    }
+
+    public String getUserImage(){
+        return user.getUserImage();
     }
 
     @Override
