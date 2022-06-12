@@ -6,24 +6,19 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 // TODO: 2022/06/12 회원정보 validation 협의하기
 
-@Schema(description = "회원가입을 위한 DTO 객체")
+@Schema(description = "로그인을 위한 DTO 객체")
 @Getter
-@ToString
 @NoArgsConstructor
-public class JoinRequestDto {
+public class LoginRequestDto {
 
     @Schema(description = "이메일", example = "joinTest@withme.com", required = true)
     @NotNull
-    @Email
     @Size(min = 3, max = 100)
     private String email;
 
@@ -33,31 +28,17 @@ public class JoinRequestDto {
     @Size(min = 3, max = 100)
     private String password;
 
-    @Schema(description = "닉네임", example = "vV짱짱위드미짱짱Vv", required = true)
-    @NotNull
-    @Size(min = 3, max = 100)
-    private String nickname;
-
     @Builder
-    public JoinRequestDto(String email, String password, String nickname){
+    public LoginRequestDto(String email, String password) {
         this.email = email;
         this.password = password;
-        this.nickname = nickname;
     }
 
     public User toEntity(){
         return User.builder()
                 .email(this.email)
                 .password(this.password)
-                .nickname(this.nickname)
-                .activated(true)
-                .userImage(null)
-                .role("ROLE_USER")
                 .build();
-    }
-
-    public void encodePassword(PasswordEncoder passwordEncoder) {
-        this.password= passwordEncoder.encode(this.password);
     }
 
 }

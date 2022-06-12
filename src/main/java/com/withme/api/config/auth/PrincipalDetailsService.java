@@ -21,11 +21,10 @@ public class PrincipalDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.debug("loadUserByUsername invoked.");
-        User userEntity = userRepository.findByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        log.debug("loadUserByUsername({}) invoked.", email);
+        User userEntity = userRepository.findByEmail(email);
 
-        log.debug("{}", userEntity);
         return new PrincipalDetails(userEntity);
     }
 }

@@ -41,7 +41,7 @@ public class Team extends BaseTimeEntity {
 
    @ManyToMany
    @JoinTable(
-           name = "TEAM_STACK",
+           name = "TEAM_SKILL",
            joinColumns = {@JoinColumn(name = "teamIdx", referencedColumnName = "teamIdx")},
            inverseJoinColumns = {@JoinColumn(name = "skillName", referencedColumnName = "skillName")}
    )

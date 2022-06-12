@@ -39,13 +39,6 @@ public class UserControllerTest {
 
     private MockMvc mvc;
 
-    //given
-    String email = "joinTest@withme.com";
-    String username = "위드미 테스트";
-    String password = "12345";
-    String nickname = "vV위드미짱짱Vv";
-
-
     @BeforeEach
     public void setup(){
         this.mvc = MockMvcBuilders
@@ -56,17 +49,20 @@ public class UserControllerTest {
 
     @AfterEach
     public void tearDown() {
-        userRepository.delete(userRepository.findByEmail(this.email));
+        userRepository.delete(userRepository.findByNickname("vV위드미짱짱Vv"));
     }
 
     @Test
-    public void User_회원가입() throws Exception{
+    public void 회원가입_성공() throws Exception{
         //given
+        String email = "joinTest@withme.com";
+        String password = "12345";
+        String nickname = "vV위드미짱짱Vv";
+
         JoinRequestDto dto = JoinRequestDto.builder()
-                .email(this.email)
-                .username(this.username)
-                .password(this.password)
-                .nickname(this.nickname)
+                .email(email)
+                .password(password)
+                .nickname(nickname)
                 .build();
 
         String url = "http://localhost:" + port + "/join";
@@ -75,8 +71,7 @@ public class UserControllerTest {
         mvc.perform(post(url)   //생성된 MockMvc를 통해 API를 테스트
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{" +
-                                "\"username\":\"" + dto.getUsername() + "\"" +
-                                ",\"email\":\"" + dto.getEmail() + "\"" +
+                                "\"email\":\"" + dto.getEmail() + "\"" +
                                 ",\"password\":\"12345\"" +
                                 ",\"nickname\":\"" + dto.getNickname() + "\"" +
                                 "}"
@@ -86,8 +81,37 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("join completed"));
 
-        assertThat(userRepository.findByEmail(this.email).getNickname()).isEqualTo(this.nickname);
+        assertThat(userRepository.findByEmail(email).getNickname()).isEqualTo(nickname);
     }
 
+    @Test
+    public void 회원가입_실패() throws Exception{
+        //given
+        String email = "joinTest@withme.com";
+        String password = "1";
+        String nickname = "vV위드미짱짱Vv";
+
+        JoinRequestDto dto = JoinRequestDto.builder()
+                .email(email)
+                .password(password)
+                .nickname(nickname)
+                .build();
+
+        String url = "http://localhost:" + port + "/join";
+
+        //when
+        mvc.perform(post(url)   //생성된 MockMvc를 통해 API를 테스트
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{" +
+                                "\"email\":\"" + dto.getEmail() + "\"" +
+                                ",\"password\":\"1\"" +
+                                ",\"nickname\":\"" + dto.getNickname() + "\"" +
+                                "}"
+                        ))
+
+                //then
+                .andExpect(status().isOk())
+                .andExpect(content().string("join completed"));
+    }
 
 }

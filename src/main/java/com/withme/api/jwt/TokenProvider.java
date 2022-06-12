@@ -72,8 +72,8 @@ public class TokenProvider implements InitializingBean {
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim(AUTHORITIES_KEY, authorities)
-                .claim("id", principal.getUser().getUserIdx())
-                .claim("username", principal.getUsername())
+                .claim("id", principal.getUserIdx())
+                .claim("email", principal.getEmail())
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(validity)
                 .compact();
@@ -92,8 +92,7 @@ public class TokenProvider implements InitializingBean {
                 .parseClaimsJws(token)
                 .getBody();
 
-        String username = claims.get("username").toString();
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByEmail(claims.get("email").toString());
 
         PrincipalDetails principalDetails = new PrincipalDetails(user);
 

@@ -2,7 +2,7 @@ package com.withme.api.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.withme.api.config.auth.PrincipalDetails;
-import com.withme.api.domain.user.User;
+import com.withme.api.controller.dto.LoginRequestDto;
 import com.withme.api.jwt.TokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,17 +46,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         log.debug("attemptAuthentication invoked.");
-        log.debug("objectMapper : " + objectMapper);
-
-        //1. username, password를 받아서
 
         try {
-            User user = objectMapper.readValue(request.getInputStream(), User.class);
-
-            log.debug("user : {}", user);
+            LoginRequestDto loginRequestDto = objectMapper.readValue(request.getInputStream(), LoginRequestDto.class);
 
             UsernamePasswordAuthenticationToken authenticationToken
-                    = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
+                    = new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword());
 
             //PrincipalDetailsService의 loadUserByUsername() 메서드가 실행된다.
             //정상이라면 authentication이 리턴된다.
