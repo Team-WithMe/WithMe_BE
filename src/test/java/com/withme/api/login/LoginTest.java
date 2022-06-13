@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -43,8 +44,8 @@ public class LoginTest{
 
     //given
     String email = "joinTest@withme.com";
-    String password = "12345";
-    String nickname = "vV위드미짱짱Vv";
+    String password = "1234qwer%T";
+    String nickname = "vV위드미Vv";
 
     @BeforeEach
     public void setup(){
@@ -65,7 +66,8 @@ public class LoginTest{
 
     @AfterEach
     public void tearDown(){
-        userRepository.delete(userRepository.findByEmail(this.email));
+        userRepository.delete(userRepository.findByEmail(this.email)
+                .orElseThrow(() -> new UsernameNotFoundException(this.email + "not exist.")));
     }
 
     @Test
@@ -87,7 +89,7 @@ public class LoginTest{
     }
 
     @Test
-    public void 로그인_실패() throws Exception{
+    public void 로그인_실패_잘못된_비밀번호() throws Exception{
         String url = "http://localhost:" + port + "/login";
 
         //when
@@ -96,6 +98,40 @@ public class LoginTest{
                         .content("{" +
                                 "\"email\":\"" + this.email + "\"" +
                                 ",\"password\":\"" + this.password+"x" + "\"" +
+                                "}"
+                        ))
+
+                //then
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void 로그인_실패_잘못된_이메일() throws Exception{
+        String url = "http://localhost:" + port + "/login";
+
+        //when
+        mvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{" +
+                                "\"email\":\"" + this.email + "x" + "\"" +
+                                ",\"password\":\"" + this.password + "\"" +
+                                "}"
+                        ))
+
+                //then
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    public void 로그인_실패_유효성_부적합() throws Exception{
+        String url = "http://localhost:" + port + "/login";
+
+        //when
+        mvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{" +
+                                "\"email\":\"" + "email" + "\"" +
+                                ",\"password\":\"" + this.password + "\"" +
                                 "}"
                         ))
 
