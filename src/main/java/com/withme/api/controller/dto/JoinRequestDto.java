@@ -13,8 +13,6 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-// TODO: 2022/06/12 회원정보 validation 협의하기
-
 @Schema(description = "회원가입을 위한 DTO 객체")
 @Getter
 @ToString
@@ -23,19 +21,19 @@ public class JoinRequestDto {
 
     @Schema(description = "이메일", example = "joinTest@withme.com", required = true)
     @NotNull
-    @Email
-    @Size(min = 3, max = 100)
+    @Email(message = "이메일 형식에 맞추어 입력해주세요.")
+    @Size(min = 1, max = 100, message = "이메일은 100자 이내로 입력해주세요.")
     private String email;
 
-    @Schema(description = "비밀번호", example = "12345", required = true)
+    @Schema(description = "비밀번호", example = "1234qwer%T", required = true)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotNull
-    @Size(min = 3, max = 100)
+    @Size(min = 8, max = 30, message = "비밀번호는 8글자 이상 30글자 이하입니다.")
     private String password;
 
-    @Schema(description = "닉네임", example = "vV짱짱위드미짱짱Vv", required = true)
+    @Schema(description = "닉네임", example = "vV위드미Vv", required = true)
     @NotNull
-    @Size(min = 3, max = 100)
+    @Size(min = 2, max = 8, message = "닉네임은 2글자 이상 8글자 이하입니다.")
     private String nickname;
 
     @Builder

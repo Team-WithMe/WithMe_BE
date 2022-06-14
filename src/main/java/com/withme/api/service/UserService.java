@@ -22,7 +22,7 @@ public class UserService {
         if(userRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new UserAlreadyExistException("Email Duplicated", "email");
         }
-        if (userRepository.findByNickname(dto.getNickname()) != null) {
+        if (userRepository.findByNickname(dto.getNickname()).isPresent()) {
             throw new UserAlreadyExistException("Nickname Duplicated", "nickname");
         }
 

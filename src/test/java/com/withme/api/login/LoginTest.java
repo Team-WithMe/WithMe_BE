@@ -72,10 +72,10 @@ public class LoginTest{
 
     @Test
     public void 로그인_성공() throws Exception{
-        String url = "http://localhost:" + port + "/login";
+        String loginUrl = "http://localhost:" + port + "/login";
 
         //when
-        mvc.perform(post(url)
+        mvc.perform(post(loginUrl)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{" +
                                 "\"email\":\"" + this.email + "\"" +
@@ -86,6 +86,7 @@ public class LoginTest{
         //then
                 .andExpect(status().isOk())
                 .andExpect(header().exists("Authorization"));
+
     }
 
     @Test

@@ -3,6 +3,8 @@ package com.withme.api.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.withme.api.filter.JwtAuthenticationFilter;
 import com.withme.api.filter.JwtAuthorizationFilter;
+import com.withme.api.jwt.JwtAccessDeniedHandler;
+import com.withme.api.jwt.JwtAuthenticationEntryPoint;
 import com.withme.api.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +24,8 @@ import org.springframework.web.filter.CorsFilter;
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final CorsFilter corsFilter;
     private final TokenProvider tokenProvider;
     private final ObjectMapper objectMapper;
@@ -35,20 +39,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-//        http.addFilterBefore(new MyFilter3(), SecurityContextPersistenceFilter.class);  //Spring Security Filter Chain 중 가장 먼저 실행되는 필터보다 먼저 수행
-        http.csrf().disable();
+        http
+                .csrf().disable()
+                .headers().frameOptions().disable()
 
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) //세션 사용 안함
                 .and()
-                .addFilter(corsFilter)  //인증이 필요한 요청에도 cors 적용
+                .exceptionHandling()
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(jwtAccessDeniedHandler)
+
+                .and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) //세션 사용 안함
+
+                .and()
                 .formLogin().disable()  //form login 사용안함
                 .httpBasic().disable()  //header에 ID, PW를 담고 요청하는 http basic 방식 사용 안함
+                .addFilter(corsFilter)  //인증이 필요한 요청에도 cors 적용
                 .addFilter(new JwtAuthenticationFilter(authenticationManager(), tokenProvider, objectMapper))
                 .addFilter(new JwtAuthorizationFilter(authenticationManager(), tokenProvider))
 
                 .authorizeRequests()
-                .antMatchers("/api/v1/user/**")
-                .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+                .antMatchers("/api/v1/user/**").authenticated()
                 .antMatchers("/api/v1/admin/**")
                 .access("hasRole('ROLE_ADMIN')")
                 .anyRequest().permitAll();

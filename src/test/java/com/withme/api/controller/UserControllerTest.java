@@ -2,6 +2,7 @@ package com.withme.api.controller;
 
 
 import com.withme.api.controller.dto.JoinRequestDto;
+import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,12 +12,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -63,8 +65,7 @@ public class UserControllerTest {
 
     @AfterEach
     public void tearDown() {
-        userRepository.delete(userRepository.findByNickname("vV위드미Vv"));
-        userRepository.delete(userRepository.findByEmail(this.dupEmail).orElseThrow(() -> new UsernameNotFoundException(this.dupEmail + "not exist.")));
+        userRepository.findAll().forEach(user -> userRepository.delete(user));
     }
 
     @Test
@@ -95,9 +96,10 @@ public class UserControllerTest {
                         ))
 
         //then
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
-        assertThat(userRepository.findByEmail(email).map(user -> user.getNickname())).isEqualTo(nickname);
+        assertThat(userRepository.findByEmail(email)
+                .map(User::getNickname)).isEqualTo(Optional.of(nickname));
     }
 
     @Test
