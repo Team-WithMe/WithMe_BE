@@ -1,7 +1,6 @@
 package com.withme.api.domain.user;
 
 import com.withme.api.domain.BaseTimeEntity;
-import com.withme.api.domain.authority.Authority;
 import com.withme.api.domain.team.Team;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @NoArgsConstructor
@@ -21,13 +19,13 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userIdx;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String email;
 
     @Column
     private String password;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String nickname;
 
     @Column(nullable = false)
@@ -36,22 +34,19 @@ public class User extends BaseTimeEntity {
     @Column
     private String userImage;
 
-    @ManyToMany
-    @JoinTable(
-            name = "USER_AUTHORITY",
-            joinColumns = {@JoinColumn(name = "userIdx", referencedColumnName = "userIdx")},
-            inverseJoinColumns = {@JoinColumn(name = "authotiryName", referencedColumnName = "authorityName")})
-    private Set<Authority> authorities;
+    @Column
+    private String role;
 
     @ManyToMany
     private List<Team> teams;
 
     @Builder
-    public User(String email, String password, String nickname, boolean activated, String userImage) {
+    public User(String email, String password, String nickname, boolean activated, String userImage, String role) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.activated = activated;
         this.userImage = userImage;
+        this.role = role;
     }
 }
