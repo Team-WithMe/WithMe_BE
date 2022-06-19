@@ -1,6 +1,7 @@
-package com.withme.api.exception;
+package com.withme.api.controller;
 
 import com.withme.api.controller.dto.ExceptionResponseDto;
+import com.withme.api.exception.UserAlreadyExistException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @ControllerAdvice
-public class CustomizedResopnseEntityExceptionHandler extends ResponseEntityExceptionHandler {
+public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistException.class)
     public final ResponseEntity<Object> handleUserAlreadyExistException(UserAlreadyExistException ex) {

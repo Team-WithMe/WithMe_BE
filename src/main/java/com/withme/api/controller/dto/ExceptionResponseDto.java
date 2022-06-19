@@ -12,9 +12,9 @@ import java.util.Map;
 public class ExceptionResponseDto {
 
     @Schema(description = "Exception 원인에 대한 간단한 내용", example = "Information Duplicated")
-    private String messgae;
+    private String message;
 
-    @Schema(description = "Exception 원인에 대한 Key-Value", example = "{\"email\": false")
+    @Schema(description = "Exception 원인에 대한 Key-Value", example = "{'email': false}")
     private Map<String, Object> details;
 
 }

@@ -31,7 +31,7 @@ public class UserController {
         summary = "회원가입"
         , description = "새로운 유저의 정보를 DB에 저장한다."
     )
-    @ApiResponses({
+    @ApiResponses(value = {
         @ApiResponse(
             responseCode = "201"
             , description = "회원가입 성공"
@@ -39,7 +39,7 @@ public class UserController {
         , @ApiResponse(
             responseCode = "422"
             , description = "파라미터 유효성 부적합"
-            , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
+            , content = {@Content(schema = @Schema(implementation = ExceptionResponseDto.class))}
         )
         , @ApiResponse(
             responseCode = "400"
