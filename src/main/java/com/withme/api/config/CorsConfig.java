@@ -19,7 +19,7 @@ public class CorsConfig {
         config.addAllowedHeader("*");   //허용할 header
         config.addAllowedMethod("*");   //허용할 httpMehod(GET, POST, etc..)
 
-        source.registerCorsConfiguration("*", config);
+        source.registerCorsConfiguration("/*", config);
 
         return new CorsFilter(source);
     }
