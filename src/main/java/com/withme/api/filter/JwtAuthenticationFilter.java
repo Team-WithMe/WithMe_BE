@@ -3,6 +3,7 @@ package com.withme.api.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.withme.api.config.auth.PrincipalDetails;
 import com.withme.api.controller.dto.LoginRequestDto;
+import com.withme.api.controller.dto.LoginResponseDto;
 import com.withme.api.jwt.TokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -85,8 +86,20 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
         log.debug("principalDetails : {}", principalDetails);
 
-        String jwt = tokenProvider.createToken(authResult);
+        String jwt = "Bearer " + tokenProvider.createToken(authResult);
 
-        response.addHeader(AUTHORIZATION_HEADER, "Bearer " + jwt);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("utf-8");
+
+        LoginResponseDto loginResponseDto = LoginResponseDto.builder()
+                .nickname(principalDetails.getNickname())
+                .token(jwt)
+                .build();
+
+        String body = objectMapper.writeValueAsString(loginResponseDto);
+
+        response.addHeader(AUTHORIZATION_HEADER, jwt);
+        response.getWriter().write(body);
+
     }
 }
