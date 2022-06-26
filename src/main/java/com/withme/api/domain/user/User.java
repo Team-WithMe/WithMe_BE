@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @ToString
@@ -40,7 +41,7 @@ public class User extends BaseTimeEntity {
     private String role;
 
     @ManyToMany
-    private List<Team> teams;
+    private List<Team> teams = new ArrayList<>();
 
     @Builder
     public User(String email, String password, String nickname, boolean activated, String userImage, String role) {
