@@ -55,6 +55,8 @@ public class OAuthAttributes {
                 .build();
     }
 
+    // TODO: 2022/06/24 1. 닉네임 중복 발생 가능. unique하게 처리할 요건 필요, 2. 비밀번호 랜덤하게 처리할 요건 필요
+
     //OAuthAttributes에서 엔티티를 생성하는 시점은 처음 가입 시
     public User toEntity(){
         return User.builder()

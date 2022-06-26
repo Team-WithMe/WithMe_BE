@@ -5,10 +5,12 @@ import com.withme.api.domain.team.Team;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.List;
 
+@ToString
 @Getter
 @NoArgsConstructor
 @Table(name = "USER")
