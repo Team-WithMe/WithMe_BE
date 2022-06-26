@@ -5,10 +5,12 @@ import com.withme.api.domain.team.Team;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.List;
 
+@ToString
 @Getter
 @NoArgsConstructor
 @Table(name = "USER")
@@ -48,5 +50,11 @@ public class User extends BaseTimeEntity {
         this.activated = activated;
         this.userImage = userImage;
         this.role = role;
+    }
+
+    public User update(String userImage) {
+        this.userImage = userImage;
+
+        return this;
     }
 }

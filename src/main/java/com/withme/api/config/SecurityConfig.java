@@ -1,6 +1,8 @@
 package com.withme.api.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.withme.api.config.auth.CustomAuthenticationSuccessHandler;
+import com.withme.api.config.auth.CustomOAuth2UserService;
 import com.withme.api.filter.JwtAuthenticationFilter;
 import com.withme.api.filter.JwtAuthorizationFilter;
 import com.withme.api.jwt.JwtAccessDeniedHandler;
@@ -29,6 +31,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final CorsFilter corsFilter;
     private final TokenProvider tokenProvider;
     private final ObjectMapper objectMapper;
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -62,6 +66,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/v1/user/**").authenticated()
                 .antMatchers("/api/v1/admin/**")
                 .access("hasRole('ROLE_ADMIN')")
-                .anyRequest().permitAll();
+                .anyRequest().permitAll()
+
+                .and()
+                .oauth2Login()
+                .successHandler(customAuthenticationSuccessHandler)
+                .userInfoEndpoint()
+                .userService(customOAuth2UserService);
     }
 }

@@ -6,7 +6,7 @@ import lombok.Getter;
 
 import java.util.Map;
 
-@Schema(description = "Exception Return을 위한 DTO 객체")
+@Schema(description = "Exception 응답 DTO 객체")
 @Getter
 @AllArgsConstructor
 public class ExceptionResponseDto {

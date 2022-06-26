@@ -11,7 +11,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-@Schema(description = "로그인을 위한 DTO 객체")
+@Schema(description = "로그인 요청 DTO 객체")
 @Getter
 @NoArgsConstructor
 public class LoginRequestDto {
