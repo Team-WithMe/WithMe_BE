@@ -61,24 +61,27 @@ public class TokenProvider implements InitializingBean {
      * @return jwt 토큰
      */
     public String createToken(Authentication authentication) {
-        String authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
-        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-
-        long now = (new Date()).getTime();
-        Date validity = new Date(now + this.tokenValidityInMilliseconds);
+//        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setSubject(authentication.getName())
-                .claim(AUTHORITIES_KEY, authorities)
-                .claim("id", principal.getUserIdx())
-                .claim("email", principal.getEmail())
+                .claim(AUTHORITIES_KEY, this.getAuthoritiesFromAuthentication(authentication))
                 .signWith(key, SignatureAlgorithm.HS512)
-                .setExpiration(validity)
+                .setExpiration(this.getValidity())
                 .compact();
     }
+
+    private Date getValidity() {
+        long now = (new Date()).getTime();
+        return new Date(now + this.tokenValidityInMilliseconds);
+    }
+
+    private String getAuthoritiesFromAuthentication(Authentication authentication){
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+    }
+
 
     /**
      * 토큰을 파라미터로 받아 Authentication 정보를 리턴하는 메서드

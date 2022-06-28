@@ -1,5 +1,6 @@
 package com.withme.api.filter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.withme.api.config.auth.PrincipalDetails;
 import com.withme.api.controller.dto.LoginRequestDto;
@@ -49,14 +50,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 //        log.debug("attemptAuthentication invoked.");
 
         try {
-            LoginRequestDto loginRequestDto = objectMapper.readValue(request.getInputStream(), LoginRequestDto.class);
-
-            UsernamePasswordAuthenticationToken authenticationToken
-                    = new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword());
-
             //PrincipalDetailsService의 loadUserByUsername() 메서드가 실행된다.
             //정상이라면 authentication이 리턴된다.
-            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+            Authentication authentication = authenticationManager.authenticate(this.getUsernamePasswordAuthenticationToken(request));
             log.debug("authentication : {}", authentication);
 
             //return하면 authentication 객체가 session 영역에 저장된다.
@@ -68,6 +64,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         }
 
         return null;
+    }
+
+    private UsernamePasswordAuthenticationToken getUsernamePasswordAuthenticationToken(HttpServletRequest request) throws IOException {
+        LoginRequestDto loginRequestDto = objectMapper.readValue(request.getInputStream(), LoginRequestDto.class);
+
+        return new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword());
     }
 
     /**
@@ -86,20 +88,33 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
         log.debug("principalDetails : {}", principalDetails);
 
-        String jwt = "Bearer " + tokenProvider.createToken(authResult);
+        //토큰 생성
+        //응답 보내기
+
+        String jwt = this.creatJwt(authResult);
+
+        this.sendResponse(response, principalDetails, jwt);
+
+    }
+
+    private String creatJwt(Authentication authResult) {
+        return "Bearer " + tokenProvider.createToken(authResult);
+    }
+
+    private void sendResponse(HttpServletResponse response, PrincipalDetails principalDetails, String jwt) throws IOException {
+        String body = this.getBody(principalDetails, jwt);
 
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
+        response.addHeader(AUTHORIZATION_HEADER, jwt);
+        response.getWriter().write(body);
+    }
 
+    private String getBody(PrincipalDetails principalDetails, String jwt) throws JsonProcessingException {
         LoginResponseDto loginResponseDto = LoginResponseDto.builder()
                 .nickname(principalDetails.getNickname())
                 .token(jwt)
                 .build();
-
-        String body = objectMapper.writeValueAsString(loginResponseDto);
-
-        response.addHeader(AUTHORIZATION_HEADER, jwt);
-        response.getWriter().write(body);
-
+        return objectMapper.writeValueAsString(loginResponseDto);
     }
 }
