@@ -88,9 +88,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
         log.debug("principalDetails : {}", principalDetails);
 
-        //토큰 생성
-        //응답 보내기
-
         String jwt = this.creatJwt(authResult);
 
         this.sendResponse(response, principalDetails, jwt);
