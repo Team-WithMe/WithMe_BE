@@ -6,13 +6,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.util.StringUtils;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * SpringSecurity의 BasicAuthenticationFilter는 권한이나 인증이 필요한 특정 주소를 요청할 경우 수행된다.
@@ -30,12 +30,12 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        log.debug("doFilterInternal invoked.");
+        log.debug("JwtAuthorizationFilter invoked.");
 
-        String jwt = resolveToken(request);
+        String jwt = this.resolveToken(request);
         String requestURI = request.getRequestURI();
 
-        if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+        if(tokenProvider.validateToken(jwt)) {
             Authentication authentication = tokenProvider.getAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);;
             log.info("Security Context에 '{}' 인증 정보 저장. uri : {}", authentication, requestURI);
@@ -53,10 +53,10 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
      * @return
      */
     private String resolveToken(HttpServletRequest request){
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")){
-            return bearerToken.substring(7);
-        }
-        return null;
+
+        return Optional.ofNullable(request.getHeader(this.AUTHORIZATION_HEADER))
+                .filter(token -> token.startsWith("Bearer "))
+                .map(token -> token.substring(7))
+                .orElse("");
     }
 }

@@ -47,7 +47,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-//        log.debug("attemptAuthentication invoked.");
+        log.debug("JwtAuthenticationFilter invoked.");
 
         try {
             //PrincipalDetailsService의 loadUserByUsername() 메서드가 실행된다.

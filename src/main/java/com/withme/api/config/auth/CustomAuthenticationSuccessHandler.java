@@ -35,8 +35,8 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     protected void successfulAuthentication(HttpServletResponse response, Authentication authResult) throws IOException, ServletException {
         log.debug("successfulAuthentication invoked.");
 
-        DefaultOAuth2User principalDetails = (DefaultOAuth2User) authResult.getPrincipal();
-        log.debug("principalDetails : {}", principalDetails);
+        DefaultOAuth2User oauth2User = (DefaultOAuth2User) authResult.getPrincipal();
+        log.debug("oauth2User : {}", oauth2User);
 
         String jwt = "Bearer " + tokenProvider.createToken(authResult);
 
@@ -44,7 +44,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         response.setCharacterEncoding("utf-8");
 
         LoginResponseDto loginResponseDto = LoginResponseDto.builder()
-                .nickname(principalDetails.getName())
+                .nickname(oauth2User.getName())
                 .token(jwt)
                 .build();
 
