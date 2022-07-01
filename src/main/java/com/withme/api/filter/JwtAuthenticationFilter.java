@@ -1,10 +1,8 @@
 package com.withme.api.filter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.withme.api.config.auth.PrincipalDetails;
 import com.withme.api.controller.dto.LoginRequestDto;
-import com.withme.api.controller.dto.LoginResponseDto;
 import com.withme.api.jwt.TokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,9 +26,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private AuthenticationManager authenticationManager;  //로그인을 수행하는 주체
     private TokenProvider tokenProvider;
     private ObjectMapper objectMapper;
-
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, TokenProvider tokenProvider, ObjectMapper objectMapper) {
         this.authenticationManager = authenticationManager;
@@ -88,30 +83,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
         log.debug("principalDetails : {}", principalDetails);
 
-        String jwt = this.creatJwt(authResult);
-
-        this.sendResponse(response, principalDetails, jwt);
+        tokenProvider.provideToken(request, response, authResult);
 
     }
 
-    private String creatJwt(Authentication authResult) {
-        return "Bearer " + tokenProvider.createToken(authResult);
-    }
 
-    private void sendResponse(HttpServletResponse response, PrincipalDetails principalDetails, String jwt) throws IOException {
-        String body = this.getBody(principalDetails, jwt);
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("utf-8");
-        response.addHeader(AUTHORIZATION_HEADER, jwt);
-        response.getWriter().write(body);
-    }
 
-    private String getBody(PrincipalDetails principalDetails, String jwt) throws JsonProcessingException {
-        LoginResponseDto loginResponseDto = LoginResponseDto.builder()
-                .nickname(principalDetails.getNickname())
-                .token(jwt)
-                .build();
-        return objectMapper.writeValueAsString(loginResponseDto);
-    }
 }
