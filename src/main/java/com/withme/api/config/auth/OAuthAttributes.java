@@ -4,9 +4,11 @@ import com.withme.api.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
+@Slf4j
 @ToString
 @Getter
 public class OAuthAttributes {
@@ -34,6 +36,7 @@ public class OAuthAttributes {
     }
 
     private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes){
+        log.debug("OAuthAttributes_ofGoogle");
         return OAuthAttributes.builder()
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
@@ -44,8 +47,8 @@ public class OAuthAttributes {
     }
 
     private static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes){
+        log.debug("OAuthAttributes_ofNaver");
         Map<String, Object> response = (Map<String, Object>)attributes.get("response");
-
         return OAuthAttributes.builder()
                 .name((String) response.get("name"))
                 .email((String) response.get("email"))

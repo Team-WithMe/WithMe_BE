@@ -61,31 +61,28 @@ public class TokenProvider implements InitializingBean {
      * @throws Exception
      */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public void provideToken(HttpServletRequest request, HttpServletResponse response, Authentication authResult) throws IOException {
+    public void sendResponseWithToken(HttpServletRequest request, HttpServletResponse response, Authentication authResult) throws IOException {
         UserDetails userDetails = (UserDetails) authResult.getPrincipal();
         log.debug("userDetails : {}", userDetails);
 
-        String jwt = this.creatJwt(authResult);
-        this.sendResponse(response, userDetails, jwt);
-    }
+        String jwt = "Bearer " + this.createToken(authResult);
 
-    private String creatJwt(Authentication authResult) {
-        return "Bearer " + this.createToken(authResult);
-    }
-
-    private void sendResponse(HttpServletResponse response, UserDetails userDetails, String jwt) throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
         response.addHeader(AUTHORIZATION_HEADER, jwt);
-        response.getWriter().write(this.getBody(userDetails, jwt));
+        response.getWriter().write(this.setBody(userDetails, jwt));
+
+        if(request.getRequestURI().indexOf("oauth2") > 0) {
+            response.sendRedirect("localhost:3000/");
+        }
     }
 
-    private String getBody(UserDetails userDetails, String jwt) throws JsonProcessingException {
+    private String setBody(UserDetails userDetails, String jwt) throws JsonProcessingException {
         LoginResponseDto loginResponseDto = LoginResponseDto.builder()
                 .nickname(userDetails.getUsername())
                 .token(jwt)
@@ -100,8 +97,6 @@ public class TokenProvider implements InitializingBean {
      * @return jwt 토큰
      */
     private String createToken(Authentication authentication) {
-//        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim(AUTHORITIES_KEY, this.getAuthoritiesFromAuthentication(authentication))
