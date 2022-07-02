@@ -1,7 +1,6 @@
 package com.withme.api.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.withme.api.config.auth.PrincipalDetails;
 import com.withme.api.controller.dto.LoginRequestDto;
 import com.withme.api.jwt.TokenProvider;
 import lombok.extern.slf4j.Slf4j;
@@ -77,14 +76,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
      * @throws ServletException
      */
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        log.debug("successfulAuthentication invoked.");
-
-        PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
-        log.debug("principalDetails : {}", principalDetails);
-
-        tokenProvider.provideToken(request, response, authResult);
-
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
+        log.debug("principalDetails : {}", authResult.getPrincipal());
+        tokenProvider.sendResponseWithToken(request, response, authResult);
     }
 
 
