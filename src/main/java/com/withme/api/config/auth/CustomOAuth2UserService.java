@@ -10,7 +10,6 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
@@ -40,11 +39,12 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         User user = saveOrUpdate(attributes);
 
-        return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(user.getRole())), attributes.getAttributes(), attributes.getNameAttributeKey());
+        return new CustomOauth2User(Collections.singleton(new SimpleGrantedAuthority(user.getRole())), attributes.getAttributes(), attributes.getNameAttributeKey());
     }
 
     private User saveOrUpdate(OAuthAttributes attributes){
-        User user = userRepository.findByEmail(attributes.getEmail()).map(entity->entity.update(attributes.getUserImage()))
+        User user = userRepository.findByEmail(attributes.getEmail())
+                .map(entity -> entity.update(attributes.getUserImage()))
                 .orElse(attributes.toEntity());
 
         log.debug("user : {}", user);
