@@ -1,14 +1,12 @@
 package com.withme.api.domain.user;
 
 import com.withme.api.domain.BaseTimeEntity;
-import com.withme.api.domain.team.Team;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.util.List;
 
 @ToString
 @Getter
@@ -36,20 +34,24 @@ public class User extends BaseTimeEntity {
     @Column
     private String userImage;
 
-    @Column
+    @Column(nullable = false)
     private String role;
 
-    @ManyToMany
-    private List<Team> teams;
+    @Column(nullable = false)
+    private String joinRoot;
+
+//    @ManyToMany
+//    private List<Team> teams;
 
     @Builder
-    public User(String email, String password, String nickname, boolean activated, String userImage, String role) {
+    public User(String email, String password, String nickname, boolean activated, String userImage, String role, String joinRoot) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.activated = activated;
         this.userImage = userImage;
         this.role = role;
+        this.joinRoot = joinRoot;
     }
 
     public User update(String userImage) {

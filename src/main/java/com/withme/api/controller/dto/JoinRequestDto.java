@@ -51,6 +51,7 @@ public class JoinRequestDto {
                 .activated(true)
                 .userImage(null)
                 .role("ROLE_USER")
+                .joinRoot("WithMe")
                 .build();
     }
 
