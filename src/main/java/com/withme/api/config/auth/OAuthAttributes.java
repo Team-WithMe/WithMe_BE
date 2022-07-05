@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import net.bytebuddy.utility.RandomString;
 
 import java.util.Map;
 
@@ -67,7 +66,6 @@ public class OAuthAttributes {
     public User toEntity(String registrationId){
         return User.builder()
                 .email(email)
-                .password(RandomString.make(30))
                 .nickname(nickname)
                 .activated(true)
                 .userImage(userImage)
@@ -75,4 +73,5 @@ public class OAuthAttributes {
                 .joinRoot(registrationId)
                 .build();
     }
+
 }

@@ -78,7 +78,7 @@ public class TokenProvider implements InitializingBean {
         response.getWriter().write(this.setBody(userDetails, jwt));
 
         if(request.getRequestURI().indexOf("oauth2") > 0) {
-            response.sendRedirect("localhost:3000/");
+            response.sendRedirect("http://localhost:3000/");
         }
     }
 
