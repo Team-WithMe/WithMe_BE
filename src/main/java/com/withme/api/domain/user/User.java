@@ -19,7 +19,7 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userIdx;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String email;
 
     @Column
@@ -40,11 +40,14 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private String joinRoot;
 
+    @Column
+    private String nameAttributeValue;
+
 //    @ManyToMany
 //    private List<Team> teams;
 
     @Builder
-    public User(String email, String password, String nickname, boolean activated, String userImage, String role, String joinRoot) {
+    public User(String email, String password, String nickname, boolean activated, String userImage, String role, String joinRoot, String nameAttributeValue) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
@@ -52,6 +55,7 @@ public class User extends BaseTimeEntity {
         this.userImage = userImage;
         this.role = role;
         this.joinRoot = joinRoot;
+        this.nameAttributeValue = nameAttributeValue;
     }
 
     public User update(String userImage) {

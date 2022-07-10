@@ -17,34 +17,61 @@ public class OAuthAttributes {
     private String nickname;
     private String email;
     private String userImage;
+    private String nameAttributeValue;
 
     @Builder
-    public OAuthAttributes(Map<String, Object> attributes, String nameAttributeKey, String name, String email, String picture){
+    public OAuthAttributes(Map<String, Object> attributes, String nameAttributeKey, String name, String email, String picture, String nameAttributeValue){
         this.attributes = attributes;
         this.nameAttributeKey = nameAttributeKey;
         this.nickname = name;
         this.email = email;
         this.userImage = picture;
+        this.nameAttributeValue = nameAttributeValue;
     }
 
     //OAuth2User에서 반환하는 사용자 정보는 Map이기 때문에 값 하나하나를 변환해야 한다.
     public static OAuthAttributes of(String registrationId, String userNameAttributeName, Map<String, Object> attributes){
+        log.debug("attirbutes : {}", attributes);
         log.debug("registrationId : " + registrationId);
 
-        if("naver".equals(registrationId)){
-            return ofNaver("id", attributes);
+        OAuthAttributes oAuthAttributes;
+        switch(registrationId){
+            case "naver":
+                oAuthAttributes = ofNaver("id", attributes);
+                break;
+            case "google":
+                oAuthAttributes = ofGoogle(userNameAttributeName, attributes);
+                break;
+            default:
+                oAuthAttributes = ofGitHub(userNameAttributeName, attributes);
+                break;
         }
-        return ofGoogle(userNameAttributeName, attributes);
+
+        return oAuthAttributes;
+
     }
 
     private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes){
         log.debug("OAuthAttributes_ofGoogle");
         return OAuthAttributes.builder()
-                .name((String) attributes.get("name"))
+                .name(attributes.get("name") + "_" + attributes.get(userNameAttributeName))
                 .email((String) attributes.get("email"))
                 .picture((String) attributes.get("picture"))
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
+                .nameAttributeValue(attributes.get(userNameAttributeName).toString())
+                .build();
+    }
+
+    private static OAuthAttributes ofGitHub(String userNameAttributeName, Map<String, Object> attributes){
+        log.debug("OAuthAttributes_ofGitHub");
+        return OAuthAttributes.builder()
+                .name(attributes.get("name") + "_" + attributes.get(userNameAttributeName))
+                .email((String) attributes.get("email"))
+                .picture((String) attributes.get("picture"))
+                .attributes(attributes)
+                .nameAttributeKey(userNameAttributeName)
+                .nameAttributeValue(attributes.get(userNameAttributeName).toString())
                 .build();
     }
 
@@ -52,18 +79,17 @@ public class OAuthAttributes {
         log.debug("OAuthAttributes_ofNaver");
         Map<String, Object> response = (Map<String, Object>)attributes.get("response");
         return OAuthAttributes.builder()
-                .name((String) response.get("name"))
+                .name(response.get("name") + "_" + response.get(userNameAttributeName))
                 .email((String) response.get("email"))
                 .picture((String) response.get("profile_image"))
                 .attributes(response)
                 .nameAttributeKey(userNameAttributeName)
+                .nameAttributeValue(response.get(userNameAttributeName).toString())
                 .build();
     }
 
-    // TODO: 2022/06/24 1. 닉네임 중복 발생 가능. unique하게 처리할 요건 필요, 2. 비밀번호 랜덤하게 처리할 요건 필요
-
     //OAuthAttributes에서 엔티티를 생성하는 시점은 처음 가입 시
-    public User toEntity(String registrationId){
+    public User toEntity(String registrationId, String nameAttributeValue){
         return User.builder()
                 .email(email)
                 .nickname(nickname)
@@ -71,6 +97,7 @@ public class OAuthAttributes {
                 .userImage(userImage)
                 .role("ROLE_USER")
                 .joinRoot(registrationId)
+                .nameAttributeValue(nameAttributeValue)
                 .build();
     }
 

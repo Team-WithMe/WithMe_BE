@@ -33,20 +33,20 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             //OAuth2 로그인 진행 시 키가 되는 필드값. Primary Key
             //구글의 기본 코드는 "sub", 네이버와 카카오는 기본 지원X
 
-        OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oauth2User.getAttributes());
+        OAuthAttributes oAuthAttributes = OAuthAttributes.of(registrationId, userNameAttributeName, oauth2User.getAttributes());
         //OAuth2UserService를 통해 가져온 OAuth2User의 attribute를 담을 클래스.
 
-        log.debug("OAuth_attributes : {}", attributes);
+        log.debug("OAuth_attributes : {}", oAuthAttributes);
 
-        User user = saveOrUpdate(attributes, registrationId);
+        User user = saveOrUpdate(oAuthAttributes, registrationId);
 
-        return new CustomOauth2User(Collections.singleton(new SimpleGrantedAuthority(user.getRole())), attributes.getAttributes(), attributes.getNameAttributeKey());
+        return new CustomOauth2User(Collections.singleton(new SimpleGrantedAuthority(user.getRole())), oAuthAttributes.getAttributes(), oAuthAttributes.getNameAttributeKey());
     }
 
-    private User saveOrUpdate(OAuthAttributes attributes, String registrationId){
-        User user = userRepository.findByEmail(attributes.getEmail())
-                .map(entity -> entity.update(attributes.getUserImage()))
-                .orElse(attributes.toEntity(registrationId));
+    private User saveOrUpdate(OAuthAttributes oAuthAttributes, String registrationId){
+        User user = userRepository.findByJoinRootAndNameAttributeValue(registrationId, oAuthAttributes.getNameAttributeValue())
+                .map(entity -> entity.update(oAuthAttributes.getUserImage()))
+                .orElse(oAuthAttributes.toEntity(registrationId, oAuthAttributes.getNameAttributeValue()));
 
         log.debug("user : {}", user);
 

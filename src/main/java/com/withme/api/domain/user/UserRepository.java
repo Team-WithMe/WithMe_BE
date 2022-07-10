@@ -12,4 +12,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /** 일반 로그인 시 이메일 검색 */
     public Optional<User> findByEmailAndPasswordIsNotNull(String email);
+
+    /** OAuth2 로그인 시 계정 검색 */
+    public Optional<User> findByJoinRootAndNameAttributeValue(String registrationId, String nameAttributeValue);
 }
