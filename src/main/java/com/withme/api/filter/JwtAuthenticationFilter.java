@@ -81,7 +81,4 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         tokenProvider.sendResponseWithToken(request, response, authResult);
     }
 
-
-
-
 }

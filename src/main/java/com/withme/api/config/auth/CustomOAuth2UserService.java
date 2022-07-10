@@ -22,6 +22,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private final UserRepository userRepository;
 
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException { //Oauth 로그인 완료 후 받은 code를 받고 Access Token을 요청해 userRequest가 access token을 갖고 있음.
         OAuth2UserService<OAuth2UserRequest,OAuth2User> delegate = new DefaultOAuth2UserService();
@@ -51,4 +52,5 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         return userRepository.save(user);
     }
+
 }
