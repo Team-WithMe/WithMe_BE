@@ -1,9 +1,11 @@
 package com.withme.api.service;
 
+import com.withme.api.controller.dto.TeamListResponseMapping;
+import com.withme.api.controller.dto.TeamSearchDto;
 import com.withme.api.domain.skill.Skill;
+import com.withme.api.controller.dto.CreateTeamRequestDto;
 import com.withme.api.domain.team.Team;
 import com.withme.api.domain.team.TeamRepository;
-import com.withme.api.domain.team.TeamVo;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,10 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -108,16 +107,14 @@ public class TeamService {
     /**
      * 팀 등록
      * */
-    public int createTeamTest(TeamVo teamVo) {
+    public int createTeamTest(CreateTeamRequestDto createTeamDto) {
         try{
             Long user_idx = 1L;
 
-
-
             Team team = Team.builder()
                     .teamCategory("")
-                    .teamDesc(teamVo.getDescription())
-                    .teamName(teamVo.getName())
+                    .teamDesc(createTeamDto.getDescription())
+                    .teamName(createTeamDto.getName())
                     .teamIntroduce("")
                     .teamNotice("")
                     .shown(true)
@@ -125,7 +122,7 @@ public class TeamService {
 
             // NOTE 스킬 입력
             Skill skill = new Skill();
-            for (String skillName : teamVo.getSkills()) {
+            for (String skillName : createTeamDto.getSkills()) {
                 skill.setSkillName(skillName);
                 team.getSkills().add(skill);
                 teamRepository.save(team);
@@ -134,7 +131,7 @@ public class TeamService {
             User user = userRepository.findById(user_idx).orElseThrow(
                     ()-> new NullPointerException("존재하지않는 사용자"));
 
-            log.warn("team ::: " + user);
+            log.info("team ::: " + user);
             // NOTE 팀등록
             team.getMembers().add(user);
             teamRepository.save(team);
@@ -161,5 +158,26 @@ public class TeamService {
             result.put("result", "Exception");
             return result;
         }
+    }
+
+    public List<TeamListResponseMapping> getTeamList(TeamSearchDto teamSearchDto) throws Exception {
+        // NOTE 스킬 입력
+        Set<Skill> skills = new HashSet<>();
+        for (Skill s: teamSearchDto.getSkills()){
+                skills.add(s);
+        }
+        List<TeamListResponseMapping> teamList = new ArrayList<>();
+
+        if (skills.size() <= 0){
+            teamList = teamRepository.findAllByShownIsTrue().orElseThrow(
+                    () -> new Exception("팀 조회 오류 (검색X)")
+            );
+        }else{
+            teamList = teamRepository.findTeamsBySkillsInAndShownIsTrue(skills).orElseThrow(
+                    () -> new Exception("팀 조회 오류 (검색O)")
+            );
+        }
+        return teamList;
+
     }
 }

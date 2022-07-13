@@ -18,7 +18,7 @@ import javax.persistence.Table;
 public class Skill {
 
    @Id
-   @Column(length = 50)
+   @Column(length = 50, insertable = false, updatable = false)
    private String skillName;
 
 

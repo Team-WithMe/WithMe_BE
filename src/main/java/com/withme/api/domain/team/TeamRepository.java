@@ -1,5 +1,8 @@
 package com.withme.api.domain.team;
 
+import com.withme.api.controller.dto.TeamListResponseMapping;
+import com.withme.api.controller.dto.TeamSearchDto;
+import com.withme.api.domain.skill.Skill;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -7,6 +10,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface TeamRepository extends JpaRepository<Team, Long> {
@@ -27,4 +32,14 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     List<Map<String, Object>> findTeams();
 
     int countTeamBy();
+    String findTeamsBy = "SELECT t FROM Team t WHERE t.skills in :skills";
+    @Query(value = findTeamsBy)
+    Optional<List<TeamListResponseMapping>> findTeamsBySkills(@Param("skills")Set<Skill> skills);
+    
+    // NOTE SKILL로 팀 리스트 검색
+    Optional<List<TeamListResponseMapping>> findTeamBySkillsIn(@Param("skills")Set<Skill> skills);
+
+    Optional<List<TeamListResponseMapping>> findAllByShownIsTrue();
+
+    Optional<List<TeamListResponseMapping>> findTeamsBySkillsInAndShownIsTrue(@Param("skills")Set<Skill> skills);
 }

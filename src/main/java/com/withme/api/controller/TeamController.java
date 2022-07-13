@@ -1,18 +1,24 @@
 package com.withme.api.controller;
 
 
-import com.withme.api.domain.team.TeamVo;
+import com.withme.api.controller.dto.CreateTeamRequestDto;
+import com.withme.api.controller.dto.TeamListResponseMapping;
+import com.withme.api.controller.dto.TeamSearchDto;
+import com.withme.api.domain.team.Team;
 import com.withme.api.service.TeamService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -54,36 +60,78 @@ public class TeamController {
     }
 
     // NOTE 찬규님이 보내준 데이터 맞춤으로 팀 추가
+    @Operation(
+            summary = "팀 생성"
+            , description = "사용자가 등록한 팀의 정보를 DB에 저장한다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201"
+                    ,description = "팀 등록 성공"
+            )
+            , @ApiResponse(
+                    responseCode = "400"
+                    ,description = "팀을 생성사용자 조회시 오류"
+                    ,content = {@Content(schema = @Schema(example = "NullPointException"))}
+            )
+            , @ApiResponse(
+                    responseCode = "500"
+                    ,description = "팀등록 중 오류"
+                    ,content = {@Content(schema = @Schema(example = "Exception"))}
+            )
+    })
     @PostMapping("/createTeam-test")
-    private ResponseEntity createTeam(@RequestBody(required = false) TeamVo teamVo) {
+    private ResponseEntity createTeam(@RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto) {
+        Map<String, Object> res = new HashMap<>();
         try {
 
             // NOTE 팀 생성
-            int result = teamService.createTeamTest(teamVo);
+            int result = teamService.createTeamTest(createTeamRequestDto);
 
             if (result == 6){
                 throw new Exception();
             }else if (result == 5){
                 throw new NullPointerException();
             }else {
-                return new ResponseEntity<>(result, HttpStatus.OK);
+                res.put("status", 200);
+                return new ResponseEntity<>(res, HttpStatus.CREATED);
             }
 
         }catch (NullPointerException e){
             log.warn("[ERROR] : 팀을 생성한 사용자가 조회되지않음");
             e.printStackTrace();
-            return new ResponseEntity<>(5,  HttpStatus.BAD_REQUEST);
+            res.put("status", 400);
+            return new ResponseEntity<>(res,  HttpStatus.BAD_REQUEST);
         }catch (Exception e){
             log.warn("[ERROR] : 팀등록 중 오류");
             e.printStackTrace();
-            return new ResponseEntity<>(6, HttpStatus.BAD_REQUEST);
+            res.put("status", 500);
+            return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
 
+    /**
+     *  팀 목록 조회, 태그 검색
+     * */
+    @PostMapping("/TeamListTest")
+    @ResponseBody
+    private ResponseEntity teamListTest(@RequestBody(required = false) TeamSearchDto teamSearchDto) {
+        try {
+            Map<String, Object> result = new HashMap<>();
+            List<TeamListResponseMapping> teamList = teamService.getTeamList(teamSearchDto);
+            result.put("teamList", teamList);
+            return new ResponseEntity(teamList, HttpStatus.OK);
+        }catch (Exception e){
+            log.warn("[ERROR] : 팀 조회 중 오류");
+            e.printStackTrace();
+            return new ResponseEntity("팀 조회 중 오류 발생!", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
      * 팀 등록
      * */
+    @ApiOperation(value = "팀 생성")
     @PostMapping("/createTeam")
     private ResponseEntity createTeam(@RequestBody(required = false) String jsonString) {
         try {
