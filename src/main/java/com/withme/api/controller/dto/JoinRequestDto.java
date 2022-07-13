@@ -51,11 +51,12 @@ public class JoinRequestDto {
                 .activated(true)
                 .userImage(null)
                 .role("ROLE_USER")
+                .joinRoot("WithMe")
                 .build();
     }
 
     public void encodePassword(PasswordEncoder passwordEncoder) {
-        this.password= passwordEncoder.encode(this.password);
+        this.password=  passwordEncoder.encode(this.password);
     }
 
 }

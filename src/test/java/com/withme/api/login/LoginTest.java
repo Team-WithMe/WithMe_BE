@@ -66,7 +66,7 @@ public class LoginTest{
 
     @AfterEach
     public void tearDown(){
-        userRepository.delete(userRepository.findByEmail(this.email)
+        userRepository.delete(userRepository.findByEmailAndPasswordIsNotNull(this.email)
                 .orElseThrow(() -> new UsernameNotFoundException(this.email + "not exist.")));
     }
 
