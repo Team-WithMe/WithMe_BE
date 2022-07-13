@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.HashMap;
 
 @Slf4j
 @RequestMapping("/api/v1")
@@ -54,13 +53,6 @@ public class UserController {
         userService.createUser(dto);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    @PostMapping("/oauth")
-    public ResponseEntity<Object> oauth(HashMap<String, Object> requestMap) {
-        log.debug("oauth : {}", requestMap);
-
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

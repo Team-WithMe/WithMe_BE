@@ -21,10 +21,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 import java.util.stream.Collectors;
 
@@ -67,24 +67,24 @@ public class TokenProvider implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public void sendResponseWithToken(HttpServletRequest request, HttpServletResponse response, Authentication authResult) throws IOException {
+    public void sendRedirectWithBase64EncodedToken(HttpServletResponse response, Authentication authResult) throws IOException {
+        String jwt = "Bearer " + this.createToken(authResult);
+
+        response.sendRedirect("http://localhost:3000/successOauth?"
+                + RandomString.make(5)
+                + "="
+                + Base64.getEncoder().encodeToString(jwt.getBytes())
+        );
+    }
+
+    public void sendResponseWithToken(HttpServletResponse response, Authentication authResult) throws IOException {
         UserDetails userDetails = (UserDetails) authResult.getPrincipal();
-        log.debug("userDetails : {}", userDetails);
+        String jwt = "Bearer " + this.createToken(authResult);
 
-        if(request.getRequestURI().indexOf("oauth2") > 0) {
-            response.sendRedirect("http://localhost:3000/successOauth?"
-                    + RandomString.make(5)
-                    + "="
-                    + this.createToken(authResult)
-            );
-        } else {
-            String jwt = "Bearer " + this.createToken(authResult);
-
-            response.setContentType("application/json");
-            response.setCharacterEncoding("utf-8");
-            response.addHeader(AUTHORIZATION_HEADER, jwt);
-            response.getWriter().write(this.setBody(userDetails, jwt));
-        }
+        response.setContentType("application/json");
+        response.setCharacterEncoding("utf-8");
+        response.addHeader(AUTHORIZATION_HEADER, jwt);
+        response.getWriter().write(this.setBody(userDetails, jwt));
     }
 
     private String setBody(UserDetails userDetails, String jwt) throws JsonProcessingException {

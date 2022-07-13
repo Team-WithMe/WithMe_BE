@@ -21,7 +21,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         log.debug("CustomOauth2User : {} ", authentication.getPrincipal());
-        tokenProvider.sendResponseWithToken(request, response, authentication);
+        tokenProvider.sendRedirectWithBase64EncodedToken(response, authentication);
     }
 
 }

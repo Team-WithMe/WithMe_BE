@@ -78,7 +78,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
         log.debug("principalDetails : {}", authResult.getPrincipal());
-        tokenProvider.sendResponseWithToken(request, response, authResult);
+        tokenProvider.sendResponseWithToken(response, authResult);
     }
 
 }
