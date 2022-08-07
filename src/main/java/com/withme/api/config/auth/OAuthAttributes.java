@@ -93,7 +93,6 @@ public class OAuthAttributes {
         return User.builder()
                 .email(email)
                 .nickname(nickname)
-                .activated(true)
                 .userImage(userImage)
                 .role("ROLE_USER")
                 .joinRoot(registrationId)

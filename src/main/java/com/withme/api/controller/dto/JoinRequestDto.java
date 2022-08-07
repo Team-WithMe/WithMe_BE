@@ -48,7 +48,6 @@ public class JoinRequestDto {
                 .email(this.email)
                 .password(this.password)
                 .nickname(this.nickname)
-                .activated(true)
                 .userImage(null)
                 .role("ROLE_USER")
                 .joinRoot("WithMe")

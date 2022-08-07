@@ -1,5 +1,6 @@
 package com.withme.api.domain.skill;
 
+import com.withme.api.domain.TeamSkill.TeamSkill;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,22 +9,25 @@ import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "SKILL")
 @Entity
 public class Skill {
 
    @Id
    @Column(length = 50, insertable = false, updatable = false)
-   private String skillName;
+   private SkillName skillName;
 
+   @OneToMany(mappedBy = "skill")
+   private List<TeamSkill> teamSkills = new ArrayList<>();
 
    @Builder
-   public Skill(String skillName) {
+   public Skill(SkillName skillName) {
       this.skillName = skillName;
    }
 }

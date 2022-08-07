@@ -1,18 +1,16 @@
 package com.withme.api.domain.team;
 
 import com.withme.api.domain.BaseTimeEntity;
-import com.withme.api.domain.skill.Skill;
-import com.withme.api.domain.user.User;
-import lombok.Builder;
+import com.withme.api.domain.TeamSkill.TeamSkill;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
-@Table(name = "TEAM")
 @Entity
 public class Team extends BaseTimeEntity {
 
@@ -24,44 +22,36 @@ public class Team extends BaseTimeEntity {
    private String teamName;
 
    @Column(nullable = false)
-   private String teamCategory;
+   @Enumerated(EnumType.STRING)
+   private TeamCategory teamCategory;
 
    @Column(nullable = false)
    private String teamDesc;
 
    @Column(nullable = false)
-   private String teamIntroduce;
+   @Enumerated(EnumType.STRING)
+   private Status status;
 
-   @Column(nullable = false)
-   private boolean shown;
+   @OneToMany(mappedBy = "team")
+   private List<TeamSkill> teamSkills = new ArrayList<>();
 
-   @Column(nullable = false)
-   private String teamNotice;
 
-   @ManyToMany
-   @JoinTable(
-           name = "TEAM_SKILL",
-           joinColumns = {@JoinColumn(name = "teamIdx", referencedColumnName = "teamIdx")},
-           inverseJoinColumns = {@JoinColumn(name = "skillName", referencedColumnName = "skillName")}
-   )
-   private Set<Skill> skills = new HashSet<>();
+//
+//   @ManyToMany
+//   @JoinTable(
+//           name = "TEAM_SKILL",
+//           joinColumns = {@JoinColumn(name = "teamIdx", referencedColumnName = "teamIdx")},
+//           inverseJoinColumns = {@JoinColumn(name = "skillName", referencedColumnName = "skillName")}
+//   )
+//   private Set<Skill> skills = new HashSet<>();
+//
+//   @ManyToMany
+//   @JoinTable(
+//           name = "TEAM_USER",
+//           joinColumns = {@JoinColumn(name = "teamIdx", referencedColumnName = "teamIdx")},
+//           inverseJoinColumns = {@JoinColumn(name = "userIdx", referencedColumnName = "userIdx")}
+//   )
+//   private List<User> members = new ArrayList<>();
 
-   @ManyToMany
-   @JoinTable(
-           name = "TEAM_USER",
-           joinColumns = {@JoinColumn(name = "teamIdx", referencedColumnName = "teamIdx")},
-           inverseJoinColumns = {@JoinColumn(name = "userIdx", referencedColumnName = "userIdx")}
-   )
-   private List<User> members = new ArrayList<>();
-
-   @Builder
-   public Team(String teamName, String teamCategory, String teamDesc, String teamIntroduce, boolean shown, String teamNotice ){
-      this.teamName = teamName;
-      this.teamCategory = teamCategory;
-      this.teamDesc = teamDesc;
-      this.teamIntroduce = teamIntroduce;
-      this.shown = shown;
-      this.teamNotice = teamNotice;
-   }
 
 }

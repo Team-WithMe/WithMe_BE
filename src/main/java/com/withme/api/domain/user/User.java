@@ -7,14 +7,11 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 
 @ToString
 @Getter
 @NoArgsConstructor
-@Table(name = "USER")
 @Entity
 public class User extends BaseTimeEntity {
 
@@ -31,9 +28,6 @@ public class User extends BaseTimeEntity {
     @Column(unique = true, nullable = false)
     private String nickname;
 
-    @Column(nullable = false)
-    private boolean activated;
-
     @Column
     private String userImage;
 
@@ -46,15 +40,14 @@ public class User extends BaseTimeEntity {
     @Column
     private String nameAttributeValue;
 
-//    @ManyToMany
+    //    @ManyToMany
 //    private List<Team> teams;
 
     @Builder
-    public User(String email, String password, String nickname, boolean activated, String userImage, String role, String joinRoot, String nameAttributeValue) {
+    public User(String email, String password, String nickname, String userImage, String role, String joinRoot, String nameAttributeValue) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
-        this.activated = activated;
         this.userImage = userImage;
         this.role = role;
         this.joinRoot = joinRoot;

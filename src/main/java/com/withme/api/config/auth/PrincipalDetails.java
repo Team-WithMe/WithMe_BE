@@ -32,10 +32,6 @@ public class PrincipalDetails implements UserDetails {
         return user.getUserIdx();
     }
 
-    public boolean isActivated() {
-        return user.isActivated();
-    }
-
     public String getUserImage(){
         return user.getUserImage();
     }
