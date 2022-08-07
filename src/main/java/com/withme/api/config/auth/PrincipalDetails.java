@@ -28,10 +28,6 @@ public class PrincipalDetails implements UserDetails {
         return user.getEmail();
     }
 
-    public String getNickname() {
-        return user.getNickname();
-    }
-
     public Long getUserIdx() {
         return user.getUserIdx();
     }
@@ -51,7 +47,7 @@ public class PrincipalDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return null;
+        return user.getNickname();  //Username을 사용하지 않으므로 Nickname 리턴.
     }
 
     @Override

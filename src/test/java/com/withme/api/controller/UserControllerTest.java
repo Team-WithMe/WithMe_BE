@@ -98,7 +98,7 @@ public class UserControllerTest {
         //then
                 .andExpect(status().isCreated());
 
-        assertThat(userRepository.findByEmail(email)
+        assertThat(userRepository.findByEmailAndPasswordIsNotNull(email)
                 .map(User::getNickname)).isEqualTo(Optional.of(nickname));
     }
 

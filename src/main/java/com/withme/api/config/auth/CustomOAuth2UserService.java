@@ -10,7 +10,6 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +22,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     private final UserRepository userRepository;
 
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException { //Oauth 로그인 완료 후 받은 code를 받고 Access Token을 요청해 userRequest가 access token을 갖고 있음.
         OAuth2UserService<OAuth2UserRequest,OAuth2User> delegate = new DefaultOAuth2UserService();
@@ -33,22 +33,24 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             //OAuth2 로그인 진행 시 키가 되는 필드값. Primary Key
             //구글의 기본 코드는 "sub", 네이버와 카카오는 기본 지원X
 
-        OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oauth2User.getAttributes());
+        OAuthAttributes oAuthAttributes = OAuthAttributes.of(registrationId, userNameAttributeName, oauth2User.getAttributes());
         //OAuth2UserService를 통해 가져온 OAuth2User의 attribute를 담을 클래스.
 
-        log.debug("OAuth_attributes : {}", attributes);
+        log.debug("OAuth_attributes : {}", oAuthAttributes);
 
-        User user = saveOrUpdate(attributes);
+        User user = saveOrUpdate(oAuthAttributes, registrationId);
 
-        return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(user.getRole())), attributes.getAttributes(), attributes.getNameAttributeKey());
+        return new CustomOauth2User(Collections.singleton(new SimpleGrantedAuthority(user.getRole())), oAuthAttributes.getAttributes(), oAuthAttributes.getNameAttributeKey());
     }
 
-    private User saveOrUpdate(OAuthAttributes attributes){
-        User user = userRepository.findByEmail(attributes.getEmail()).map(entity->entity.update(attributes.getUserImage()))
-                .orElse(attributes.toEntity());
+    private User saveOrUpdate(OAuthAttributes oAuthAttributes, String registrationId){
+        User user = userRepository.findByJoinRootAndNameAttributeValue(registrationId, oAuthAttributes.getNameAttributeValue())
+                .map(entity -> entity.update(oAuthAttributes.getUserImage()))
+                .orElse(oAuthAttributes.toEntity(registrationId, oAuthAttributes.getNameAttributeValue()));
 
         log.debug("user : {}", user);
 
         return userRepository.save(user);
     }
+
 }

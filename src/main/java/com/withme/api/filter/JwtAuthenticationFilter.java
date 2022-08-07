@@ -1,9 +1,7 @@
 package com.withme.api.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.withme.api.config.auth.PrincipalDetails;
 import com.withme.api.controller.dto.LoginRequestDto;
-import com.withme.api.controller.dto.LoginResponseDto;
 import com.withme.api.jwt.TokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,9 +26,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     private TokenProvider tokenProvider;
     private ObjectMapper objectMapper;
 
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-
-
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager, TokenProvider tokenProvider, ObjectMapper objectMapper) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
@@ -46,17 +41,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-//        log.debug("attemptAuthentication invoked.");
+        log.debug("JwtAuthenticationFilter invoked.");
 
         try {
-            LoginRequestDto loginRequestDto = objectMapper.readValue(request.getInputStream(), LoginRequestDto.class);
-
-            UsernamePasswordAuthenticationToken authenticationToken
-                    = new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword());
-
             //PrincipalDetailsService의 loadUserByUsername() 메서드가 실행된다.
             //정상이라면 authentication이 리턴된다.
-            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+            Authentication authentication = authenticationManager.authenticate(this.getUsernamePasswordAuthenticationToken(request));
             log.debug("authentication : {}", authentication);
 
             //return하면 authentication 객체가 session 영역에 저장된다.
@@ -70,6 +60,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         return null;
     }
 
+    private UsernamePasswordAuthenticationToken getUsernamePasswordAuthenticationToken(HttpServletRequest request) throws IOException {
+        LoginRequestDto loginRequestDto = objectMapper.readValue(request.getInputStream(), LoginRequestDto.class);
+
+        return new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword());
+    }
+
     /**
      * attemptAuthentication 실행 후 인증이 정상적으로 수행되면 실행되는 메서드
      * @param request
@@ -80,26 +76,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
      * @throws ServletException
      */
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        log.debug("successfulAuthentication invoked.");
-
-        PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
-        log.debug("principalDetails : {}", principalDetails);
-
-        String jwt = "Bearer " + tokenProvider.createToken(authResult);
-
-        response.setContentType("application/json");
-        response.setCharacterEncoding("utf-8");
-
-        LoginResponseDto loginResponseDto = LoginResponseDto.builder()
-                .nickname(principalDetails.getNickname())
-                .token(jwt)
-                .build();
-
-        String body = objectMapper.writeValueAsString(loginResponseDto);
-
-        response.addHeader(AUTHORIZATION_HEADER, jwt);
-        response.getWriter().write(body);
-
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
+        log.debug("principalDetails : {}", authResult.getPrincipal());
+        tokenProvider.sendResponseWithToken(response, authResult);
     }
+
 }
