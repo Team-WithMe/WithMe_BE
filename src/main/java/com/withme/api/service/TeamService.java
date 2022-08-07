@@ -166,7 +166,7 @@ public class TeamService {
         for (Skill s: teamSearchDto.getSkills()){
                 skills.add(s);
         }
-        List<TeamListResponseMapping> teamList = new ArrayList<>();
+        List<TeamListResponseMapping> teamList;
 
         if (skills.size() <= 0){
             teamList = teamRepository.findAllByShownIsTrue().orElseThrow(
