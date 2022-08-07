@@ -8,8 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @NoArgsConstructor
@@ -45,7 +44,7 @@ public class Team extends BaseTimeEntity {
            joinColumns = {@JoinColumn(name = "teamIdx", referencedColumnName = "teamIdx")},
            inverseJoinColumns = {@JoinColumn(name = "skillName", referencedColumnName = "skillName")}
    )
-   private Set<Skill> skills;
+   private Set<Skill> skills = new HashSet<>();
 
    @ManyToMany
    @JoinTable(
@@ -53,7 +52,7 @@ public class Team extends BaseTimeEntity {
            joinColumns = {@JoinColumn(name = "teamIdx", referencedColumnName = "teamIdx")},
            inverseJoinColumns = {@JoinColumn(name = "userIdx", referencedColumnName = "userIdx")}
    )
-   private List<User> members;
+   private List<User> members = new ArrayList<>();
 
    @Builder
    public Team(String teamName, String teamCategory, String teamDesc, String teamIntroduce, boolean shown, String teamNotice ){
