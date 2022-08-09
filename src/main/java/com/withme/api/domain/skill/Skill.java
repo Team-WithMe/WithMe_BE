@@ -1,10 +1,9 @@
 package com.withme.api.domain.skill;
 
-import com.withme.api.domain.TeamSkill.TeamSkill;
+import com.withme.api.domain.teamSkill.TeamSkill;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @Entity
 public class Skill {

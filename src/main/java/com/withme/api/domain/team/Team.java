@@ -1,7 +1,7 @@
 package com.withme.api.domain.team;
 
 import com.withme.api.domain.BaseTimeEntity;
-import com.withme.api.domain.TeamSkill.TeamSkill;
+import com.withme.api.domain.teamSkill.TeamSkill;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,7 +16,8 @@ public class Team extends BaseTimeEntity {
 
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
-   private Long teamIdx;
+   @Column(name = "team_idx")
+   private Long id;
 
    @Column(nullable = false)
    private String teamName;
@@ -34,6 +35,8 @@ public class Team extends BaseTimeEntity {
 
    @OneToMany(mappedBy = "team")
    private List<TeamSkill> teamSkills = new ArrayList<>();
+
+
 
 
 //
