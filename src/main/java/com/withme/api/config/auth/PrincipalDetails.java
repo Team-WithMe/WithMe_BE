@@ -28,8 +28,8 @@ public class PrincipalDetails implements UserDetails {
         return user.getEmail();
     }
 
-    public Long getUserIdx() {
-        return user.getUserIdx();
+    public Long getUserId() {
+        return user.getId();
     }
 
     public String getUserImage(){

@@ -2,6 +2,8 @@ package com.withme.api.domain.team;
 
 import com.withme.api.domain.BaseTimeEntity;
 import com.withme.api.domain.teamSkill.TeamSkill;
+import com.withme.api.domain.teamUser.TeamUser;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -36,25 +38,17 @@ public class Team extends BaseTimeEntity {
    @OneToMany(mappedBy = "team")
    private List<TeamSkill> teamSkills = new ArrayList<>();
 
+   @OneToMany(mappedBy = "team")
+   private List<TeamUser> teamUsers = new ArrayList<>();
 
-
-
-//
-//   @ManyToMany
-//   @JoinTable(
-//           name = "TEAM_SKILL",
-//           joinColumns = {@JoinColumn(name = "teamIdx", referencedColumnName = "teamIdx")},
-//           inverseJoinColumns = {@JoinColumn(name = "skillName", referencedColumnName = "skillName")}
-//   )
-//   private Set<Skill> skills = new HashSet<>();
-//
-//   @ManyToMany
-//   @JoinTable(
-//           name = "TEAM_USER",
-//           joinColumns = {@JoinColumn(name = "teamIdx", referencedColumnName = "teamIdx")},
-//           inverseJoinColumns = {@JoinColumn(name = "userIdx", referencedColumnName = "userIdx")}
-//   )
-//   private List<User> members = new ArrayList<>();
-
-
+   @Builder
+   public Team(Long id, String teamName, TeamCategory teamCategory, String teamDesc, Status status, List<TeamSkill> teamSkills, List<TeamUser> teamUsers) {
+      this.id = id;
+      this.teamName = teamName;
+      this.teamCategory = teamCategory;
+      this.teamDesc = teamDesc;
+      this.status = status;
+      this.teamSkills = teamSkills;
+      this.teamUsers = teamUsers;
+   }
 }

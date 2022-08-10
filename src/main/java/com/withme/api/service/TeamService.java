@@ -74,12 +74,12 @@ public class TeamService {
         try{
             if (paramsMap != null){
                 Team team = Team.builder()
-                        .teamCategory(String.valueOf(paramsMap.getOrDefault("team_category", "기본 카테고리")))
+//                        .teamCategory(String.valueOf(paramsMap.getOrDefault("team_category", "기본 카테고리")))
                         .teamDesc(String.valueOf(paramsMap.getOrDefault("team_desc", "기본 정보")))
                         .teamName(String.valueOf(paramsMap.getOrDefault("team_name", "기본 팀이름")))
-                        .teamIntroduce(String.valueOf(paramsMap.getOrDefault("team_introduce", "기본 팀소개")))
-                        .teamNotice(String.valueOf(paramsMap.getOrDefault("team_notice", "기본 공지사항")))
-                        .shown(true)
+//                        .teamIntroduce(String.valueOf(paramsMap.getOrDefault("team_introduce", "기본 팀소개")))
+//                        .teamNotice(String.valueOf(paramsMap.getOrDefault("team_notice", "기본 공지사항")))
+//                        .shown(true)
                         .build();
 
                 Long user_idx = ((Number)paramsMap.get("user_idx")).longValue();
@@ -88,7 +88,7 @@ public class TeamService {
 
                 log.warn("team ::: " + user);
                 // NOTE 팀등록
-                team.getMembers().add(user);
+//                team.getMembers().add(user);
                 teamRepository.save(team);
                 return 1;
             }else {
@@ -112,19 +112,19 @@ public class TeamService {
             Long user_idx = 1L;
 
             Team team = Team.builder()
-                    .teamCategory("")
+//                    .teamCategory("")
                     .teamDesc(createTeamDto.getDescription())
                     .teamName(createTeamDto.getName())
-                    .teamIntroduce("")
-                    .teamNotice("")
-                    .shown(true)
+//                    .teamIntroduce("")
+//                    .teamNotice("")
+//                    .shown(true)
                     .build();
 
             // NOTE 스킬 입력
             Skill skill = new Skill();
             for (String skillName : createTeamDto.getSkills()) {
-                skill.setSkillName(skillName);
-                team.getSkills().add(skill);
+//                skill.setSkillName(skillName);
+//                team.getSkills().add(skill);
                 teamRepository.save(team);
             }
 
@@ -133,7 +133,7 @@ public class TeamService {
 
             log.info("team ::: " + user);
             // NOTE 팀등록
-            team.getMembers().add(user);
+//            team.getMembers().add(user);
             teamRepository.save(team);
             return 1;
 

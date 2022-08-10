@@ -1,12 +1,15 @@
 package com.withme.api.domain.user;
 
 import com.withme.api.domain.BaseTimeEntity;
+import com.withme.api.domain.teamUser.TeamUser;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @ToString
@@ -41,8 +44,9 @@ public class User extends BaseTimeEntity {
     @Column
     private String nameAttributeValue;
 
-    //    @ManyToMany
-//    private List<Team> teams;
+    @OneToMany(mappedBy = "user")
+    private List<TeamUser> userTeams = new ArrayList<>();
+
 
     @Builder
     public User(String email, String password, String nickname, String userImage, String role, String joinRoot, String nameAttributeValue) {

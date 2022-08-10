@@ -5,10 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,11 +15,12 @@ import java.util.List;
 public class Skill {
 
    @Id
-   @Column(length = 50, insertable = false, updatable = false)
+   @Column
+   @Enumerated(EnumType.STRING)
    private SkillName skillName;
 
    @OneToMany(mappedBy = "skill")
-   private List<TeamSkill> teamSkills = new ArrayList<>();
+   private List<TeamSkill> skillTeams = new ArrayList<>();
 
    @Builder
    public Skill(SkillName skillName) {
