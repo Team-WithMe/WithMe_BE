@@ -61,7 +61,7 @@ public class LoginTest{
                 .nickname(this.nickname)
                 .build();
 
-        userController.join(dto);
+        userController.createUser(dto);
     }
 
     @AfterEach

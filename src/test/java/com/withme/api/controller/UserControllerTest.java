@@ -60,7 +60,7 @@ public class UserControllerTest {
                 .nickname(this.dupNick)
                 .build();
 
-        userController.join(dto);
+        userController.createUser(dto);
     }
 
     @AfterEach

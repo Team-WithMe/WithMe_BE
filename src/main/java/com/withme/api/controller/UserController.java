@@ -48,8 +48,8 @@ public class UserController {
         )
     })
     @PostMapping("/join")
-    public ResponseEntity<Object> join(@Valid @RequestBody JoinRequestDto dto) {
-        log.debug("join{} invoked", dto);
+    public ResponseEntity<Object> createUser(@Valid @RequestBody JoinRequestDto dto) {
+        log.debug("createUser{} invoked", dto);
         userService.createUser(dto);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
