@@ -1,6 +1,6 @@
 package com.withme.api.domain.teamUser;
 
-public enum Grade {
+public enum MemberType {
     LEADER
     , MEMBER
 

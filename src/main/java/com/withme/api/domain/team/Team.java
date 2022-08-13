@@ -1,6 +1,7 @@
 package com.withme.api.domain.team;
 
 import com.withme.api.domain.BaseTimeEntity;
+import com.withme.api.domain.teamNotice.TeamNotice;
 import com.withme.api.domain.teamSkill.TeamSkill;
 import com.withme.api.domain.teamUser.TeamUser;
 import lombok.Builder;
@@ -41,14 +42,15 @@ public class Team extends BaseTimeEntity {
    @OneToMany(mappedBy = "team")
    private List<TeamUser> teamUsers = new ArrayList<>();
 
+   @OneToMany(mappedBy = "team")
+   private List<TeamNotice> teamNotice = new ArrayList<>();
+
    @Builder
-   public Team(Long id, String teamName, TeamCategory teamCategory, String teamDesc, Status status, List<TeamSkill> teamSkills, List<TeamUser> teamUsers) {
-      this.id = id;
+   public Team(String teamName, TeamCategory teamCategory, String teamDesc, Status status) {
       this.teamName = teamName;
       this.teamCategory = teamCategory;
       this.teamDesc = teamDesc;
       this.status = status;
-      this.teamSkills = teamSkills;
-      this.teamUsers = teamUsers;
    }
+
 }
