@@ -19,7 +19,7 @@ public class TeamUser {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private Grade grade;
+    private MemberType memberType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_idx")
@@ -28,7 +28,5 @@ public class TeamUser {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_idx")
     private User user;
-
-
 
 }

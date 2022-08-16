@@ -51,6 +51,19 @@ public class OAuthAttributes {
 
     }
 
+    private static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes){
+        log.debug("OAuthAttributes_ofNaver");
+        Map<String, Object> response = (Map<String, Object>)attributes.get("response");
+        return OAuthAttributes.builder()
+                .name(response.get("name") + "_" + response.get(userNameAttributeName))
+                .email((String) response.get("email"))
+                .picture((String) response.get("profile_image"))
+                .attributes(response)
+                .nameAttributeKey(userNameAttributeName)
+                .nameAttributeValue(response.get(userNameAttributeName).toString())
+                .build();
+    }
+
     private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes){
         log.debug("OAuthAttributes_ofGoogle");
         return OAuthAttributes.builder()
@@ -72,19 +85,6 @@ public class OAuthAttributes {
                 .attributes(attributes)
                 .nameAttributeKey(userNameAttributeName)
                 .nameAttributeValue(attributes.get(userNameAttributeName).toString())
-                .build();
-    }
-
-    private static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes){
-        log.debug("OAuthAttributes_ofNaver");
-        Map<String, Object> response = (Map<String, Object>)attributes.get("response");
-        return OAuthAttributes.builder()
-                .name(response.get("name") + "_" + response.get(userNameAttributeName))
-                .email((String) response.get("email"))
-                .picture((String) response.get("profile_image"))
-                .attributes(response)
-                .nameAttributeKey(userNameAttributeName)
-                .nameAttributeValue(response.get(userNameAttributeName).toString())
                 .build();
     }
 
