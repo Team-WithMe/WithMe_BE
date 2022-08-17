@@ -33,34 +33,51 @@ import java.util.Map;
 public class TeamController {
 
     private final TeamService teamService;
-//
-//    /**
-//     * 팀 조회
-//     * */
-//    @PostMapping("/TeamList")
-//    private ResponseEntity selectTeam(@RequestBody(required = false) String jsonString){
-//        try {
-//            Map<String, Object> paramsMap = new HashMap<>();
-//            if (jsonString != null) {
-//                JSONObject jsonObject = new JSONObject(jsonString);
-//                paramsMap = jsonObject.toMap();
-//            }
-//            List<Map<String, Object>> teamList = teamService.selectTeamList(paramsMap);
-//            log.info("teamList : " + teamList);
-//            if (teamList != null){
-//                return new ResponseEntity<>(teamList, HttpStatus.OK);
-//            }else {
-//                teamList.add((Map<String, Object>) paramsMap.put("result", "검색조회중 오류"));
-//                return new ResponseEntity<>(teamList, HttpStatus.OK);
-//            }
-//
-//        }catch (Exception e){
-//            log.warn("[ERROR] : 팀 조회시 오류");
-//            e.printStackTrace();
-//            return new ResponseEntity<>("팀 조회중 Exception 발생", HttpStatus.BAD_REQUEST);
-//        }
-//    }
-//
+    @Operation(
+            summary = "팀 리스트 조회"
+            , description = "팀 리스트를 검색, 정렬 기능으로 조회한다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200"
+                    ,description = "팀 리스트 조회 성공"
+            )
+            , @ApiResponse(
+            responseCode = "400"
+            ,description = "검색 조건 파라미터 오류"
+            ,content = {@Content(schema = @Schema(example = "NullPointException"))}
+    )
+            , @ApiResponse(
+            responseCode = "500"
+            ,description = "팀리스트 조회 중 오류"
+            ,content = {@Content(schema = @Schema(example = "Exception"))}
+    )
+    })
+    /**
+     * 팀 조회
+     * */
+    @PostMapping("/TeamList")
+    private ResponseEntity selectTeam(@RequestBody(required = true) Map<String, Object> params){
+        try {
+            Map<String, Object> paramsMap = new HashMap<>();
+
+            List<Map<String, Object>> teamList = teamService.selectTeamList(paramsMap);
+            log.info("teamList : " + teamList);
+
+            if (teamList != null){
+                return new ResponseEntity<>(teamList, HttpStatus.OK);
+            }else {
+                teamList.add((Map<String, Object>) paramsMap.put("result", "검색조회중 오류"));
+                return new ResponseEntity<>(teamList, HttpStatus.BAD_REQUEST);
+            }
+
+        }catch (Exception e){
+            log.warn("[ERROR] : 팀 조회시 오류");
+            e.printStackTrace();
+            return new ResponseEntity<>("팀 조회중 Exception 발생", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     // NOTE 찬규님이 보내준 데이터 맞춤으로 팀 추가
     @Operation(
             summary = "팀 생성"

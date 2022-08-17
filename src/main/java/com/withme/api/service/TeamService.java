@@ -1,6 +1,7 @@
 package com.withme.api.service;
 
 import com.withme.api.controller.dto.CreateTeamRequestDto;
+import com.withme.api.controller.dto.TeamListResponseMapping;
 import com.withme.api.domain.skill.Skill;
 import com.withme.api.domain.skill.SkillName;
 import com.withme.api.domain.team.Status;
@@ -18,6 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,49 +31,50 @@ public class TeamService {
 
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
-//
-//    /**
-//     * 팀 리스트 조회
-//     * */
-//    public List<Map<String, Object>> selectTeamList(Map<String, Object> params){
-//        try {
-//            // NOTE null 값이 아니면 검색 조건 분기
-//            if (params != null){
-//                HashMap<String, Object> teamsCountMap = new HashMap<>();
-//                // NOTE 팀이름 검색
-//                if (params.containsKey("team_name")){
-//                    List<Map<String, Object>> teamsList = Optional.ofNullable(teamRepository.findTeamsByTeamName("%" + params.get("team_name") + "%"))
-//                            .orElseThrow(()-> new NullPointerException("팀 검색 조회 중 오류"));
-//
-//                    // NOTE 팀이름 카운트 조회
-//                    int countTeamByTeamNameLike = teamRepository.countTeamByTeamNameLike("%" + params.get("team_name") + "%");
-//                    teamsCountMap.put("team_count", countTeamByTeamNameLike);
-//                    teamsList.add(teamsCountMap);
-//
-//                    return teamsList;
-//                }else{
-//                    List<Map<String, Object>> teamsList = Optional.ofNullable(teamRepository.findTeams())
-//                            .orElseThrow(()-> new NullPointerException("팀 조회 중 오류"));
-//
-//                    // NOTE 팀 카운트 조회
-//                    int countTeamBy = teamRepository.countTeamBy();
-//                    teamsCountMap.put("team_count", countTeamBy);
-//                    teamsList.add(teamsCountMap);
-//
-//                    return teamsList;
-//                }
-//
-//            }else{
-//                throw new NullPointerException();
-//            }
-//        }catch (NullPointerException e){
-//            e.printStackTrace();
-//            return null;
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            return null;
-//        }
-//    }
+
+    /**
+     * 팀 리스트 조회
+     * */
+    public Map<String, Object> selectTeamList(Map<String, Object> params){
+        try {
+            // NOTE null 값이 아니면 검색 조건 분기
+            if (params != null){
+                Map<String, Object> reuslt = new HashMap<>();
+                // NOTE 팀이름 검색
+                if (params.containsKey("team_name")){
+                    List<Map<String, Object>> teamsList = Optional.ofNullable(teamRepository.findTeamsByTeamName("%" + params.get("team_name") + "%"))
+                            .orElseThrow(()-> new NullPointerException("팀 검색 조회 중 오류"));teamRepository.
+
+                    // NOTE 팀이름 카운트 조회
+                    int countTeamByTeamNameLike = teamRepository.countTeamByTeamNameLike("%" + params.get("team_name") + "%");
+                    reuslt.put("team_count", countTeamByTeamNameLike);
+                    reuslt.put("team_list", teamsList);
+
+                    return reuslt;
+                }else{
+                    List<TeamListResponseMapping> teamsList = teamRepository.findTeams()
+                            .orElseThrow(()-> new NullPointerException("팀 조회 중 오류"));
+
+                    // NOTE 팀 카운트 조회
+                    int countTeamBy = teamRepository.countTeamBy();
+                    reuslt.put("teamCount", countTeamBy);
+                    reuslt.put("teamsList", teamsList);
+
+
+                    return reuslt;
+                }
+
+            }else{
+                throw new NullPointerException();
+            }
+        }catch (NullPointerException e){
+            e.printStackTrace();
+            return null;
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
 //
 //    /**
 //     * 팀 등록
@@ -113,7 +119,8 @@ public class TeamService {
      * */
     @Transactional
     public int createTeamTest(CreateTeamRequestDto createTeamDto) {
-            Long user_idx = 1L;
+        // NOTE 현재 접속한 유저 ID 구해서 적용필요
+        Long user_idx = 1L;
 
         Team team = Team.builder()
                     .teamCategory(TeamCategory.PROJECT)

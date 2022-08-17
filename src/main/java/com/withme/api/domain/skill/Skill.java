@@ -19,7 +19,7 @@ public class Skill {
    @Enumerated(EnumType.STRING)
    private SkillName skillName;
 
-   @OneToMany(mappedBy = "skill")
+   @OneToMany(mappedBy = "skill", cascade = CascadeType.ALL)
    private List<TeamSkill> skillTeams = new ArrayList<>();
 
    @Builder

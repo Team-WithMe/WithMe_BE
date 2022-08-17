@@ -36,13 +36,13 @@ public class Team extends BaseTimeEntity {
    @Enumerated(EnumType.STRING)
    private Status status;
 
-   @OneToMany(mappedBy = "team")
+   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
    private List<TeamSkill> teamSkills = new ArrayList<>();
 
-   @OneToMany(mappedBy = "team")
+   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
    private List<TeamUser> teamUsers = new ArrayList<>();
 
-   @OneToMany(mappedBy = "team")
+   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
    private List<TeamNotice> teamNotice = new ArrayList<>();
 
    @Builder

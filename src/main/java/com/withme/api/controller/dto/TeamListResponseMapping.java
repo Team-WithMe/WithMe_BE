@@ -2,7 +2,7 @@ package com.withme.api.controller.dto;
 
 import com.withme.api.domain.skill.Skill;
 
-import java.util.Set;
+import java.util.List;
 
 public interface TeamListResponseMapping {
     Long getTeamIdx();
@@ -11,5 +11,7 @@ public interface TeamListResponseMapping {
 
     String getTeamDesc();
 
-    Set<Skill> getSkills();
+    List<Skill> getSkills();
+
+    int getTeamListCount();
 }
