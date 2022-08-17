@@ -2,6 +2,7 @@ package com.withme.api.domain.teamSkill;
 
 import com.withme.api.domain.skill.Skill;
 import com.withme.api.domain.team.Team;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -25,4 +26,9 @@ public class TeamSkill {
     @JoinColumn(name = "skill_name")
     private Skill skill;
 
+    @Builder
+    public TeamSkill(Team team, Skill skill) {
+        this.team = team;
+        this.skill = skill;
+    }
 }

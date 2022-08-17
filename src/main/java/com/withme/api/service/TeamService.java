@@ -1,16 +1,31 @@
 package com.withme.api.service;
 
+import com.withme.api.controller.dto.CreateTeamRequestDto;
+import com.withme.api.domain.skill.Skill;
+import com.withme.api.domain.skill.SkillName;
+import com.withme.api.domain.team.Status;
+import com.withme.api.domain.team.Team;
+import com.withme.api.domain.team.TeamCategory;
+import com.withme.api.domain.team.TeamRepository;
+import com.withme.api.domain.teamSkill.TeamSkill;
+import com.withme.api.domain.teamUser.MemberType;
+import com.withme.api.domain.teamUser.TeamUser;
+import com.withme.api.domain.user.User;
+import com.withme.api.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class TeamService {
 
-//    private final TeamRepository teamRepository;
-//    private final UserRepository userRepository;
+    private final TeamRepository teamRepository;
+    private final UserRepository userRepository;
 //
 //    /**
 //     * 팀 리스트 조회
@@ -93,45 +108,50 @@ public class TeamService {
 //
 //    }
 //
-//    /**
-//     * 팀 등록
-//     * */
-//    public int createTeamTest(CreateTeamRequestDto createTeamDto) {
-//        try{
-//            Long user_idx = 1L;
-//
-//            Team team = Team.builder()
-////                    .teamCategory("")
-//                    .teamDesc(createTeamDto.getDescription())
-//                    .teamName(createTeamDto.getName())
-////                    .teamIntroduce("")
-////                    .teamNotice("")
-////                    .shown(true)
-//                    .build();
-//
-//            // NOTE 스킬 입력
-//            Skill skill = new Skill();
-//            for (String skillName : createTeamDto.getSkills()) {
-////                skill.setSkillName(skillName);
-////                team.getSkills().add(skill);
-//                teamRepository.save(team);
-//            }
-//
-//            User user = userRepository.findById(user_idx).orElseThrow(
-//                    ()-> new NullPointerException("존재하지않는 사용자"));
-//
-//            log.info("team ::: " + user);
-//            // NOTE 팀등록
-////            team.getMembers().add(user);
-//            teamRepository.save(team);
-//            return 1;
-//
-//        }catch (NullPointerException e){
-//            return 5;
-//        }catch (Exception e){
-//            return 6;
-//        }
-//    }
+    /**
+     * 팀 등록
+     * */
+    @Transactional
+    public int createTeamTest(CreateTeamRequestDto createTeamDto) {
+            Long user_idx = 1L;
+
+        Team team = Team.builder()
+                    .teamCategory(TeamCategory.PROJECT)
+                    .teamDesc(createTeamDto.getDescription())
+                    .teamName(createTeamDto.getName())
+                    .status(Status.DISPLAYED)
+                    .build();
+
+            // NOTE 스킬 입력
+            Skill skill = new Skill();
+            TeamSkill teamSkill = new TeamSkill();
+            for (String skillName : createTeamDto.getSkills()) {
+                skill = Skill.builder()
+                        .skillName(SkillName.valueOf(skillName))
+                        .build();
+            }
+            teamSkill = TeamSkill.builder()
+                    .team(team)
+                    .skill(skill)
+                    .build();
+            team.addTeamSkill(teamSkill);
+
+
+            User user = userRepository.findById(user_idx).orElseThrow(
+                    ()-> new NullPointerException("존재하지않는 사용자"));
+
+            log.info("team ::: " + user);
+            // NOTE 팀등록
+            TeamUser teamUser = TeamUser.builder()
+                    .memberType(MemberType.LEADER)
+                    .team(team)
+                    .user(user)
+                    .build();
+            team.addTeamUser(teamUser);
+            teamRepository.save(team);
+
+            return 1;
+    }
 //
 //    /**
 //     * 팀 삭제

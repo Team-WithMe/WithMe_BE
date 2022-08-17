@@ -52,5 +52,17 @@ public class Team extends BaseTimeEntity {
       this.teamDesc = teamDesc;
       this.status = status;
    }
+   /**
+    *  팀 스킬 등록
+    * */
+   public void addTeamSkill(TeamSkill teamSkill){
+      teamSkills.add(teamSkill);
+   }
+   /**
+    *  팀 스킬 등록
+    * */
+   public void addTeamUser(TeamUser teamUser){
+      teamUsers.add(teamUser);
+   }
 
 }

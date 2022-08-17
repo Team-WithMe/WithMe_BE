@@ -2,6 +2,7 @@ package com.withme.api.domain.teamUser;
 
 import com.withme.api.domain.team.Team;
 import com.withme.api.domain.user.User;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,4 +30,11 @@ public class TeamUser {
     @JoinColumn(name = "user_idx")
     private User user;
 
+    @Builder
+
+    public TeamUser(MemberType memberType, Team team, User user) {
+        this.memberType = memberType;
+        this.team = team;
+        this.user = user;
+    }
 }
