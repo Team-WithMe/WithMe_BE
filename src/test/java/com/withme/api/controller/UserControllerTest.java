@@ -1,7 +1,9 @@
 package com.withme.api.controller;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.withme.api.controller.dto.JoinRequestDto;
+import com.withme.api.controller.dto.UserUpdateRequestDto;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -198,5 +200,33 @@ public class UserControllerTest {
                 .andExpect(status().is4xxClientError());
     }
 
+
+    @Test
+    public void 닉네임변경_성공() throws Exception{
+        //given
+        Long id = 1L;
+        String nicknameToBeChanged = "vV위드미Vv";
+
+        String apiUrl = "/api/v1/user/nickname/"+id;
+
+        UserUpdateRequestDto dto = UserUpdateRequestDto.builder()
+                .id(id)
+                .nickname(nicknameToBeChanged)
+                .build();
+
+        String url = "http://localhost:" + port + apiUrl;
+
+        //when
+        mvc.perform(post(url)   //생성된 MockMvc를 통해 API를 테스트
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(dto))
+                )
+
+                //then
+                .andExpect(status().isOk());
+
+        assertThat(userRepository.findById(id)
+                .map(User::getNickname)).isEqualTo(nicknameToBeChanged);
+    }
 
 }
