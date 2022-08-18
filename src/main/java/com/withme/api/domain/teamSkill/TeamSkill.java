@@ -1,12 +1,17 @@
 package com.withme.api.domain.teamSkill;
 
+import com.fasterxml.jackson.annotation.*;
 import com.withme.api.domain.skill.Skill;
+import com.withme.api.domain.skill.SkillName;
 import com.withme.api.domain.team.Team;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -17,12 +22,12 @@ public class TeamSkill {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "team_skill_index")
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    //@JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_idx")
     private Team team;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    //@JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "skill_name")
     private Skill skill;
 

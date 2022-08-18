@@ -1,6 +1,7 @@
 package com.withme.api.controller.dto;
 
 import com.withme.api.domain.skill.Skill;
+import com.withme.api.domain.skill.SkillName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,9 +21,9 @@ public class TeamSearchDto {
 
     @Schema(description = "팀 스킬", allowableValues = {"nodejs", "java"}, required = true)
     @NotNull
-    private Set<Skill> skills;
+    private List<SkillName> skills;
 
-    public TeamSearchDto(Set<Skill> skills) {
+    public TeamSearchDto(List<SkillName> skills) {
         this.skills = skills;
     }
 }

@@ -1,7 +1,9 @@
 package com.withme.api.service;
 
 import com.withme.api.controller.dto.CreateTeamRequestDto;
+import com.withme.api.controller.dto.TeamListResponseDto;
 import com.withme.api.controller.dto.TeamListResponseMapping;
+import com.withme.api.controller.dto.TeamSearchDto;
 import com.withme.api.domain.skill.Skill;
 import com.withme.api.domain.skill.SkillName;
 import com.withme.api.domain.team.Status;
@@ -9,6 +11,7 @@ import com.withme.api.domain.team.Team;
 import com.withme.api.domain.team.TeamCategory;
 import com.withme.api.domain.team.TeamRepository;
 import com.withme.api.domain.teamSkill.TeamSkill;
+import com.withme.api.domain.teamSkill.TeamSkillRepository;
 import com.withme.api.domain.teamUser.MemberType;
 import com.withme.api.domain.teamUser.TeamUser;
 import com.withme.api.domain.user.User;
@@ -19,10 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.sql.Array;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,48 +33,60 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
 
+    private final TeamSkillRepository teamSkillRepository;
     /**
      * 팀 리스트 조회
      * */
     public Map<String, Object> selectTeamList(Map<String, Object> params){
-        try {
-            // NOTE null 값이 아니면 검색 조건 분기
-            if (params != null){
-                Map<String, Object> reuslt = new HashMap<>();
-                // NOTE 팀이름 검색
-                if (params.containsKey("team_name")){
-                    List<Map<String, Object>> teamsList = Optional.ofNullable(teamRepository.findTeamsByTeamName("%" + params.get("team_name") + "%"))
-                            .orElseThrow(()-> new NullPointerException("팀 검색 조회 중 오류"));teamRepository.
+        try{
+            Map<String, Object> result = new HashMap<>();
+            List<TeamListResponseMapping> teamsList = teamRepository.findTeamsByOrderById()
+                    .orElseThrow(()-> new NullPointerException("팀 조회 중 오류"));
 
-                    // NOTE 팀이름 카운트 조회
-                    int countTeamByTeamNameLike = teamRepository.countTeamByTeamNameLike("%" + params.get("team_name") + "%");
-                    reuslt.put("team_count", countTeamByTeamNameLike);
-                    reuslt.put("team_list", teamsList);
+            // NOTE 팀 카운트 조회
+            int countTeamBy = teamRepository.countTeamBy();
+            result.put("teamCount", countTeamBy);
+            result.put("teamsList", teamsList);
 
-                    return reuslt;
-                }else{
-                    List<TeamListResponseMapping> teamsList = teamRepository.findTeams()
-                            .orElseThrow(()-> new NullPointerException("팀 조회 중 오류"));
-
-                    // NOTE 팀 카운트 조회
-                    int countTeamBy = teamRepository.countTeamBy();
-                    reuslt.put("teamCount", countTeamBy);
-                    reuslt.put("teamsList", teamsList);
-
-
-                    return reuslt;
-                }
-
-            }else{
-                throw new NullPointerException();
-            }
-        }catch (NullPointerException e){
-            e.printStackTrace();
-            return null;
+            return result;
         }catch (Exception e){
             e.printStackTrace();
             return null;
         }
+    }
+    @Transactional
+    public List<TeamListResponseMapping> getTeamList(TeamSearchDto map) throws Exception {
+        // NOTE 스킬 입력
+//        List<SkillName> skillNames = (List<SkillName>) map.get("skills");
+        List<Skill> skill = new ArrayList<>();
+        List<TeamSkill> teamSkills = new ArrayList<>();
+        for (SkillName names: map.getSkills()){
+            skill.add(Skill.builder().skillName(names).build());
+        }
+        for (Skill skill1 : skill) {
+            teamSkills.add(TeamSkill.builder().skill(skill1).build());
+        }
+
+        List<TeamListResponseMapping> teamSkillsBySkill = teamSkillRepository.findTeamSkillsBySkillIn(skill).orElseThrow(
+                () -> new Exception("팀 스킬 조회 오류")
+        );
+
+
+        List<TeamListResponseMapping> teamList = new ArrayList<>();
+
+//        if (teamSkillsBySkill.size() <= 0){
+//            teamList = teamRepository.findAllByStatus(Status.DISPLAYED).orElseThrow(
+//                    () -> new Exception("팀 조회 오류 (검색X)")
+//            );
+//        }else{
+//            teamList = teamRepository.findTeamsByTeamSkillsIn(teamSkillsBySkill).orElseThrow(
+//                    () -> new Exception("팀 조회 오류 (검색O)")
+//            );
+//        }
+        teamList = teamRepository.findTeamsBy();
+
+        return teamList;
+
     }
 //
 //    /**

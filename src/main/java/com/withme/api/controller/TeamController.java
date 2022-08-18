@@ -8,6 +8,11 @@ package com.withme.api.controller;
 //import com.withme.api.service.TeamService;
 //import io.swagger.annotations.ApiOperation;
 import com.withme.api.controller.dto.CreateTeamRequestDto;
+import com.withme.api.controller.dto.TeamListResponseDto;
+import com.withme.api.controller.dto.TeamListResponseMapping;
+import com.withme.api.controller.dto.TeamSearchDto;
+import com.withme.api.domain.team.Team;
+import com.withme.api.domain.teamSkill.TeamSkill;
 import com.withme.api.service.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,42 +38,40 @@ import java.util.Map;
 public class TeamController {
 
     private final TeamService teamService;
-    @Operation(
-            summary = "팀 리스트 조회"
-            , description = "팀 리스트를 검색, 정렬 기능으로 조회한다."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200"
-                    ,description = "팀 리스트 조회 성공"
-            )
-            , @ApiResponse(
-            responseCode = "400"
-            ,description = "검색 조건 파라미터 오류"
-            ,content = {@Content(schema = @Schema(example = "NullPointException"))}
-    )
-            , @ApiResponse(
-            responseCode = "500"
-            ,description = "팀리스트 조회 중 오류"
-            ,content = {@Content(schema = @Schema(example = "Exception"))}
-    )
-    })
+//    @Operation(
+//            summary = "팀 리스트 조회"
+//            , description = "팀 리스트를 검색, 정렬 기능으로 조회한다."
+//    )
+//    @ApiResponses(value = {
+//            @ApiResponse(
+//                    responseCode = "200"
+//                    ,description = "팀 리스트 조회 성공"
+//            )
+//            , @ApiResponse(
+//            responseCode = "400"
+//            ,description = "검색 조건 파라미터 오류"
+//            ,content = {@Content(schema = @Schema(example = "NullPointException"))}
+//    )
+//            , @ApiResponse(
+//            responseCode = "500"
+//            ,description = "팀리스트 조회 중 오류"
+//            ,content = {@Content(schema = @Schema(example = "Exception"))}
+//    )
+//    })
     /**
      * 팀 조회
      * */
+    @ResponseBody
     @PostMapping("/TeamList")
-    private ResponseEntity selectTeam(@RequestBody(required = true) Map<String, Object> params){
+    private ResponseEntity selectTeam(@RequestBody(required = true) TeamSearchDto params){
         try {
-            Map<String, Object> paramsMap = new HashMap<>();
 
-            List<Map<String, Object>> teamList = teamService.selectTeamList(paramsMap);
-            log.info("teamList : " + teamList);
-
-            if (teamList != null){
-                return new ResponseEntity<>(teamList, HttpStatus.OK);
+            List<TeamListResponseMapping> teamData = teamService.getTeamList(params);
+            log.info("teamData : " + teamData);
+            if (teamData != null){
+                return new ResponseEntity<>(teamData, HttpStatus.OK);
             }else {
-                teamList.add((Map<String, Object>) paramsMap.put("result", "검색조회중 오류"));
-                return new ResponseEntity<>(teamList, HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(teamData, HttpStatus.BAD_REQUEST);
             }
 
         }catch (Exception e){
