@@ -58,75 +58,32 @@ public class TeamService {
     public List<TeamListResponseMapping> getTeamList(TeamSearchDto map) throws Exception {
         // NOTE 스킬 입력
 //        List<SkillName> skillNames = (List<SkillName>) map.get("skills");
-        List<Skill> skill = new ArrayList<>();
+        List<Skill> skillList = new ArrayList<>();
         List<TeamSkill> teamSkills = new ArrayList<>();
         for (SkillName names: map.getSkills()){
-            skill.add(Skill.builder().skillName(names).build());
+            skillList.add(Skill.builder().skillName(names).build());
         }
-        for (Skill skill1 : skill) {
-            teamSkills.add(TeamSkill.builder().skill(skill1).build());
+        for (Skill skill : skillList) {
+            teamSkills.add(TeamSkill.builder().skill(skill).build());
         }
-
-        List<TeamListResponseMapping> teamSkillsBySkill = teamSkillRepository.findTeamSkillsBySkillIn(skill).orElseThrow(
-                () -> new Exception("팀 스킬 조회 오류")
-        );
-
 
         List<TeamListResponseMapping> teamList = new ArrayList<>();
 
-//        if (teamSkillsBySkill.size() <= 0){
-//            teamList = teamRepository.findAllByStatus(Status.DISPLAYED).orElseThrow(
-//                    () -> new Exception("팀 조회 오류 (검색X)")
-//            );
-//        }else{
-//            teamList = teamRepository.findTeamsByTeamSkillsIn(teamSkillsBySkill).orElseThrow(
-//                    () -> new Exception("팀 조회 오류 (검색O)")
-//            );
-//        }
+        if (teamSkills.size() <= 0){
+            teamList = teamRepository.findAllByStatus(Status.DISPLAYED).orElseThrow(
+                    () -> new Exception("팀 조회 오류 (검색X)")
+            );
+        }else{
+            teamList = teamRepository.findTeamsByTeamSkillsIn(teamSkills).orElseThrow(
+                    () -> new Exception("팀 조회 오류 (검색O)")
+            );
+        }
         teamList = teamRepository.findTeamsBy();
 
         return teamList;
 
     }
-//
-//    /**
-//     * 팀 등록
-//     * */
-//    @Transactional
-//    public int createTeam(Map<String, Object> paramsMap) {
-//        try{
-//            if (paramsMap != null){
-//                Team team = Team.builder()
-////                        .teamCategory(String.valueOf(paramsMap.getOrDefault("team_category", "기본 카테고리")))
-//                        .teamDesc(String.valueOf(paramsMap.getOrDefault("team_desc", "기본 정보")))
-//                        .teamName(String.valueOf(paramsMap.getOrDefault("team_name", "기본 팀이름")))
-////                        .teamIntroduce(String.valueOf(paramsMap.getOrDefault("team_introduce", "기본 팀소개")))
-////                        .teamNotice(String.valueOf(paramsMap.getOrDefault("team_notice", "기본 공지사항")))
-////                        .shown(true)
-//                        .build();
-//
-//                Long user_idx = ((Number)paramsMap.get("user_idx")).longValue();
-//                User user = userRepository.findById(user_idx).orElseThrow(
-//                        ()-> new NullPointerException("존재하지않는 사용자"));
-//
-//                log.warn("team ::: " + user);
-//                // NOTE 팀등록
-////                team.getMembers().add(user);
-//                teamRepository.save(team);
-//                return 1;
-//            }else {
-//                log.warn("[ERROR] : 파싱된 팀 정보가 없음 ");
-//                return 4;
-//            }
-//        }catch (NullPointerException e){
-//            return 5;
-//        }catch (Exception e){
-//            return 6;
-//        }
-//
-//
-//    }
-//
+
     /**
      * 팀 등록
      * */
@@ -149,12 +106,12 @@ public class TeamService {
                 skill = Skill.builder()
                         .skillName(SkillName.valueOf(skillName))
                         .build();
+                teamSkill = TeamSkill.builder()
+                        .team(team)
+                        .skill(skill)
+                        .build();
+                team.addTeamSkill(teamSkill);
             }
-            teamSkill = TeamSkill.builder()
-                    .team(team)
-                    .skill(skill)
-                    .build();
-            team.addTeamSkill(teamSkill);
 
 
             User user = userRepository.findById(user_idx).orElseThrow(

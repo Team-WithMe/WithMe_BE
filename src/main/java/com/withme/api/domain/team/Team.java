@@ -39,7 +39,7 @@ public class Team extends BaseTimeEntity {
    @Column(nullable = false)
    @Enumerated(EnumType.STRING)
    private Status status;
-//   @JsonManagedReference
+   @JsonManagedReference
    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
    private List<TeamSkill> teamSkills = new ArrayList<>();
 
