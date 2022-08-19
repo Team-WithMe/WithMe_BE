@@ -9,13 +9,12 @@ import com.withme.api.domain.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -25,10 +24,11 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("local")
-@ExtendWith(SpringExtension.class)
+//@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest {
 
@@ -46,8 +46,8 @@ public class UserControllerTest {
 
     private MockMvc mvc;
 
-    private final String dupEmail = "dup@check.com";
-    private final String dupNick = "dupNick";
+    private final String setupEmail = "set@up.com";
+    private final String setupNick = "setupNick";
 
     @BeforeEach
     public void setup(){
@@ -57,9 +57,9 @@ public class UserControllerTest {
                 .build();
 
         JoinRequestDto dto = JoinRequestDto.builder()
-                .email(this.dupEmail)
+                .email(this.setupEmail)
                 .password("1234qwer%T")
-                .nickname(this.dupNick)
+                .nickname(this.setupNick)
                 .build();
 
         userController.createUser(dto);
@@ -140,7 +140,7 @@ public class UserControllerTest {
     public void 회원가입_실패_이메일_중복() throws Exception{
         //given
 
-        String email = this.dupEmail;
+        String email = this.setupEmail;
         String password = "1234qwer%T";
         String nickname = "vV위드미VvV";
 
@@ -174,7 +174,7 @@ public class UserControllerTest {
         //given
         String email = "joinTest1@withme.com";
         String password = "1234qwer%T";
-        String nickname = this.dupNick;
+        String nickname = this.setupNick;
 
         String apiUrl = "/api/v1/join";
 
@@ -202,6 +202,7 @@ public class UserControllerTest {
 
 
     @Test
+    @WithMockUser(roles = "USER")
     public void 닉네임변경_성공() throws Exception{
         //given
         Long id = 1L;
@@ -210,14 +211,13 @@ public class UserControllerTest {
         String apiUrl = "/api/v1/user/nickname/"+id;
 
         UserUpdateRequestDto dto = UserUpdateRequestDto.builder()
-                .id(id)
                 .nickname(nicknameToBeChanged)
                 .build();
 
         String url = "http://localhost:" + port + apiUrl;
 
         //when
-        mvc.perform(post(url)   //생성된 MockMvc를 통해 API를 테스트
+        mvc.perform(put(url)   //생성된 MockMvc를 통해 API를 테스트
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto))
                 )
@@ -226,7 +226,7 @@ public class UserControllerTest {
                 .andExpect(status().isOk());
 
         assertThat(userRepository.findById(id)
-                .map(User::getNickname)).isEqualTo(nicknameToBeChanged);
+                .map(User::getNickname)).isEqualTo(Optional.of(nicknameToBeChanged));
     }
 
 }
