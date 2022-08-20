@@ -30,6 +30,12 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         return ResponseEntity.badRequest().body(exceptionResponseDto);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public final ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ExceptionResponseDto exceptionResponseDto = new ExceptionResponseDto(ex.getMessage(), null);
+        return ResponseEntity.badRequest().body(exceptionResponseDto);
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         Map<String, Object> errorDetailsMap = new HashMap<>();
@@ -40,5 +46,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 
         return ResponseEntity.unprocessableEntity().body(exceptionResponseDto);
     }
+
+
 
 }

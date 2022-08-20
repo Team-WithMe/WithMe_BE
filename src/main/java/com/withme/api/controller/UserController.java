@@ -37,7 +37,7 @@ public class UserController {
         , @ApiResponse(
             responseCode = "422"
             , description = "파라미터 유효성 부적합"
-            , content = {@Content(schema = @Schema(implementation = ExceptionResponseDto.class))}
+            , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
         )
         , @ApiResponse(
             responseCode = "400"

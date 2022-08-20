@@ -25,10 +25,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles("local")
-//@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest {
 
@@ -47,7 +46,7 @@ public class UserControllerTest {
     private MockMvc mvc;
 
     private final String setupEmail = "set@up.com";
-    private final String setupNick = "setupNick";
+    private final String setupNick = "setNick";
 
     @BeforeEach
     public void setup(){
@@ -132,7 +131,11 @@ public class UserControllerTest {
                         ))
 
                 //then
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().json("{\"message\": \"Validation Failed\"}"));
+//                .andExpect(jsonPath("$.message").value("Validation Failed"));
+
+
     }
 
 
@@ -165,7 +168,11 @@ public class UserControllerTest {
                         ))
 
                 //then
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().json("{\"message\": \"Email Duplicated\"}"));
+//                .andExpect(jsonPath("$.message").value("Email Duplicated"));
+
+
     }
 
 
@@ -197,7 +204,12 @@ public class UserControllerTest {
                         ))
 
                 //then
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().json("{\"message\": \"Nickname Duplicated\"}"));
+//                .andExpect(jsonPath("$.message").value("Nickname Duplicated"));
+
+
+
     }
 
 
@@ -205,7 +217,7 @@ public class UserControllerTest {
     @WithMockUser(roles = "USER")
     public void 닉네임변경_성공() throws Exception{
         //given
-        Long id = 1L;
+        Long id = userRepository.findAll().get(0).getId();
         String nicknameToBeChanged = "vV위드미Vv";
 
         String apiUrl = "/api/v1/user/nickname/"+id;
@@ -217,7 +229,7 @@ public class UserControllerTest {
         String url = "http://localhost:" + port + apiUrl;
 
         //when
-        mvc.perform(put(url)   //생성된 MockMvc를 통해 API를 테스트
+        mvc.perform(put(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(dto))
                 )
@@ -227,6 +239,87 @@ public class UserControllerTest {
 
         assertThat(userRepository.findById(id)
                 .map(User::getNickname)).isEqualTo(Optional.of(nicknameToBeChanged));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    public void 닉네임변경_실패_중복() throws Exception{
+        //given
+        Long id = userRepository.findAll().get(0).getId();
+        String nicknameToBeChanged = this.setupNick;
+
+        String apiUrl = "/api/v1/user/nickname/"+id;
+
+        UserUpdateRequestDto dto = UserUpdateRequestDto.builder()
+                .nickname(nicknameToBeChanged)
+                .build();
+
+        String url = "http://localhost:" + port + apiUrl;
+
+        //when
+        mvc.perform(put(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(dto))
+                )
+
+                //then
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().json("{\"message\": \"Nickname Duplicated\"}"));
+//                .andExpect(jsonPath("$.message").value("Nickname Duplicated"));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    public void 닉네임변경_실패_유효성_부적합() throws Exception{
+        //given
+        Long id = 1L;
+        String nicknameToBeChanged = "h";
+
+        String apiUrl = "/api/v1/user/nickname/"+id;
+
+        UserUpdateRequestDto dto = UserUpdateRequestDto.builder()
+                .nickname(nicknameToBeChanged)
+                .build();
+
+        String url = "http://localhost:" + port + apiUrl;
+
+        //when
+        mvc.perform(put(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(dto))
+                )
+
+                //then
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().json("{\"message\": \"Validation Failed\"}"));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    public void 닉네임변경_실패_id없음() throws Exception{
+        //given
+        Long id = 654356L;
+        String nicknameToBeChanged = "nnname";
+
+        String apiUrl = "/api/v1/user/nickname/"+id;
+
+        UserUpdateRequestDto dto = UserUpdateRequestDto.builder()
+                .nickname(nicknameToBeChanged)
+                .build();
+
+        String url = "http://localhost:" + port + apiUrl;
+
+        //when
+        mvc.perform(put(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(dto))
+                )
+
+                //then
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().json("{\"message\": \"User Not Found. id : 654356\"}"));
+//                .andExpect(jsonPath("$.message").value("User Not Found. id : " + id));
+
     }
 
 }

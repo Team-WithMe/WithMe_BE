@@ -34,8 +34,13 @@ public class UserService {
     @Transactional
     public void changeUserNickname(Long id, UserUpdateRequestDto dto) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저 정보를 찾을 수 없습니다. id : " + id));
-        user.changeNickname(dto.getNickname());
+                .orElseThrow(() -> new IllegalArgumentException("User Not Found. id : " + id));
+
+        if(userRepository.findByNickname(dto.getNickname()).isPresent()) {
+            throw new UserAlreadyExistException("Nickname Duplicated", "nickname");
+        } else {
+            user.changeNickname(dto.getNickname());
+        }
     }
 
 }
