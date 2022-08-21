@@ -1,6 +1,7 @@
 package com.withme.api.service;
 
 import com.withme.api.controller.dto.JoinRequestDto;
+import com.withme.api.controller.dto.UserUpdateRequestDto;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
 import com.withme.api.exception.UserAlreadyExistException;
@@ -18,7 +19,6 @@ public class UserService {
 
     @Transactional
     public User createUser(JoinRequestDto dto){
-
         if(userRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new UserAlreadyExistException("Email Duplicated", "email");
         }
@@ -29,6 +29,18 @@ public class UserService {
         dto.encodePassword(passwordEncoder);
 
         return userRepository.save(dto.toEntity());
+    }
+
+    @Transactional
+    public void changeUserNickname(Long id, UserUpdateRequestDto dto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User Not Found. id : " + id));
+
+        if(userRepository.findByNickname(dto.getNickname()).isPresent()) {
+            throw new UserAlreadyExistException("Nickname Duplicated", "nickname");
+        } else {
+            user.changeNickname(dto.getNickname());
+        }
     }
 
 }

@@ -15,12 +15,15 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "TEAMSKILL_TEAM_SKILL_UNIQUE", columnNames = {"team_idx", "skill_name"})
+})
 @Entity
 public class TeamSkill {
     @JsonIgnore // NOTE 관계 테이블 ID는 화면에서 필요없기 때문에 제외
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "team_skill_index")
+    @Column(name = "team_skill_idx")
     private Long id;
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)

@@ -18,6 +18,9 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "TEAM_TEAMNAME_UNIQUE", columnNames = "teamName")
+})
 @Entity
 public class Team extends BaseTimeEntity {
 

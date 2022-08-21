@@ -14,6 +14,10 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
+@Table(uniqueConstraints = {
+                @UniqueConstraint(name = "USER_EMAIL_UNIQUE", columnNames = "EMAIL")
+                , @UniqueConstraint(name = "USER_NICKNAME_UNIQUE", columnNames = "NICKNAME")
+        })
 @Entity
 public class User extends BaseTimeEntity {
 
@@ -22,13 +26,13 @@ public class User extends BaseTimeEntity {
     @Column(name = "user_idx")
     private Long id;
 
-    @Column(unique = true)
+    @Column
     private String email;
 
     @Column
     private String password;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String nickname;
 
     @Column
@@ -62,7 +66,11 @@ public class User extends BaseTimeEntity {
 
     public User update(String userImage) {
         this.userImage = userImage;
+        return this;
+    }
 
+    public User changeNickname(String nickname) {
+        this.nickname = nickname;
         return this;
     }
 

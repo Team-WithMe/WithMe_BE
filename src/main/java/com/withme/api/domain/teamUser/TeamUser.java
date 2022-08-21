@@ -10,12 +10,15 @@ import javax.persistence.*;
 
 @Getter
 @NoArgsConstructor
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "TEAMUSER_TEAM_USER_UNIQUE", columnNames = {"team_idx", "user_idx"})
+})
 @Entity
 public class TeamUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "team_user")
+    @Column(name = "team_user_idx")
     private Long id;
 
     @Column
