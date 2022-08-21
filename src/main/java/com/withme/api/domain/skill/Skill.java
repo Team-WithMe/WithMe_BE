@@ -24,6 +24,7 @@ public class Skill {
    @Column
    @Enumerated(EnumType.STRING)
    private SkillName skillName;
+
    @JsonBackReference
    @OneToMany(mappedBy = "skill", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
    private List<TeamSkill> skillTeams = new ArrayList<>();

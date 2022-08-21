@@ -40,13 +40,13 @@ public class TeamService {
     public Map<String, Object> selectTeamList(Map<String, Object> params){
         try{
             Map<String, Object> result = new HashMap<>();
-            List<TeamListResponseMapping> teamsList = teamRepository.findTeamsByOrderById()
-                    .orElseThrow(()-> new NullPointerException("팀 조회 중 오류"));
+//            List<TeamListResponseMapping> teamsList = teamRepository.findTeamsByOrderById()
+//                    .orElseThrow(()-> new NullPointerException("팀 조회 중 오류"));
 
             // NOTE 팀 카운트 조회
             int countTeamBy = teamRepository.countTeamBy();
             result.put("teamCount", countTeamBy);
-            result.put("teamsList", teamsList);
+//            result.put("teamsList", teamsList);
 
             return result;
         }catch (Exception e){
@@ -60,6 +60,7 @@ public class TeamService {
 //        List<SkillName> skillNames = (List<SkillName>) map.get("skills");
         List<Skill> skillList = new ArrayList<>();
         List<TeamSkill> teamSkills = new ArrayList<>();
+
         for (SkillName names: map.getSkills()){
             skillList.add(Skill.builder().skillName(names).build());
         }
@@ -69,15 +70,15 @@ public class TeamService {
 
         List<TeamListResponseMapping> teamList = new ArrayList<>();
 
-        if (teamSkills.size() <= 0){
-            teamList = teamRepository.findAllByStatus(Status.DISPLAYED).orElseThrow(
-                    () -> new Exception("팀 조회 오류 (검색X)")
-            );
-        }else{
-            teamList = teamRepository.findTeamsByTeamSkillsIn(teamSkills).orElseThrow(
-                    () -> new Exception("팀 조회 오류 (검색O)")
-            );
-        }
+//        if (teamSkills.size() <= 0){
+//            teamList = teamRepository.findAllByStatus(Status.DISPLAYED).orElseThrow(
+//                    () -> new Exception("팀 조회 오류 (검색X)")
+//            );
+//        }else{
+//            teamList = teamRepository.findTeamsByTeamSkillsIn(teamSkills).orElseThrow(
+//                    () -> new Exception("팀 조회 오류 (검색O)")
+//            );
+//        }
         teamList = teamRepository.findTeamsBy();
 
         return teamList;

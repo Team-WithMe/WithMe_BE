@@ -21,8 +21,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +31,7 @@ import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/team")
+@RequestMapping("/api/v1/team")
 @RestController
 public class TeamController {
 
@@ -65,7 +63,7 @@ public class TeamController {
     @PostMapping("/TeamList")
     private ResponseEntity selectTeam(@RequestBody(required = true) TeamSearchDto params){
         try {
-
+            log.info("params = " + params);
             List<TeamListResponseMapping> teamData = teamService.getTeamList(params);
             log.info("teamData : " + teamData);
             if (teamData != null){
