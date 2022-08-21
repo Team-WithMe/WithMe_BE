@@ -1,5 +1,9 @@
 package com.withme.api.domain.team;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.withme.api.domain.BaseTimeEntity;
 import com.withme.api.domain.teamNotice.TeamNotice;
 import com.withme.api.domain.teamSkill.TeamSkill;
@@ -35,14 +39,14 @@ public class Team extends BaseTimeEntity {
    @Column(nullable = false)
    @Enumerated(EnumType.STRING)
    private Status status;
-
-   @OneToMany(mappedBy = "team")
+   @JsonManagedReference
+   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
    private List<TeamSkill> teamSkills = new ArrayList<>();
 
-   @OneToMany(mappedBy = "team")
+   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
    private List<TeamUser> teamUsers = new ArrayList<>();
 
-   @OneToMany(mappedBy = "team")
+   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
    private List<TeamNotice> teamNotice = new ArrayList<>();
 
    @Builder
@@ -51,6 +55,18 @@ public class Team extends BaseTimeEntity {
       this.teamCategory = teamCategory;
       this.teamDesc = teamDesc;
       this.status = status;
+   }
+   /**
+    *  팀 스킬 등록
+    * */
+   public void addTeamSkill(TeamSkill teamSkill){
+      teamSkills.add(teamSkill);
+   }
+   /**
+    *  팀 스킬 등록
+    * */
+   public void addTeamUser(TeamUser teamUser){
+      teamUsers.add(teamUser);
    }
 
 }
