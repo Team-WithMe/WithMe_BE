@@ -1,9 +1,6 @@
 package com.withme.api.domain.team;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.withme.api.domain.BaseTimeEntity;
 import com.withme.api.domain.teamNotice.TeamNotice;
 import com.withme.api.domain.teamSkill.TeamSkill;
@@ -42,11 +39,12 @@ public class Team extends BaseTimeEntity {
    @Column(nullable = false)
    @Enumerated(EnumType.STRING)
    private Status status;
+
    @JsonManagedReference
    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
    private List<TeamSkill> teamSkills = new ArrayList<>();
 
-   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+   @OneToMany(mappedBy = "team")
    private List<TeamUser> teamUsers = new ArrayList<>();
 
    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
@@ -70,6 +68,10 @@ public class Team extends BaseTimeEntity {
     * */
    public void addTeamUser(TeamUser teamUser){
       teamUsers.add(teamUser);
+   }
+
+   public void newUserJoined(TeamUser teamUser) {
+      this.teamUsers.add(teamUser);
    }
 
 }

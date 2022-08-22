@@ -23,12 +23,15 @@ public class MyPageResponseDto {
     private String userImage;
 
     @Schema(description = "유저가 속한 팀 리스트", example = "???")
-    private List<Team> teamList = new ArrayList<>();
+//    private List<Team> teamList = new ArrayList<>();
+    private List<TeamResponseDto> teamList = new ArrayList<>();
 
     public MyPageResponseDto(User user, List<Team> teamList) {
         this.nickname = user.getNickname();
         this.userImage = user.getUserImage();
-        this.teamList = teamList;
+        teamList.forEach(team -> {
+            this.teamList.add(new TeamResponseDto(team));
+        });
     }
 
 }

@@ -4,6 +4,7 @@ package com.withme.api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.withme.api.controller.dto.JoinRequestDto;
 import com.withme.api.controller.dto.UserUpdateRequestDto;
+import com.withme.api.domain.team.Status;
 import com.withme.api.domain.team.Team;
 import com.withme.api.domain.team.TeamCategory;
 import com.withme.api.domain.user.User;
@@ -322,7 +323,6 @@ public class UserControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-//                .andExpect(content().json("{\"message\": \"User Not Found. id : 654356\"}"));
                 .andExpect(jsonPath("$.message").value("User Not Found. id : " + id));
 
     }
@@ -339,12 +339,14 @@ public class UserControllerTest {
                 .teamName("TestTeamName1")
                 .teamCategory(TeamCategory.STUDY)
                 .teamDesc("This is TestTeam Description1")
+                .status(Status.DISPLAYED)
                 .build();
 
         Team team2 = Team.builder()
                 .teamName("TestTeamName2")
                 .teamCategory(TeamCategory.STUDY)
                 .teamDesc("This is TestTeam Description2")
+                .status(Status.HIDDEN)
                 .build();
 
         user.joinTeam(team1);
@@ -353,15 +355,25 @@ public class UserControllerTest {
         String apiUrl = "/api/v1/user/mypage/"+id;
         String url = "http://localhost:" + port + apiUrl;
 
+        String expectedNickname = "$.[?(@.nickname == '%s')]";
+        String expectedUserImage = "$.[?(@.userImage == '%s')]";
+        String expectedTeamName = "$..teamList[?(@.teamName == '%s')]";
+        String expectedTeamStatus = "$..teamList[?(@.status == '%s')]";
+        String expectedTeamDesc = "$..teamList[?(@.teamDesc == '%s')]";
+
         //when
         mvc.perform(get(url))
 
             //then
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.nickname").value(user.getNickname()))
-            .andExpect(jsonPath("$.userImage").value(user.getUserImage()));
-//            .andExpect(jsonPath("$.teamList").value("1"));
-
+            .andExpect(jsonPath(expectedNickname, user.getNickname()).exists())
+            .andExpect(jsonPath(expectedUserImage, user.getUserImage()).exists())
+            .andExpect(jsonPath(expectedTeamName, team1.getTeamName()).exists())
+            .andExpect(jsonPath(expectedTeamName, team2.getTeamName()).exists())
+            .andExpect(jsonPath(expectedTeamStatus, team1.getStatus()).exists())
+            .andExpect(jsonPath(expectedTeamStatus, team2.getStatus()).exists())
+            .andExpect(jsonPath(expectedTeamDesc, team1.getTeamDesc()).exists())
+            .andExpect(jsonPath(expectedTeamDesc, team2.getTeamDesc()).exists());
     }
 
 }
