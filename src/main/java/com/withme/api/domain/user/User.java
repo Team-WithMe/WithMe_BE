@@ -1,7 +1,9 @@
 package com.withme.api.domain.user;
 
 import com.withme.api.domain.BaseTimeEntity;
+import com.withme.api.domain.team.Team;
 import com.withme.api.domain.teamNotice.TeamNotice;
+import com.withme.api.domain.teamUser.MemberType;
 import com.withme.api.domain.teamUser.TeamUser;
 import lombok.Builder;
 import lombok.Getter;
@@ -72,6 +74,27 @@ public class User extends BaseTimeEntity {
     public User changeNickname(String nickname) {
         this.nickname = nickname;
         return this;
+    }
+
+    public void joinTeam(Team team){
+        TeamUser teamUser = TeamUser.builder()
+                .team(team)
+                .user(this)
+                .memberType(MemberType.MEMBER)
+                .build();
+
+        this.userTeams.add(teamUser);
+        team.newUserJoined(teamUser);
+    }
+
+    public List<Team> joinedTeamList() {
+        List<Team> teamList = new ArrayList<>();
+
+        this.userTeams.forEach(teamUser -> {
+            teamList.add(teamUser.getTeam());
+        });
+
+        return teamList;
     }
 
 }

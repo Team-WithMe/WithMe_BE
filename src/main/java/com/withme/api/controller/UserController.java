@@ -2,6 +2,7 @@ package com.withme.api.controller;
 
 import com.withme.api.controller.dto.ExceptionResponseDto;
 import com.withme.api.controller.dto.JoinRequestDto;
+import com.withme.api.controller.dto.MyPageResponseDto;
 import com.withme.api.controller.dto.UserUpdateRequestDto;
 import com.withme.api.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,12 +54,46 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @Operation(
+            summary = "닉네임 변경"
+            , description = "유저의 닉네임을 수정한다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                responseCode = "200"
+                , description = "닉네임 변경 성공"
+            )
+            , @ApiResponse(
+                responseCode = "422"
+                , description = "파라미터 유효성 부적합"
+                , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
+            )
+            , @ApiResponse(
+                responseCode = "400"
+                , description = "이메일 혹은 닉네임 중복"
+                , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
+            )
+            , @ApiResponse(
+                responseCode = "400"
+                , description = "id에 일치하는 유저 없음"
+                , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
+            )
+    })
     @PutMapping("/user/nickname/{id}")
     public ResponseEntity<Object> changeUserNickname(@PathVariable Long id, @Valid @RequestBody UserUpdateRequestDto dto) {
         log.debug("changeUserNickname{} invoked", dto);
         userService.changeUserNickname(id, dto);
-
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/user/mypage/{id}")
+    public ResponseEntity<Object> getUserAndTeamInfo(@PathVariable Long id) {
+        log.debug("getUserAndTeamInfo{} invoked", id);
+        MyPageResponseDto myPageResponseDto = userService.getUserAndTeamInfo(id);
+
+        log.debug("myPageResponseDto : " + myPageResponseDto);
+
+        return ResponseEntity.ok().body(myPageResponseDto);
     }
 
 }

@@ -34,7 +34,6 @@ public class TeamUser {
     private User user;
 
     @Builder
-
     public TeamUser(MemberType memberType, Team team, User user) {
         this.memberType = memberType;
         this.team = team;

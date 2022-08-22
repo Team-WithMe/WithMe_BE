@@ -4,6 +4,8 @@ package com.withme.api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.withme.api.controller.dto.JoinRequestDto;
 import com.withme.api.controller.dto.UserUpdateRequestDto;
+import com.withme.api.domain.team.Team;
+import com.withme.api.domain.team.TeamCategory;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -17,15 +19,16 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("local")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -132,8 +135,8 @@ public class UserControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-                .andExpect(content().json("{\"message\": \"Validation Failed\"}"));
-//                .andExpect(jsonPath("$.message").value("Validation Failed"));
+//                .andExpect(content().json("{\"message\": \"Validation Failed\"}"));
+                .andExpect(jsonPath("$.message").value("Validation Failed"));
 
 
     }
@@ -169,8 +172,8 @@ public class UserControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-                .andExpect(content().json("{\"message\": \"Email Duplicated\"}"));
-//                .andExpect(jsonPath("$.message").value("Email Duplicated"));
+//                .andExpect(content().json("{\"message\": \"Email Duplicated\"}"));
+                .andExpect(jsonPath("$.message").value("Email Duplicated"));
 
 
     }
@@ -205,8 +208,8 @@ public class UserControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-                .andExpect(content().json("{\"message\": \"Nickname Duplicated\"}"));
-//                .andExpect(jsonPath("$.message").value("Nickname Duplicated"));
+//                .andExpect(content().json("{\"message\": \"Nickname Duplicated\"}"));
+                .andExpect(jsonPath("$.message").value("Nickname Duplicated"));
 
 
 
@@ -264,8 +267,8 @@ public class UserControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-                .andExpect(content().json("{\"message\": \"Nickname Duplicated\"}"));
-//                .andExpect(jsonPath("$.message").value("Nickname Duplicated"));
+//                .andExpect(content().json("{\"message\": \"Nickname Duplicated\"}"));
+                .andExpect(jsonPath("$.message").value("Nickname Duplicated"));
     }
 
     @Test
@@ -291,7 +294,9 @@ public class UserControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-                .andExpect(content().json("{\"message\": \"Validation Failed\"}"));
+//                .andExpect(content().json("{\"message\": \"Validation Failed\"}"));
+                .andExpect(jsonPath("$.message").value("Validation Failed"));
+
     }
 
     @Test
@@ -317,8 +322,45 @@ public class UserControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-                .andExpect(content().json("{\"message\": \"User Not Found. id : 654356\"}"));
-//                .andExpect(jsonPath("$.message").value("User Not Found. id : " + id));
+//                .andExpect(content().json("{\"message\": \"User Not Found. id : 654356\"}"));
+                .andExpect(jsonPath("$.message").value("User Not Found. id : " + id));
+
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    @Transactional
+    public void 마이페이지조회_성공() throws Exception {
+        //given
+        User user = userRepository.findAll().get(0);
+        Long id = user.getId();
+
+        Team team1 = Team.builder()
+                .teamName("TestTeamName1")
+                .teamCategory(TeamCategory.STUDY)
+                .teamDesc("This is TestTeam Description1")
+                .build();
+
+        Team team2 = Team.builder()
+                .teamName("TestTeamName2")
+                .teamCategory(TeamCategory.STUDY)
+                .teamDesc("This is TestTeam Description2")
+                .build();
+
+        user.joinTeam(team1);
+        user.joinTeam(team2);
+
+        String apiUrl = "/api/v1/user/mypage/"+id;
+        String url = "http://localhost:" + port + apiUrl;
+
+        //when
+        mvc.perform(get(url))
+
+            //then
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.nickname").value(user.getNickname()))
+            .andExpect(jsonPath("$.userImage").value(user.getUserImage()));
+//            .andExpect(jsonPath("$.teamList").value("1"));
 
     }
 
