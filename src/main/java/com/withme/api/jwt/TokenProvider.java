@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @Component
 public class TokenProvider implements InitializingBean {
 
+    private static final String USER_ID = "id";
     private static final String AUTHORITIES_KEY = "auth";
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
@@ -105,6 +106,7 @@ public class TokenProvider implements InitializingBean {
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim(AUTHORITIES_KEY, this.getAuthoritiesFromAuthentication(authentication))
+                .claim("id", ((PrincipalDetails)authentication.getPrincipal()).getUserId())
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(this.getValidity())
                 .compact();
@@ -134,7 +136,7 @@ public class TokenProvider implements InitializingBean {
                 .parseClaimsJws(token)
                 .getBody();
 
-        User user = userRepository.findByEmail(claims.get("email").toString())
+        User user = userRepository.findById(Long.parseLong(claims.get("id").toString()))
                 .orElseThrow(() -> new UsernameNotFoundException("User not exist."));
 
         PrincipalDetails principalDetails = new PrincipalDetails(user);

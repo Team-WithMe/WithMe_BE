@@ -49,7 +49,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         Authentication authentication = tokenProvider.getAuthentication(jwt);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        log.info("Security Context에 '{}' 인증 정보 저장. uri : {}", authentication, requestURI);
+        log.debug("Security Context에 '{}' 인증 정보 저장. uri : {}", authentication, requestURI);
     }
 
     /**
