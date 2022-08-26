@@ -86,6 +86,23 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(
+        summary = "마이페이지 유저 및 팀 정보 조회"
+        , description = "마이페이지에서 본인의 닉네임과 속해있는 팀 정보를 조회한다."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200"
+            , description = "조회 성공"
+            , content = @Content(schema = @Schema(implementation = MyPageResponseDto.class))
+
+        )
+        , @ApiResponse(
+            responseCode = "400"
+            , description = "id에 일치하는 유저 없음"
+            , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
+        )
+    })
     @GetMapping("/user/mypage/{id}")
     public ResponseEntity<Object> getUserAndTeamInfo(@PathVariable Long id) {
         log.debug("getUserAndTeamInfo{} invoked", id);

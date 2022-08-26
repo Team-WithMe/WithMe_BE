@@ -19,11 +19,16 @@ public class MyPageResponseDto {
     @Schema(description = "유저 닉네임", example = "vV위드미Vv")
     private String nickname;
 
-    @Schema(description = "유저 사진 경로", example = "null 혹은 경로")
+    @Schema(description = "유저 사진 경로", example = "default 혹은 경로")
     private String userImage;
 
-    @Schema(description = "유저가 속한 팀 리스트", example = "???")
-//    private List<Team> teamList = new ArrayList<>();
+    @Schema(description = "유저가 속한 팀 리스트", example =
+            "[{'id' : '1'" +
+            ", 'teamName' : '별다방 스터디 모임'" +
+            ", 'teamCategory' : 'STUDY or PROJECT'" +
+            ", 'teamDesc' : '매주 일요일에 모이는 스터디입니다.'" +
+            ", 'status' : 'DISPLAYED or HIDDEN'}" +
+            ", {...}, {...}]")
     private List<TeamResponseDto> teamList = new ArrayList<>();
 
     public MyPageResponseDto(User user, List<Team> teamList) {
