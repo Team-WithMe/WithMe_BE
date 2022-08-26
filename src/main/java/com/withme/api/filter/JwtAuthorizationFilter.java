@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.util.Optional;
 
 /**
@@ -39,6 +40,16 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
             saveAuthenticationOnSecurityContext(jwt, requestURI);
         } else {
             log.info("유효한 JWT 토큰 없음. uri : {}", requestURI);
+        }
+
+        if(requestURI.contains("/user/mypage/")) {
+            String[] split = requestURI.split("/");
+            String id = split[split.length-1];
+            if(!tokenProvider.getClaimsFromToken(jwt).get("id").toString().equals(id)){
+                log.debug("token ID : "+ tokenProvider.getClaimsFromToken(jwt).get("id").toString());
+                log.debug("param ID : " + id);
+                throw new InvalidParameterException("Requested User ID != Token User ID");
+            }
         }
 
         chain.doFilter(request, response);;
