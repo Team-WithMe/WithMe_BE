@@ -126,7 +126,7 @@ public class TokenProvider implements InitializingBean {
                 .setSubject(authentication.getName())
                 .setIssuer("WithMe")
                 .claim(AUTHORITIES_KEY, this.getAuthoritiesFromAuthentication(authentication))
-                .claim("id", ((PrincipalDetails)authentication.getPrincipal()).getUserId())
+                .claim(USER_ID, ((PrincipalDetails)authentication.getPrincipal()).getUserId())
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(this.getValidity())
                 .compact();

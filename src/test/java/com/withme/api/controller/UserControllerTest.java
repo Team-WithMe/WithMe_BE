@@ -9,6 +9,7 @@ import com.withme.api.domain.team.Team;
 import com.withme.api.domain.team.TeamCategory;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
+import com.withme.api.jwt.TokenProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,9 @@ public class UserControllerTest {
 
     @Autowired
     private WebApplicationContext context;
+
+    @Autowired
+    private TokenProvider tokenProvider;
 
     private MockMvc mvc;
 
@@ -136,7 +140,6 @@ public class UserControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-//                .andExpect(content().json("{\"message\": \"Validation Failed\"}"));
                 .andExpect(jsonPath("$.message").value("Validation Failed"));
 
 
@@ -209,7 +212,6 @@ public class UserControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-//                .andExpect(content().json("{\"message\": \"Nickname Duplicated\"}"));
                 .andExpect(jsonPath("$.message").value("Nickname Duplicated"));
 
 
@@ -268,7 +270,6 @@ public class UserControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-//                .andExpect(content().json("{\"message\": \"Nickname Duplicated\"}"));
                 .andExpect(jsonPath("$.message").value("Nickname Duplicated"));
     }
 
@@ -323,7 +324,49 @@ public class UserControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.message").value("User Not Found. id : " + id));
+                .andExpect(jsonPath("$.message","User Not Found. id : " + id ).exists());
+
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    public void 닉네임변경_실패_다른유저id() throws Exception{
+        //given
+        String jwtToken = mvc.perform(post("http://localhost:"+port+ "/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{" +
+                                "\"email\":\"" + this.setupEmail + "\"" +
+                                ",\"password\":\"" + "1234qwer%T" + "\"" +
+                                "}"
+                        ))
+                .andReturn()
+                .getResponse()
+                .getHeaderValue(tokenProvider.AUTHORIZATION_HEADER)
+                .toString();
+
+        Long id = 1683L;
+        String nicknameToBeChanged = "nntbc";
+
+        String apiUrl = "/api/v1/user/nickname/"+id;
+
+        UserUpdateRequestDto dto = UserUpdateRequestDto.builder()
+                .nickname(nicknameToBeChanged)
+                .build();
+
+        String url = "http://localhost:" + port + apiUrl;
+
+        //when
+        mvc.perform(put(url)
+                        .header(tokenProvider.AUTHORIZATION_HEADER, jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(dto))
+                )
+
+                //then
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.message","User ID != Token User ID" ).exists());
+
+        assertThat(tokenProvider.getClaimsFromToken(jwtToken.substring(7)).getId()).isNotEqualTo(id);
 
     }
 
