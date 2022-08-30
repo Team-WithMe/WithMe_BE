@@ -34,7 +34,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
     @ExceptionHandler(UsernameNotFoundException.class)
     public final ResponseEntity<Object> handleUsernameNotFoundException(UsernameNotFoundException ex) {
         ExceptionResponseDto exceptionResponseDto = new ExceptionResponseDto(ex.getMessage(), null);
-        return ResponseEntity.badRequest().body(exceptionResponseDto);
+        return ResponseEntity.status(460).body(exceptionResponseDto);
     }
 
     @Override
@@ -46,8 +46,9 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         ExceptionResponseDto exceptionResponseDto = new ExceptionResponseDto("Validation Failed", errorDetailsMap);
 
         return ResponseEntity.unprocessableEntity().body(exceptionResponseDto);
+
+
+
     }
-
-
 
 }

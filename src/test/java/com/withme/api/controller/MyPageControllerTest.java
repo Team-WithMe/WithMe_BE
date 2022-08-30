@@ -23,13 +23,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles("local")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -94,7 +94,8 @@ public class MyPageControllerTest {
     @Test
     public void 닉네임변경_성공() throws Exception{
         //given
-        Long id = userRepository.findAll().get(0).getId();
+        List<User> users = userRepository.findAll();
+        Long id = users.get(users.size()-1).getId();
         String nicknameToBeChanged = "vV위드미Vv";
 
         String apiUrl = "/api/v1/user/nickname/"+id;
@@ -148,7 +149,8 @@ public class MyPageControllerTest {
     @Test
     public void 닉네임변경_실패_유효성_부적합() throws Exception{
         //given
-        Long id = 1L;
+        List<User> users = userRepository.findAll();
+        Long id = users.get(users.size()-1).getId();
         String nicknameToBeChanged = "h";
 
         String apiUrl = "/api/v1/user/nickname/"+id;
@@ -168,44 +170,43 @@ public class MyPageControllerTest {
 
                 //then
                 .andExpect(status().is4xxClientError())
-//                .andExpect(content().json("{\"message\": \"Validation Failed\"}"));
                 .andExpect(jsonPath("$.message").value("Validation Failed"));
 
     }
 
+//    @Test
+//    public void 닉네임변경_실패_id없음() throws Exception{
+//        //given
+//        List<User> users = userRepository.findAll();
+//        Long id = users.get(users.size()-1).getId();
+//
+//        String nicknameToBeChanged = "nnname";
+//
+//        String apiUrl = "/api/v1/user/nickname/"+id;
+//
+//        UserUpdateRequestDto dto = UserUpdateRequestDto.builder()
+//                .nickname(nicknameToBeChanged)
+//                .build();
+//
+//        String url = "http://localhost:" + port + apiUrl;
+//
+//        //when
+//        mvc.perform(put(url)
+//                        .header(tokenProvider.AUTHORIZATION_HEADER, this.jwtToken)
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(new ObjectMapper().writeValueAsString(dto))
+//                )
+//
+//                //then
+//                .andExpect(status().is4xxClientError())
+//                .andExpect(jsonPath("$.message","User Not Found. id : " + id ).exists());
+//        assertThat(tokenProvider.getClaimsFromToken(jwtToken.substring(7)).getId()).isNotEqualTo(id);
+//    }
+
     @Test
-    public void 닉네임변경_실패_id없음() throws Exception{
+    public void 닉네임변경_실패_TokenId불일치() throws Exception{
         //given
         Long id = 654356L;
-        String nicknameToBeChanged = "nnname";
-
-        String apiUrl = "/api/v1/user/nickname/"+id;
-
-        UserUpdateRequestDto dto = UserUpdateRequestDto.builder()
-                .nickname(nicknameToBeChanged)
-                .build();
-
-        String url = "http://localhost:" + port + apiUrl;
-
-        //when
-        mvc.perform(put(url)
-                        .header(tokenProvider.AUTHORIZATION_HEADER, this.jwtToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto))
-                )
-
-                //then
-                .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.message","User Not Found. id : " + id ).exists());
-
-    }
-
-    @Test
-    public void 닉네임변경_실패_다른유저id() throws Exception{
-        //given
-
-
-        Long id = 1683L;
         String nicknameToBeChanged = "nntbc";
 
         String apiUrl = "/api/v1/user/nickname/"+id;
@@ -224,11 +225,7 @@ public class MyPageControllerTest {
                 )
 
                 //then
-                .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.message","User ID != Token User ID" ).exists());
-
-        assertThat(tokenProvider.getClaimsFromToken(jwtToken.substring(7)).getId()).isNotEqualTo(id);
-
+                .andExpect(status().is4xxClientError());
     }
 
     @Test
