@@ -3,6 +3,7 @@ package com.withme.api.controller;
 import com.withme.api.controller.dto.ExceptionResponseDto;
 import com.withme.api.controller.dto.MyPageResponseDto;
 import com.withme.api.controller.dto.UserUpdateRequestDto;
+import com.withme.api.jwt.TokenProvider;
 import com.withme.api.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,6 +24,7 @@ import javax.validation.Valid;
 public class MyPageController {
 
     private final UserService userService;
+    private final TokenProvider tokenProvider;
 
     @Operation(
         summary = "마이페이지 유저 및 팀 정보 조회"
@@ -35,14 +37,23 @@ public class MyPageController {
             , content = @Content(schema = @Schema(implementation = MyPageResponseDto.class))
         )
         , @ApiResponse(
+            responseCode = "406"
+            , description = "토큰의 유저 id와 pathVariable의 id가 불일치"
+            , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
+    )
+        , @ApiResponse(
             responseCode = "460"
             , description = "id에 일치하는 유저 없음"
             , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
         )
     })
     @GetMapping("/user/mypage/{id}")
-    public ResponseEntity<Object> getUserAndTeamInfo(@PathVariable Long id) {
+    public ResponseEntity<Object> getUserAndTeamInfo(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) throws IllegalAccessException {
         log.debug("getUserAndTeamInfo{} invoked", id);
+
+        if(!tokenProvider.getUserIdFromToken(authHeader).equals(id)){
+            throw new IllegalArgumentException("Requested User ID != Token User ID");
+        }
 
         MyPageResponseDto myPageResponseDto = userService.getUserAndTeamInfo(id);
         log.debug("myPageResponseDto : " + myPageResponseDto);
@@ -70,14 +81,23 @@ public class MyPageController {
             , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
         )
         , @ApiResponse(
+            responseCode = "406"
+            , description = "토큰의 유저 id와 pathVariable의 id가 불일치"
+            , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
+    )
+        , @ApiResponse(
             responseCode = "460"
             , description = "id에 일치하는 유저 없음"
             , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
         )
     })
     @PutMapping("/user/nickname/{id}")
-    public ResponseEntity<Object> changeUserNickname(@PathVariable Long id, @Valid @RequestBody UserUpdateRequestDto dto) {
+    public ResponseEntity<Object> changeUserNickname(@PathVariable Long id, @Valid @RequestBody UserUpdateRequestDto dto, @RequestHeader("Authorization") String authHeader) {
         log.debug("changeUserNickname{} invoked", dto);
+
+        if(!tokenProvider.getUserIdFromToken(authHeader).equals(id)){
+            throw new IllegalArgumentException("Requested User ID != Token User ID");
+        }
         userService.changeUserNickname(id, dto);
         return ResponseEntity.ok().build();
     }

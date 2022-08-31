@@ -158,7 +158,7 @@ public class TokenProvider implements InitializingBean {
      * @return Authentication 객체
      */
     public Authentication getAuthentication(String token) {
-        User user = userRepository.findById(Long.parseLong(this.getClaimsFromToken(token).get("id").toString()))
+        User user = userRepository.findById(this.getUserIdFromToken(token))
                 .orElseThrow(() -> new UsernameNotFoundException("User not exist."));
 
         PrincipalDetails principalDetails = new PrincipalDetails(user);
@@ -166,11 +166,25 @@ public class TokenProvider implements InitializingBean {
         return new UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.getAuthorities());
     }
 
-    public Claims getClaimsFromToken(String token) {
+    /**
+     * 토큰을 파라미터로 받아 토큰 내부 body의 userId를 리턴하는 메서드
+     * @param token
+     * @return userId
+     */
+    public Long getUserIdFromToken(String token) {
+        return Long.parseLong(getClaimsFromToken(token).get("id").toString());
+    }
+
+    /**
+     * 토큰을 파라미터로 받아 토큰 내부의 body를 리턴하는 메서드
+     * @param token
+     * @return 토큰의 body
+     */
+    private Claims getClaimsFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(token)
+                .parseClaimsJws(token.substring(7))
                 .getBody();
     }
 
@@ -180,6 +194,7 @@ public class TokenProvider implements InitializingBean {
      * @return
      */
     public boolean validateToken(String token) {
+        token = token.substring(7);
         try {
             if(token.equals("No Token")){
                 return false;
