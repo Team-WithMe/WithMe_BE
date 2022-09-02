@@ -17,8 +17,8 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Table(uniqueConstraints = {
-                @UniqueConstraint(name = "USER_EMAIL_UNIQUE", columnNames = "EMAIL")
-                , @UniqueConstraint(name = "USER_NICKNAME_UNIQUE", columnNames = "NICKNAME")
+                @UniqueConstraint(name = "USER_EMAIL_ROOT_ATTRIBUTE_UNIQUE", columnNames = {"email", "joinRoot", "nameAttributeValue"})
+                , @UniqueConstraint(name = "USER_NICKNAME_UNIQUE", columnNames = "nickname")
         })
 @Entity
 public class User extends BaseTimeEntity {

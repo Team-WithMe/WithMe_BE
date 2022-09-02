@@ -51,6 +51,7 @@ public class MyPageController {
     public ResponseEntity<Object> getUserAndTeamInfo(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) throws IllegalAccessException {
         log.debug("getUserAndTeamInfo{} invoked", id);
 
+        // TODO: 2022/09/02 pathVariable id 토큰과 비교하는 로직 공통으로 처리할 방법 고민해보기 
         if(!tokenProvider.getUserIdFromToken(authHeader).equals(id)){
             throw new IllegalArgumentException("Requested User ID != Token User ID");
         }
