@@ -18,12 +18,15 @@ import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.sql.Array;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -56,30 +59,45 @@ public class TeamService {
     }
     @Transactional
     public List<TeamListResponseMapping> getTeamList(TeamSearchDto map) throws Exception {
-        // NOTE 스킬 입력
-//        List<SkillName> skillNames = (List<SkillName>) map.get("skills");
-        List<Skill> skillList = new ArrayList<>();
-        List<TeamSkill> teamSkills = new ArrayList<>();
 
+        List<Skill> skillList = new ArrayList<>();
+        List<TeamListResponseMapping> teamList = new ArrayList<>();
+        List<TeamSkill> teamSkillsParams = new ArrayList<>();
+        List<List<TeamSkill>> teamSkillsParamsList = new ArrayList<>();
+        // NOTE 검색 조건 사용을 위해 TeamSkill 조회
+        List<TeamSkill> teamSkills = teamSkillRepository.findAll();
+        // NOTE 스킬 입력
         for (SkillName names: map.getSkills()){
             skillList.add(Skill.builder().skillName(names).build());
         }
+
+        // NOTE 검색 조건 걸러냄
         for (Skill skill : skillList) {
-            teamSkills.add(TeamSkill.builder().skill(skill).build());
+            teamSkillsParams = teamSkills.stream()
+                    .filter(teamSkill -> {
+                            return teamSkill.getSkill().getSkillName().equals(skill.getSkillName());
+                    }).collect(Collectors.toList());
+            teamSkillsParamsList.add(teamSkillsParams);
+        }
+        // NOTE 검색 조건을 위해 리스트를 합침
+        List<TeamSkill> params = teamSkillsParamsList.stream()
+                .flatMap(x -> x.stream())
+                .collect(Collectors.toList());
+
+        if (teamSkills.size() <= 0){
+            teamList = teamRepository.findAllByStatusOrderByCreatedTimeDesc(Status.DISPLAYED).orElseThrow(
+                    () -> new Exception("팀 조회 오류 (검색X)")
+            );
+        }else{
+            teamList = teamRepository.findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeDesc(params, Status.DISPLAYED)
+                    .orElseThrow(
+                    () -> new Exception("팀 조회 오류 (검색O)")
+            );
         }
 
-        List<TeamListResponseMapping> teamList = new ArrayList<>();
-
-//        if (teamSkills.size() <= 0){
-//            teamList = teamRepository.findAllByStatus(Status.DISPLAYED).orElseThrow(
-//                    () -> new Exception("팀 조회 오류 (검색X)")
-//            );
-//        }else{
-//            teamList = teamRepository.findTeamsByTeamSkillsIn(teamSkills).orElseThrow(
-//                    () -> new Exception("팀 조회 오류 (검색O)")
-//            );
-//        }
-        teamList = teamRepository.findTeamsBy();
+        teamList.stream()
+                .map(v -> v.getCreatedTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                .collect(Collectors.toList());
 
         return teamList;
 
@@ -147,24 +165,5 @@ public class TeamService {
 //        }
 //    }
 //
-//    public List<TeamListResponseMapping> getTeamList(TeamSearchDto teamSearchDto) throws Exception {
-//        // NOTE 스킬 입력
-//        Set<Skill> skills = new HashSet<>();
-//        for (Skill s: teamSearchDto.getSkills()){
-//                skills.add(s);
-//        }
-//        List<TeamListResponseMapping> teamList;
-//
-//        if (skills.size() <= 0){
-//            teamList = teamRepository.findAllByShownIsTrue().orElseThrow(
-//                    () -> new Exception("팀 조회 오류 (검색X)")
-//            );
-//        }else{
-//            teamList = teamRepository.findTeamsBySkillsInAndShownIsTrue(skills).orElseThrow(
-//                    () -> new Exception("팀 조회 오류 (검색O)")
-//            );
-//        }
-//        return teamList;
-//
-//    }
+
 }

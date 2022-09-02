@@ -53,8 +53,10 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     // NOTE SKILL로 팀 리스트 검색
 //    Optional<List<TeamListResponseMapping>> findTeamBySkillsIn(@Param("skills")List<Skill> skills);
 
-    Optional<List<TeamListResponseMapping>> findAllByStatus(@Param("status")Status status);
-    Optional<List<TeamListResponseMapping>> findTeamsByTeamSkillsIn(@Param("teamSkills")List<TeamSkill> teamSkills);
+    Optional<List<TeamListResponseMapping>> findAllByStatusOrderByCreatedTimeDesc(@Param("status")Status status);
+//    @Query("SELECT T FROM Team T where T.teamSkills in (:teamSkills)")
+    Optional<List<TeamListResponseMapping>> findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeDesc(@Param("teamSkills")List<TeamSkill> teamSkills, @Param("status")Status status);
+
 
 //    @Query("SELECT T FROM Team T")
     List<TeamListResponseMapping> findTeamsBy();

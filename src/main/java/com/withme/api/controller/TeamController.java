@@ -108,7 +108,7 @@ public class TeamController {
             // NOTE 팀 생성
             int result = teamService.createTeamTest(createTeamRequestDto);
 
-            res.put("status", 200);
+            res.put("status", 201);
             return new ResponseEntity<>(res, HttpStatus.CREATED);
 
 
