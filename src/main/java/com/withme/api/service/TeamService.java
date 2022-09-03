@@ -1,8 +1,8 @@
 package com.withme.api.service;
 
 import com.withme.api.controller.dto.CreateTeamRequestDto;
-import com.withme.api.controller.dto.TeamListResponseDto;
 import com.withme.api.controller.dto.TeamListResponseMapping;
+import com.withme.api.controller.dto.TeamNoticeCreateRequestDto;
 import com.withme.api.controller.dto.TeamSearchDto;
 import com.withme.api.domain.skill.Skill;
 import com.withme.api.domain.skill.SkillName;
@@ -10,20 +10,25 @@ import com.withme.api.domain.team.Status;
 import com.withme.api.domain.team.Team;
 import com.withme.api.domain.team.TeamCategory;
 import com.withme.api.domain.team.TeamRepository;
+import com.withme.api.domain.teamNotice.TeamNotice;
+import com.withme.api.domain.teamNotice.TeamNoticeRepository;
 import com.withme.api.domain.teamSkill.TeamSkill;
 import com.withme.api.domain.teamSkill.TeamSkillRepository;
 import com.withme.api.domain.teamUser.MemberType;
 import com.withme.api.domain.teamUser.TeamUser;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
+import com.withme.api.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import java.sql.Array;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,6 +37,10 @@ public class TeamService {
 
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+
+    private final TokenProvider tokenProvider;
+    private final TeamNoticeRepository teamNoticeRepository;
+
 
     private final TeamSkillRepository teamSkillRepository;
     /**
@@ -130,7 +139,8 @@ public class TeamService {
 
             return 1;
     }
-//
+
+    //
 //    /**
 //     * 팀 삭제
 //     * */
@@ -167,4 +177,24 @@ public class TeamService {
 //        return teamList;
 //
 //    }
+
+    @Transactional
+    public TeamNotice createTeamNotice(Long teamId, TeamNoticeCreateRequestDto dto, String authHeader) {
+        /**
+         * 1. authHeader 파싱해서 user id 가져오기
+         * 2. team에 uesr가 있는지 확인하기 -> 없으면 exception 발생
+         * 3. team에 공지사항 등록
+         */
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
+
+        Long userIdFromToken = tokenProvider.getUserIdFromToken(authHeader);
+        team.isUserJoined(userIdFromToken);
+
+        User user = userRepository.findById(userIdFromToken)
+                .orElseThrow(() -> new UsernameNotFoundException("User not exist."));
+
+        return teamNoticeRepository.save(dto.toEntity(team, user));
+    }
 }

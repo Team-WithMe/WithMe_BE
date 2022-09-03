@@ -7,12 +7,9 @@ package com.withme.api.controller;
 //import com.withme.api.domain.team.Team;
 //import com.withme.api.service.TeamService;
 //import io.swagger.annotations.ApiOperation;
-import com.withme.api.controller.dto.CreateTeamRequestDto;
-import com.withme.api.controller.dto.TeamListResponseDto;
-import com.withme.api.controller.dto.TeamListResponseMapping;
-import com.withme.api.controller.dto.TeamSearchDto;
-import com.withme.api.domain.team.Team;
-import com.withme.api.domain.teamSkill.TeamSkill;
+
+import com.withme.api.controller.dto.*;
+import com.withme.api.jwt.TokenProvider;
 import com.withme.api.service.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +34,8 @@ import java.util.Map;
 public class TeamController {
 
     private final TeamService teamService;
+
+    private final TokenProvider tokenProvider;
 //    @Operation(
 //            summary = "팀 리스트 조회"
 //            , description = "팀 리스트를 검색, 정렬 기능으로 조회한다."
@@ -218,4 +218,19 @@ public class TeamController {
 //        }
 //    }
 //
+
+
+
+    @PostMapping("/{teamId}/notice")
+    public ResponseEntity<Object> createTeamNotice(
+            @PathVariable Long teamId
+            , @Valid @RequestBody TeamNoticeCreateRequestDto dto
+            , @RequestHeader("Authorization") String authHeader
+    ) {
+        log.debug("createTeamNotice {}, {} invoked", teamId, dto);
+
+        teamService.createTeamNotice(teamId, dto, authHeader);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.withme.api.domain.BaseTimeEntity;
 import com.withme.api.domain.teamNotice.TeamNotice;
 import com.withme.api.domain.teamSkill.TeamSkill;
+import com.withme.api.domain.teamUser.MemberType;
 import com.withme.api.domain.teamUser.TeamUser;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,7 +48,7 @@ public class Team extends BaseTimeEntity {
    @OneToMany(mappedBy = "team")
    private List<TeamUser> teamUsers = new ArrayList<>();
 
-   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+   @OneToMany(mappedBy = "team")
    private List<TeamNotice> teamNotice = new ArrayList<>();
 
    @Builder
@@ -74,4 +75,23 @@ public class Team extends BaseTimeEntity {
       this.teamUsers.add(teamUser);
    }
 
+    public boolean isUserJoined(Long userId) {
+      this.teamUsers.forEach(teamUser -> {
+         if(teamUser.getUser().getId().equals(userId)) {
+            if(teamUser.getMemberType().equals(MemberType.LEADER)){
+               //여기는 작성 성공
+               return;
+            } else {
+               //리더가 아니라 작성 불가능
+               throw new RuntimeException("This Member is not a Leader of this Team");
+            }
+         } else {
+            //멤버가 아니라 작성 불가능
+            throw new RuntimeException("This User is not a Member of this Team.");
+         }
+      });
+
+      return true;
+
+    }
 }
