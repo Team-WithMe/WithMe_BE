@@ -26,12 +26,12 @@ public class TeamSkill {
     @Column(name = "team_skill_idx")
     private Long id;
     @JsonBackReference
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
     @JoinColumn(name = "team_idx")
     private Team team;
     //@JsonBackReference
     @JsonManagedReference
-    @ManyToOne(fetch = FetchType.EAGER) // NOTE FetchType.EAGER 로 Skill안의 모든 정보를 바로 조회해서 무한루프 안걸리도록함
+    @ManyToOne(fetch = FetchType.EAGER, cascade=CascadeType.ALL) // NOTE FetchType.EAGER 로 Skill안의 모든 정보를 바로 조회해서 무한루프 안걸리도록함
     @JoinColumn(name = "skill_name")
     private Skill skill;
 
