@@ -220,7 +220,16 @@ public class TeamController {
 //
 
 
-
+    @Operation(
+            summary = "공지사항 작성"
+            , description = "팀 공지사항을 작성한다."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201"
+            , description = "팀 공지사항 작성 성공"
+        )
+    })
     @PostMapping("/{teamId}/notice")
     public ResponseEntity<Object> createTeamNotice(
             @PathVariable Long teamId
