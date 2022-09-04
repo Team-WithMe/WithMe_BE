@@ -85,19 +85,29 @@ public class TeamService {
                 .collect(Collectors.toList());
 
         if (teamSkills.size() <= 0){
-            teamList = teamRepository.findAllByStatusOrderByCreatedTimeDesc(Status.DISPLAYED).orElseThrow(
-                    () -> new Exception("팀 조회 오류 (검색X)")
-            );
+            // NOTE 내림 차순
+            if (map.getSort() == 0){
+                teamList = teamRepository.findAllByStatusOrderByCreatedTimeDesc(Status.DISPLAYED).orElseThrow(
+                        () -> new NullPointerException("팀 조회 오류 (검색X)")
+                );
+            }else {
+                teamList = teamRepository.findAllByStatusOrderByCreatedTimeAsc(Status.DISPLAYED).orElseThrow(
+                        () -> new NullPointerException("팀 조회 오류 (검색X)")
+                );
+            }
         }else{
-            teamList = teamRepository.findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeDesc(params, Status.DISPLAYED)
-                    .orElseThrow(
-                    () -> new Exception("팀 조회 오류 (검색O)")
-            );
+            if (map.getSort() == 0){
+                teamList = teamRepository.findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeDesc(params, Status.DISPLAYED)
+                        .orElseThrow(
+                                () -> new NullPointerException("팀 조회 오류 (검색O)")
+                        );
+            }else {
+                teamList = teamRepository.findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeAsc(params, Status.DISPLAYED)
+                        .orElseThrow(
+                                () -> new NullPointerException("팀 조회 오류 (검색O)")
+                        );
+            }
         }
-
-        teamList.stream()
-                .map(v -> v.getCreatedTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
-                .collect(Collectors.toList());
 
         return teamList;
 
@@ -147,6 +157,13 @@ public class TeamService {
             teamRepository.save(team);
 
             return 1;
+    }
+
+    /**
+     * 팀 상세 정보 조회
+     * */
+    public void teamDetailInfo() {
+        //TeamRepository.
     }
 //
 //    /**

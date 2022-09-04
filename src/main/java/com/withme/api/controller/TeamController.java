@@ -72,6 +72,10 @@ public class TeamController {
                 return new ResponseEntity<>(teamData, HttpStatus.BAD_REQUEST);
             }
 
+        }catch (NullPointerException e){
+            log.warn("[ERROR] : 팀 조회시 조건에 맞는 팀이 존재하지 않음");
+            e.printStackTrace();
+            return new ResponseEntity<>("팀 조회중 값을 찾지 못함", HttpStatus.UNPROCESSABLE_ENTITY);
         }catch (Exception e){
             log.warn("[ERROR] : 팀 조회시 오류");
             e.printStackTrace();
@@ -124,25 +128,7 @@ public class TeamController {
             return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-//
-//    /**
-//     *  팀 목록 조회, 태그 검색
-//     * */
-//    @PostMapping("/TeamListTest")
-//    @ResponseBody
-//    private ResponseEntity teamListTest(@RequestBody(required = false) TeamSearchDto teamSearchDto) {
-//        try {
-//            Map<String, Object> result = new HashMap<>();
-//            List<TeamListResponseMapping> teamList = teamService.getTeamList(teamSearchDto);
-//            result.put("teamList", teamList);
-//            return new ResponseEntity(teamList, HttpStatus.OK);
-//        }catch (Exception e){
-//            log.warn("[ERROR] : 팀 조회 중 오류");
-//            e.printStackTrace();
-//            return new ResponseEntity("팀 조회 중 오류 발생!", HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
-//
+//    @GetMapping
 //    /**
 //     * 팀 등록
 //     * */

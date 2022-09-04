@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.stereotype.Component;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,11 +63,11 @@ public class TeamListTest {
 
         if (teamSkills.size() <= 0){
             teamList = teamRepository.findAllByStatusOrderByCreatedTimeDesc(Status.DISPLAYED).orElseThrow(
-                    () -> new Exception("팀 조회 오류 (검색X)")
+                    () -> new NullPointerException("팀 조회 오류 (검색X)")
             );
         }else{
             teamList = teamRepository.findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeDesc(params, Status.DISPLAYED).orElseThrow(
-                    () -> new Exception("팀 조회 오류 (검색O)")
+                    () -> new NullPointerException("팀 조회 오류 (검색O)")
             );
         }
 
@@ -80,13 +79,9 @@ public class TeamListTest {
             }
         }
 
-        equalsSkillName.stream()
-                .distinct()
-                .collect(Collectors.toList());
-
         List<SkillName> skillNameList = skillList.stream()
-                .map(v -> v.getSkillName())
                 .distinct()
+                .map(v -> v.getSkillName())
                 .collect(Collectors.toList());
 
         // NOTE 검색 결과의 SkillName 리스트가 검색 조건의 SkillName 리스트의 요소가 포함되어 있으면
@@ -98,6 +93,7 @@ public class TeamListTest {
         List<SkillName> skills = new ArrayList<>();
         skills.add(SkillName.java);
         skills.add(SkillName.nodejs);
+        skills.add(SkillName.docker);
 
         return skills;
     }
