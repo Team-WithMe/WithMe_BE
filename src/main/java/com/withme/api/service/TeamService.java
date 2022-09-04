@@ -205,18 +205,18 @@ public class TeamService {
         return teamNoticeRepository.save(dto.toEntity(team, user));
     }
 
-    @Transactional
-    public List<TeamNoticeResponseDto> selectTeamNoticeList(Long teamId) {
-        List<TeamNoticeResponseDto> teamNoticeResponseDtoList = new ArrayList<>();
-
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
-
-        List<TeamNotice> teamNoticeList = team.getTeamNotice();
-        teamNoticeList.forEach(teamNotice -> {
-            teamNoticeResponseDtoList.add(new TeamNoticeResponseDto(teamNotice));
-        });
-
-        return teamNoticeResponseDtoList;
-    }
+//    @Transactional
+//    public List<TeamNoticeResponseDto> selectTeamNoticeList(Long teamId) {
+//        List<TeamNoticeResponseDto> teamNoticeResponseDtoList = new ArrayList<>();
+//
+//        Team team = teamRepository.findById(teamId)
+//                .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
+//
+//        List<TeamNotice> teamNoticeList = team.getTeamNotice();
+//        teamNoticeList.forEach(teamNotice -> {
+//            teamNoticeResponseDtoList.add(new TeamNoticeResponseDto(teamNotice));
+//        });
+//
+//        return teamNoticeResponseDtoList;
+//    }
 }
