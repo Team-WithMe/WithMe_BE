@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Set;
 
-@Schema(description = "팀 조회 요청 DTO")
+@Schema(description = "팀 리스트 조회 요청 DTO")
 @Getter
 @Setter
 @Builder
@@ -23,7 +23,12 @@ public class TeamSearchDto {
     @NotNull
     private List<SkillName> skills;
 
-    public TeamSearchDto(List<SkillName> skills) {
+    @Schema(description = "팀 리스트 정렬", defaultValue= "0", allowableValues = {"0", "1"}, required = true)
+    @NotNull
+    private int sort;
+
+    public TeamSearchDto(List<SkillName> skills, int sort) {
         this.skills = skills;
+        this.sort = sort;
     }
 }

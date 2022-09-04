@@ -7,23 +7,16 @@ import com.withme.api.domain.team.Team;
 import com.withme.api.domain.teamSkill.TeamSkill;
 import com.withme.api.domain.teamUser.TeamUser;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TeamListResponseMapping {
     Long getId();
 
     String getTeamName();
-
-//    Status getTeamCategory();
-//
     String getTeamDesc();
-//
     List<TeamSkill> getTeamSkills();
-    //Team getTeam();
-//    Skill getSkill();
-//
-//    List<TeamUser> getTeamUser();
-//
-//    List<Skill> getSkills();
+    LocalDateTime getCreatedTime();
+    LocalDateTime getModifiedTime();
 
 }
