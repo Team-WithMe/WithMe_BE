@@ -151,31 +151,6 @@ public class TeamService {
             return 1;
     }
 
-
-    /**
-     * 팀 상세 정보 조회
-     * */
-    public void teamDetailInfo() {
-        //TeamRepository.
-    }
-
-//    /**
-//     * 팀 삭제
-//     * */
-//    public Map<String, Object> deleteTeam(Map<String, Object> params){
-//        HashMap<String, Object> result = new HashMap<>();
-//        try {
-//            teamRepository.deleteById(((Number)params.get("team_idx")).longValue());
-//            result.put("result", "success");
-//            return result;
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            result.put("result", "Exception");
-//            return result;
-//        }
-//    }
-//
-
     @Transactional
     public TeamNotice createTeamNotice(Long teamId, TeamNoticeCreateRequestDto dto, String authHeader) {
         /**
@@ -195,7 +170,9 @@ public class TeamService {
 
         return teamNoticeRepository.save(dto.toEntity(team, user));
     }
-
+    /**
+     * 팀 상세 정보 조회
+     * */
     public TeamListResponseMapping getTeamListByTeamId(Long teamId) {
         return teamRepository.findTeamById(teamId)
                 .orElseThrow(() -> new NullPointerException("Team not found"));
