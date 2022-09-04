@@ -1,17 +1,15 @@
 package com.withme.api.domain.teamSkill;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.withme.api.domain.skill.Skill;
-import com.withme.api.domain.skill.SkillName;
 import com.withme.api.domain.team.Team;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -25,10 +23,12 @@ public class TeamSkill {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "team_skill_idx")
     private Long id;
+
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
     @JoinColumn(name = "team_idx")
     private Team team;
+
     //@JsonBackReference
     @JsonManagedReference
     @ManyToOne(fetch = FetchType.EAGER, cascade=CascadeType.ALL) // NOTE FetchType.EAGER 로 Skill안의 모든 정보를 바로 조회해서 무한루프 안걸리도록함

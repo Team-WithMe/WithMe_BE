@@ -1,13 +1,5 @@
 package com.withme.api.controller;
 
-//
-//import com.withme.api.controller.dto.CreateTeamRequestDto;
-//import com.withme.api.controller.dto.TeamListResponseMapping;
-//import com.withme.api.controller.dto.TeamSearchDto;
-//import com.withme.api.domain.team.Team;
-//import com.withme.api.service.TeamService;
-//import io.swagger.annotations.ApiOperation;
-
 import com.withme.api.controller.dto.*;
 import com.withme.api.jwt.TokenProvider;
 import com.withme.api.service.TeamService;
@@ -29,7 +21,7 @@ import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/team")
+@RequestMapping("/api/v1")
 @RestController
 public class TeamController {
 
@@ -60,7 +52,7 @@ public class TeamController {
      * 팀 조회
      * */
     @ResponseBody
-    @PostMapping("/TeamList")
+    @PostMapping("/team/teamList")
     private ResponseEntity selectTeam(@RequestBody(required = true) TeamSearchDto params){
         try {
             log.info("params = " + params);
@@ -104,13 +96,16 @@ public class TeamController {
                     ,content = {@Content(schema = @Schema(example = "Exception"))}
             )
     })
-    @PostMapping("/createTeam-test")
-    private ResponseEntity createTeam(@RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto) {
+    @PostMapping("/team")
+    private ResponseEntity createTeam(
+        @RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto
+        , @RequestHeader("Authorization") String authHeader
+    ) {
         Map<String, Object> res = new HashMap<>();
         try {
 
             // NOTE 팀 생성
-            int result = teamService.createTeamTest(createTeamRequestDto);
+            int result = teamService.createTeamTest(createTeamRequestDto, authHeader);
 
             res.put("status", 201);
             return new ResponseEntity<>(res, HttpStatus.CREATED);
@@ -128,83 +123,6 @@ public class TeamController {
             return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-//    @GetMapping
-//    /**
-//     * 팀 등록
-//     * */
-//    @ApiOperation(value = "팀 생성")
-//    @PostMapping("/createTeam")
-//    private ResponseEntity createTeam(@RequestBody(required = false) String jsonString) {
-//        try {
-//
-//            if (jsonString != null) {
-//                Long user_idx = 172L;
-//
-//                JSONObject jsonObject = new JSONObject(jsonString);
-//                Map<String, Object> paramsMap = jsonObject.toMap();
-//                paramsMap.put("user_idx", user_idx);
-//                // NOTE 팀 생성
-//                int result = teamService.createTeam(paramsMap);
-//
-//                if(result == 6){
-//                    throw new Exception();
-//                }else if (result == 5){
-//                    throw new NullPointerException();
-//                }else if (result == 4){
-//                    throw new JSONException("");
-//                }else{
-//                    return new ResponseEntity<>(result, HttpStatus.OK);
-//                }
-//            }else {
-//                // NOTE 데이터 없음
-//                return new ResponseEntity<>("팀 등록 데이터없음", HttpStatus.OK);
-//            }
-//
-//        }catch (JSONException e) {
-//            log.warn("[ERROR] : 팀생성시 JSON 파싱오류");
-//            e.printStackTrace();
-//            return new ResponseEntity<>(1, HttpStatus.BAD_REQUEST);
-//        }catch (NullPointerException e){
-//            log.warn("[ERROR] : 팀을 생성한 사용자가 조회되지않음");
-//            e.printStackTrace();
-//            return new ResponseEntity<>(2, HttpStatus.BAD_REQUEST);
-//        }catch (Exception e){
-//            log.warn("[ERROR] : 팀등록 중 오류");
-//            e.printStackTrace();
-//            return new ResponseEntity<>(3, HttpStatus.BAD_REQUEST);
-//        }
-//
-//    }
-//
-//    /**
-//     * 팀 삭제
-//     * */
-//    @PostMapping("deleteTeam")
-//    private ResponseEntity deleteTeam(@RequestBody(required = false) String jsonString){
-//        try {
-//            if (jsonString != null) {
-//                JSONObject jsonObject = new JSONObject(jsonString);
-//                Map<String, Object> paramsMap = jsonObject.toMap();
-//                Map<String, Object> result = teamService.deleteTeam(paramsMap);
-//                if ("success".equals(result.get("result"))){
-//                    return new ResponseEntity("success", HttpStatus.OK);
-//                }else{
-//                    throw new Exception("팀 삭제중 Exception");
-//                }
-//
-//            }else {
-//                return new ResponseEntity("삭제할 idx가 없음", HttpStatus.OK);
-//            }
-//        }catch (JSONException e){
-//            e.printStackTrace();
-//            return new ResponseEntity("JSON파싱 EXCEPTION", HttpStatus.BAD_REQUEST);
-//        }catch (Exception e ){
-//            e.printStackTrace();
-//            return new ResponseEntity("팀삭제중 EXCEPTION", HttpStatus.BAD_REQUEST);
-//        }
-//    }
-//
-
 
     @Operation(
             summary = "공지사항 작성"
@@ -216,7 +134,7 @@ public class TeamController {
             , description = "팀 공지사항 작성 성공"
         )
     })
-    @PostMapping("/{teamId}/notice")
+    @PostMapping("/team/{teamId}/notice")
     public ResponseEntity<Object> createTeamNotice(
             @PathVariable Long teamId
             , @Valid @RequestBody TeamNoticeCreateRequestDto dto

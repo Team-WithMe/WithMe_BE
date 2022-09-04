@@ -121,9 +121,9 @@ public class TeamService {
      * 팀 등록
      * */
     @Transactional
-    public int createTeamTest(CreateTeamRequestDto createTeamDto) {
+    public int createTeamTest(CreateTeamRequestDto createTeamDto, String authHeader) {
         // NOTE 현재 접속한 유저 ID 구해서 적용필요
-        Long user_idx = 1L;
+        Long user_idx = tokenProvider.getUserIdFromToken(authHeader);
 
         Team team = Team.builder()
                     .teamCategory(TeamCategory.PROJECT)

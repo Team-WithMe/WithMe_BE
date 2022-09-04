@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -35,7 +34,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("local")
@@ -151,67 +149,67 @@ public class TeamControllerTest {
                 .map(TeamNotice::getTitle)).isEqualTo(Optional.of(title));
     }
 
-    @Test
-    @WithMockUser(roles = "USER")
-    public void 공지사항조회_성공() throws Exception {
-        //given
-        Team team1 = Team.builder()
-                .teamName("네트워크 공부하기")
-                .teamCategory(TeamCategory.STUDY)
-                .teamDesc("매주 주말에 카페에 모여 네트워크를 공부는 스터디 모임입니다.")
-                .status(Status.DISPLAYED)
-                .build();
-
-        User user1 = User.builder()
-                .nickname("승현")
-                .userImage("default")
-                .role("ROLE_USER")
-                .joinRoot("WithMe")
-                .build();
-
-        TeamUser teamUser1 = TeamUser.builder()
-                .team(team1)
-                .user(user1)
-                .memberType(MemberType.MEMBER)
-                .build();
-
-        teamRepository.saveAndFlush(team1);
-
-        String title1 = "title1";
-        String content1 = "content1";
-        String title2 = "title2";
-        String content2 = "content2";
-
-        TeamNotice teamNotice1 = TeamNotice.builder()
-                .title(title1)
-                .content(content1)
-                .team(team1)
-                .writer(user1)
-                .build();
-        TeamNotice teamNotice2 = TeamNotice.builder()
-                .title(title2)
-                .content(content2)
-                .team(team1)
-                .writer(user1)
-                .build();
-
-
-        String apiUrl = "/api/v1/team/" + team1.getId() + "/notice";
-        String url = "http://localhost:" + port + apiUrl;
-
-        String expectedId = "$.[?(@.id == '%s')]";
-        String expectedTitle = "$.[?(@.title == '%s')]";
-        String expected = "$.[?(@.title == '%s')]";
-
-
-
-        //when
-        mvc.perform(get(url)
-                        .header(tokenProvider.AUTHORIZATION_HEADER, this.jwtToken)
-                )
-                //then
-                .andExpect(status().isOk());
-
-    }
+//    @Test
+//    @WithMockUser(roles = "USER")
+//    public void 공지사항조회_성공() throws Exception {
+//        //given
+//        Team team1 = Team.builder()
+//                .teamName("네트워크 공부하기")
+//                .teamCategory(TeamCategory.STUDY)
+//                .teamDesc("매주 주말에 카페에 모여 네트워크를 공부는 스터디 모임입니다.")
+//                .status(Status.DISPLAYED)
+//                .build();
+//
+//        User user1 = User.builder()
+//                .nickname("승현")
+//                .userImage("default")
+//                .role("ROLE_USER")
+//                .joinRoot("WithMe")
+//                .build();
+//
+//        TeamUser teamUser1 = TeamUser.builder()
+//                .team(team1)
+//                .user(user1)
+//                .memberType(MemberType.MEMBER)
+//                .build();
+//
+//        teamRepository.saveAndFlush(team1);
+//
+//        String title1 = "title1";
+//        String content1 = "content1";
+//        String title2 = "title2";
+//        String content2 = "content2";
+//
+//        TeamNotice teamNotice1 = TeamNotice.builder()
+//                .title(title1)
+//                .content(content1)
+//                .team(team1)
+//                .writer(user1)
+//                .build();
+//        TeamNotice teamNotice2 = TeamNotice.builder()
+//                .title(title2)
+//                .content(content2)
+//                .team(team1)
+//                .writer(user1)
+//                .build();
+//
+//
+//        String apiUrl = "/api/v1/team/" + team1.getId() + "/notice";
+//        String url = "http://localhost:" + port + apiUrl;
+//
+//        String expectedId = "$.[?(@.id == '%s')]";
+//        String expectedTitle = "$.[?(@.title == '%s')]";
+//        String expected = "$.[?(@.title == '%s')]";
+//
+//
+//
+//        //when
+//        mvc.perform(get(url)
+//                        .header(tokenProvider.AUTHORIZATION_HEADER, this.jwtToken)
+//                )
+//                //then
+//                .andExpect(status().isOk());
+//
+//    }
 
 }

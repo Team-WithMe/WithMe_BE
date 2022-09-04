@@ -1,4 +1,4 @@
-package com.withme.api.team;
+package com.withme.api.service;
 
 import com.withme.api.controller.dto.TeamListResponseMapping;
 import com.withme.api.domain.skill.Skill;
