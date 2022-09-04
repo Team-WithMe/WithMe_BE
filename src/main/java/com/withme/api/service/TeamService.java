@@ -41,56 +41,22 @@ public class TeamService {
 
 
     private final TeamSkillRepository teamSkillRepository;
-    /**
-     * 팀 리스트 조회
-     * */
-    public Map<String, Object> selectTeamList(Map<String, Object> params){
-        try{
-            Map<String, Object> result = new HashMap<>();
-//            List<TeamListResponseMapping> teamsList = teamRepository.findTeamsByOrderById()
-//                    .orElseThrow(()-> new NullPointerException("팀 조회 중 오류"));
 
-            // NOTE 팀 카운트 조회
-            int countTeamBy = teamRepository.countTeamBy();
-            result.put("teamCount", countTeamBy);
-//            result.put("teamsList", teamsList);
-
-            return result;
-        }catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-    }
     @Transactional
-    public List<TeamListResponseMapping> getTeamList(TeamSearchDto map) throws Exception {
+    public List<TeamListResponseMapping> getTeamList(TeamSearchDto teamSearchDto) throws Exception {
 
-        List<Skill> skillList = new ArrayList<>();
         List<TeamListResponseMapping> teamList = new ArrayList<>();
-        List<TeamSkill> teamSkillsParams = new ArrayList<>();
-        List<List<TeamSkill>> teamSkillsParamsList = new ArrayList<>();
+
         // NOTE 검색 조건 사용을 위해 TeamSkill 조회
         List<TeamSkill> teamSkills = teamSkillRepository.findAll();
         // NOTE 스킬 입력
-        for (SkillName names: map.getSkills()){
-            skillList.add(Skill.builder().skillName(names).build());
-        }
+        List<Skill> skillList = teamSearchDto.toSkillList();
+        // NOTE 검색 조건 만들기
+        List<TeamSkill> teamSkillList = toTeamListParams(skillList, teamSkills);
 
-        // NOTE 검색 조건 걸러냄
-        for (Skill skill : skillList) {
-            teamSkillsParams = teamSkills.stream()
-                    .filter(teamSkill -> {
-                            return teamSkill.getSkill().getSkillName().equals(skill.getSkillName());
-                    }).collect(Collectors.toList());
-            teamSkillsParamsList.add(teamSkillsParams);
-        }
-        // NOTE 검색 조건을 위해 리스트를 합침
-        List<TeamSkill> params = teamSkillsParamsList.stream()
-                .flatMap(x -> x.stream())
-                .collect(Collectors.toList());
-
-        if (teamSkills.size() <= 0){
+        if (teamSkillList.size() <= 0){
             // NOTE 내림 차순
-            if (map.getSort() == 0){
+            if (teamSearchDto.getSort() == 0){
                 teamList = teamRepository.findAllByStatusOrderByCreatedTimeDesc(Status.DISPLAYED).orElseThrow(
                         () -> new NullPointerException("팀 조회 오류 (검색X)")
                 );
@@ -100,13 +66,13 @@ public class TeamService {
                 );
             }
         }else{
-            if (map.getSort() == 0){
-                teamList = teamRepository.findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeDesc(params, Status.DISPLAYED)
+            if (teamSearchDto.getSort() == 0){
+                teamList = teamRepository.findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeDesc(teamSkillList, Status.DISPLAYED)
                         .orElseThrow(
                                 () -> new NullPointerException("팀 조회 오류 (검색O)")
                         );
             }else {
-                teamList = teamRepository.findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeAsc(params, Status.DISPLAYED)
+                teamList = teamRepository.findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeAsc(teamSkillList, Status.DISPLAYED)
                         .orElseThrow(
                                 () -> new NullPointerException("팀 조회 오류 (검색O)")
                         );
@@ -114,14 +80,36 @@ public class TeamService {
         }
 
         return teamList;
+    }
+    // NOTE 팀 검색 조건 처리 로직
+    public List<TeamSkill> toTeamListParams(List<Skill> skills, List<TeamSkill> teamSkills) {
+        List<TeamSkill> teamSkillsParams = new ArrayList<>();
+        List<List<TeamSkill>> teamSkillsParamsList = new ArrayList<>();
+        // NOTE 검색 조건 걸러냄
+        for (Skill skill : skills) {
+            teamSkillsParams = teamSkills.stream()
+                    .filter(teamSkill -> {
+                        return teamSkill.getSkill().getSkillName().equals(skill.getSkillName());
+                    })
+                    .peek(v ->
+                            System.out.println("v.getSkill().getSkillName() = " + v.getSkill().getSkillName()))
+                    .collect(Collectors.toList());
+            teamSkillsParamsList.add(teamSkillsParams);
+        }
 
+        // NOTE 검색 조건을 위해 리스트를 합침
+        List<TeamSkill> params = teamSkillsParamsList.stream()
+                .flatMap(x -> x.stream())
+                .collect(Collectors.toList());
+
+        return params;
     }
 
     /**
      * 팀 등록
      * */
     @Transactional
-    public int createTeamTest(CreateTeamRequestDto createTeamDto, String authHeader) {
+    public int createTeam(CreateTeamRequestDto createTeamDto, String authHeader) {
         // NOTE 현재 접속한 유저 ID 구해서 적용필요
         Long user_idx = tokenProvider.getUserIdFromToken(authHeader);
 
@@ -129,7 +117,7 @@ public class TeamService {
                     .teamCategory(TeamCategory.PROJECT)
                     .teamDesc(createTeamDto.getDescription())
                     .teamName(createTeamDto.getName())
-                    .status(Status.DISPLAYED)
+                    .status(Status.HIDDEN)
                     .build();
 
             // NOTE 스킬 입력
@@ -163,31 +151,6 @@ public class TeamService {
             return 1;
     }
 
-
-    /**
-     * 팀 상세 정보 조회
-     * */
-    public void teamDetailInfo() {
-        //TeamRepository.
-    }
-
-//    /**
-//     * 팀 삭제
-//     * */
-//    public Map<String, Object> deleteTeam(Map<String, Object> params){
-//        HashMap<String, Object> result = new HashMap<>();
-//        try {
-//            teamRepository.deleteById(((Number)params.get("team_idx")).longValue());
-//            result.put("result", "success");
-//            return result;
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            result.put("result", "Exception");
-//            return result;
-//        }
-//    }
-//
-
     @Transactional
     public TeamNotice createTeamNotice(Long teamId, TeamNoticeCreateRequestDto dto, String authHeader) {
         /**
@@ -207,5 +170,11 @@ public class TeamService {
 
         return teamNoticeRepository.save(dto.toEntity(team, user));
     }
-
+    /**
+     * 팀 상세 정보 조회
+     * */
+    public TeamListResponseMapping getTeamListByTeamId(Long teamId) {
+        return teamRepository.findTeamById(teamId)
+                .orElseThrow(() -> new NullPointerException("Team not found"));
+    }
 }

@@ -21,7 +21,7 @@ public class TeamSkill {
     @JsonIgnore // NOTE 관계 테이블 ID는 화면에서 필요없기 때문에 제외
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "team_skill_idx")
+    @Column(name = "team_skill_index")
     private Long id;
 
     @JsonBackReference
