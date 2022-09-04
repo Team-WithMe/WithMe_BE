@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @Component
 public class TokenProvider implements InitializingBean {
 
+    private static final String USER_ID = "id";
     private static final String AUTHORITIES_KEY = "auth";
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
@@ -67,6 +68,12 @@ public class TokenProvider implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
+    /**
+     * OAuth2로 로그인 성공 후 클라이언트로 토큰을 전달하는 메서드
+     * @param response
+     * @param authResult JWT 토큰 생성을 위한 인증정보
+     * @throws IOException
+     */
     public void sendRedirectWithBase64EncodedToken(HttpServletResponse response, Authentication authResult) throws IOException {
         String jwt = "Bearer " + this.createToken(authResult);
 
@@ -77,6 +84,12 @@ public class TokenProvider implements InitializingBean {
         );
     }
 
+    /**
+     * 일반 로그인 후 클라이언트로 토큰을 전달하는 메서드
+     * @param response
+     * @param authResult JWT 토큰 생성을 위한 인증정보
+     * @throws IOException
+     */
     public void sendResponseWithToken(HttpServletResponse response, Authentication authResult) throws IOException {
         UserDetails userDetails = (UserDetails) authResult.getPrincipal();
         String jwt = "Bearer " + this.createToken(authResult);
@@ -87,6 +100,13 @@ public class TokenProvider implements InitializingBean {
         response.getWriter().write(this.setBody(userDetails, jwt));
     }
 
+    /**
+     * 일반 로그인 성공 후 응답 바디에 담을 내용을 생성하는 메서드
+     * @param userDetails 인증된 유저 정보
+     * @param jwt 클라이언트로 전달한 JWT 토큰
+     * @return 응답 바디에 담길 내용
+     * @throws JsonProcessingException
+     */
     private String setBody(UserDetails userDetails, String jwt) throws JsonProcessingException {
         LoginResponseDto loginResponseDto = LoginResponseDto.builder()
                 .nickname(userDetails.getUsername())
@@ -104,17 +124,28 @@ public class TokenProvider implements InitializingBean {
     private String createToken(Authentication authentication) {
         return Jwts.builder()
                 .setSubject(authentication.getName())
+                .setIssuer("WithMe")
                 .claim(AUTHORITIES_KEY, this.getAuthoritiesFromAuthentication(authentication))
+                .claim(USER_ID, ((PrincipalDetails)authentication.getPrincipal()).getUserId())
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(this.getValidity())
                 .compact();
     }
 
+    /**
+     * JWT 토큰의 유효기간을 설정하는 메서드
+     * @return
+     */
     private Date getValidity() {
         long now = (new Date()).getTime();
         return new Date(now + this.tokenValidityInMilliseconds);
     }
 
+    /**
+     * 유저의 권한을 리턴하는 메서드
+     * @param authentication 인증된 유저 정보
+     * @return
+     */
     private String getAuthoritiesFromAuthentication(Authentication authentication){
         return authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -127,14 +158,7 @@ public class TokenProvider implements InitializingBean {
      * @return Authentication 객체
      */
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts
-                .parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        User user = userRepository.findByEmail(claims.get("email").toString())
+        User user = userRepository.findById(this.getUserIdFromToken(token))
                 .orElseThrow(() -> new UsernameNotFoundException("User not exist."));
 
         PrincipalDetails principalDetails = new PrincipalDetails(user);
@@ -143,11 +167,34 @@ public class TokenProvider implements InitializingBean {
     }
 
     /**
+     * 토큰을 파라미터로 받아 토큰 내부 body의 userId를 리턴하는 메서드
+     * @param token
+     * @return userId
+     */
+    public Long getUserIdFromToken(String token) {
+        return Long.parseLong(getClaimsFromToken(token).get("id").toString());
+    }
+
+    /**
+     * 토큰을 파라미터로 받아 토큰 내부의 body를 리턴하는 메서드
+     * @param token
+     * @return 토큰의 body
+     */
+    private Claims getClaimsFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token.substring(7))
+                .getBody();
+    }
+
+    /**
      * 토큰을 파라미터로 받아 유효성 검사를 하는 메서드
      * @param token
      * @return
      */
     public boolean validateToken(String token) {
+        token = token.substring(7);
         try {
             if(token.equals("No Token")){
                 return false;

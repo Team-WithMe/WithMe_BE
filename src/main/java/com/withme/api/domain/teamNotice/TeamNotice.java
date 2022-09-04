@@ -19,10 +19,10 @@ public class TeamNotice extends BaseTimeEntity {
     @Column(name = "team_notice_idx")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String title;
 
-    @Column
+    @Column(nullable = false)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -34,9 +34,11 @@ public class TeamNotice extends BaseTimeEntity {
     private User writer;
 
     @Builder
-    public TeamNotice(String title, String content) {
+    public TeamNotice(String title, String content, Team team, User writer) {
         this.title = title;
         this.content = content;
+        this.team = team;
+        this.writer = writer;
     }
 
 }

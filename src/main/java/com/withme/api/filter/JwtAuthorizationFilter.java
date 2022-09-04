@@ -41,7 +41,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
             log.info("유효한 JWT 토큰 없음. uri : {}", requestURI);
         }
 
-        chain.doFilter(request, response);;
+        chain.doFilter(request, response);
 
     }
 
@@ -49,7 +49,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         Authentication authentication = tokenProvider.getAuthentication(jwt);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        log.info("Security Context에 '{}' 인증 정보 저장. uri : {}", authentication, requestURI);
+        log.debug("Security Context에 '{}' 인증 정보 저장. uri : {}", authentication, requestURI);
     }
 
     /**
@@ -60,7 +60,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     private String resolveToken(HttpServletRequest request){
         return Optional.ofNullable(request.getHeader(this.AUTHORIZATION_HEADER))
                 .filter(token -> token.startsWith("Bearer "))
-                .map(token -> token.substring(7))
+//                .map(token -> token.substring(7))
                 .orElse("No Token");
     }
 }
