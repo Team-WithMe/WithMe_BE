@@ -1,9 +1,6 @@
 package com.withme.api.service;
 
-import com.withme.api.controller.dto.CreateTeamRequestDto;
-import com.withme.api.controller.dto.TeamListResponseMapping;
-import com.withme.api.controller.dto.TeamNoticeCreateRequestDto;
-import com.withme.api.controller.dto.TeamSearchDto;
+import com.withme.api.controller.dto.*;
 import com.withme.api.domain.skill.Skill;
 import com.withme.api.domain.skill.SkillName;
 import com.withme.api.domain.team.Status;
@@ -208,4 +205,18 @@ public class TeamService {
         return teamNoticeRepository.save(dto.toEntity(team, user));
     }
 
+    @Transactional
+    public List<TeamNoticeResponseDto> selectTeamNoticeList(Long teamId) {
+        List<TeamNoticeResponseDto> teamNoticeResponseDtoList = new ArrayList<>();
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
+
+        List<TeamNotice> teamNoticeList = team.getTeamNotice();
+        teamNoticeList.forEach(teamNotice -> {
+            teamNoticeResponseDtoList.add(new TeamNoticeResponseDto(teamNotice));
+        });
+
+        return teamNoticeResponseDtoList;
+    }
 }
