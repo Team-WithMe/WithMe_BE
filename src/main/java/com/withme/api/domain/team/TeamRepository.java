@@ -30,7 +30,7 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     Optional<List<TeamListResponseMapping>> findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeAsc(@Param("teamSkills")List<TeamSkill> teamSkills, @Param("status")Status status);
 
-   // List<TeamListResponseMapping> findTeamsById();
+   Optional<TeamListResponseMapping> findTeamById(@Param("teamId") Long teamId);
 
 
 }
