@@ -28,31 +28,36 @@ public class TeamController {
     private final TeamService teamService;
 
     private final TokenProvider tokenProvider;
-//    @Operation(
-//            summary = "팀 리스트 조회"
-//            , description = "팀 리스트를 검색, 정렬 기능으로 조회한다."
-//    )
-//    @ApiResponses(value = {
-//            @ApiResponse(
-//                    responseCode = "200"
-//                    ,description = "팀 리스트 조회 성공"
-//            )
-//            , @ApiResponse(
-//            responseCode = "400"
-//            ,description = "검색 조건 파라미터 오류"
-//            ,content = {@Content(schema = @Schema(example = "NullPointException"))}
-//    )
-//            , @ApiResponse(
-//            responseCode = "500"
-//            ,description = "팀리스트 조회 중 오류"
-//            ,content = {@Content(schema = @Schema(example = "Exception"))}
-//    )
-//    })
+    @Operation(
+            summary = "팀 리스트 조회"
+            , description = "팀 리스트를 검색, 정렬 기능으로 조회한다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200"
+                    ,description = "팀 리스트 조회 성공"
+            )
+            , @ApiResponse(
+            responseCode = "400"
+            ,description = "검색 조건 파라미터 오류"
+            ,content = {@Content(schema = @Schema(example = "BAD_REQUEST"))}
+            )
+            , @ApiResponse(
+            responseCode = "422"
+            ,description = "팀 리스트가 조회되지 않음 "
+            ,content = {@Content(schema = @Schema(example = "UNPROCESSABLE_ENTITY"))}
+            )
+            , @ApiResponse(
+            responseCode = "500"
+            ,description = "팀리스트 조회 중 오류"
+            ,content = {@Content(schema = @Schema(example = "INTERNAL_SERVER_ERROR"))}
+            )
+    })
     /**
      * 팀 조회
      * */
     @ResponseBody
-    @PostMapping("/team/teamList")
+    @PostMapping("/team/team-list")
     private ResponseEntity selectTeam(@RequestBody(required = true) TeamSearchDto params){
         try {
             log.info("params = " + params);
