@@ -28,34 +28,40 @@ public class TeamController {
     private final TeamService teamService;
 
     private final TokenProvider tokenProvider;
-//    @Operation(
-//            summary = "팀 리스트 조회"
-//            , description = "팀 리스트를 검색, 정렬 기능으로 조회한다."
-//    )
-//    @ApiResponses(value = {
-//            @ApiResponse(
-//                    responseCode = "200"
-//                    ,description = "팀 리스트 조회 성공"
-//            )
-//            , @ApiResponse(
-//            responseCode = "400"
-//            ,description = "검색 조건 파라미터 오류"
-//            ,content = {@Content(schema = @Schema(example = "NullPointException"))}
-//    )
-//            , @ApiResponse(
-//            responseCode = "500"
-//            ,description = "팀리스트 조회 중 오류"
-//            ,content = {@Content(schema = @Schema(example = "Exception"))}
-//    )
-//    })
+    @Operation(
+            summary = "팀 리스트 조회"
+            , description = "팀 리스트를 검색, 정렬 기능으로 조회한다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200"
+                    ,description = "팀 리스트 조회 성공"
+            )
+            , @ApiResponse(
+            responseCode = "400"
+            ,description = "검색 조건 파라미터 오류"
+            ,content = {@Content(schema = @Schema(example = "BAD_REQUEST"))}
+    )
+            , @ApiResponse(
+            responseCode = "422"
+            ,description = "팀리스트 결과 없음"
+            ,content = {@Content(schema = @Schema(example = "UNPROCESSABLE_ENTITY"))}
+    )
+            , @ApiResponse(
+            responseCode = "500"
+            ,description = "팀리스트 조회 중 오류"
+            ,content = {@Content(schema = @Schema(example = "INTERNAL_SERVER_ERROR"))}
+    )
+    })
     /**
      * 팀 조회
      * */
     @ResponseBody
-    @PostMapping("/team/teamList")
-    private ResponseEntity selectTeam(@RequestBody(required = true) TeamSearchDto params){
+    @PostMapping("/team/team-list")
+    private ResponseEntity selectTeam(@Valid @RequestBody(required = true) TeamSearchDto params){
         try {
             log.info("params = " + params);
+            params.getSkills().forEach(v -> System.out.println("v = " + v));
             List<TeamListResponseMapping> teamData = teamService.getTeamList(params);
             log.info("teamData : " + teamData);
             if (teamData != null){
@@ -98,14 +104,14 @@ public class TeamController {
     })
     @PostMapping("/team")
     private ResponseEntity createTeam(
-        @RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto
+          @Valid @RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto
         , @RequestHeader("Authorization") String authHeader
     ) {
         Map<String, Object> res = new HashMap<>();
         try {
 
             // NOTE 팀 생성
-            int result = teamService.createTeamTest(createTeamRequestDto, authHeader);
+            int result = teamService.createTeam(createTeamRequestDto, authHeader);
 
             res.put("status", 201);
             return new ResponseEntity<>(res, HttpStatus.CREATED);
@@ -114,7 +120,7 @@ public class TeamController {
         }catch (NullPointerException e){
             log.warn("[ERROR] : 팀을 생성한 사용자가 조회되지않음");
             e.printStackTrace();
-            res.put("status", 400);
+            res.put("status", 422);
             return new ResponseEntity<>(res,  HttpStatus.BAD_REQUEST);
         }catch (Exception e){
             log.warn("[ERROR] : 팀등록 중 오류");
@@ -122,6 +128,30 @@ public class TeamController {
             res.put("status", 500);
             return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Operation(
+            summary = "팀 상세정보 조회"
+            , description = "팀 상세정보를 조회한다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201"
+                    , description = "팀 상세정보 조회 성공"
+            )
+    })
+    @GetMapping("/team/{teamId}/detail")
+    public ResponseEntity teamDetail(@PathVariable(value = "teamId") Long teamId) {
+        Map<String, Object> result = new HashMap<>();
+        try{
+            TeamListResponseMapping team = teamService.getTeamListByTeamId(teamId);
+            return new ResponseEntity<>(team, HttpStatus.OK);
+        }catch (NullPointerException e){
+            e.printStackTrace();
+            result.put("des", "팀 상세정보가 없음");
+            return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
     }
 
     @Operation(
