@@ -176,4 +176,23 @@ public class TeamController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+//    @Operation(
+//        summary = "공지사항 목록 조회"
+//        , description = "팀 공지사항 목록 조회한다."
+//    )
+//    @ApiResponses(value = {
+//        @ApiResponse(
+//            responseCode = "200"
+//            , description = "팀 공지사항 목록 조회 성공"
+//            , content = @Content(schema = @Schema(implementation = TeamNoticeResponseDto.class))
+//        )
+//    })
+//    @GetMapping("/team/{teamId}/notice")
+//    public ResponseEntity<Object> selectTeamNoticeList(@PathVariable Long teamId) {
+//        log.debug("selectTeamNotice {} invoked", teamId);
+//
+//        teamService.selectTeamNoticeList(teamId);
+//        return new ResponseEntity<>(HttpStatus.CREATED);
+//    }
+
 }

@@ -79,11 +79,9 @@ public class TeamControllerTest {
     }
 
     @Test
-//    @WithMockUser(roles = "USER")
     @Transactional
     public void 공지사항등록_성공() throws Exception{
         //given
-
         String testEmail = "123#123.com";
         String testPw = "1!2@3#4$5%";
         String testNick = "Shawn";
@@ -200,8 +198,6 @@ public class TeamControllerTest {
 //        String expectedId = "$.[?(@.id == '%s')]";
 //        String expectedTitle = "$.[?(@.title == '%s')]";
 //        String expected = "$.[?(@.title == '%s')]";
-//
-//
 //
 //        //when
 //        mvc.perform(get(url)
