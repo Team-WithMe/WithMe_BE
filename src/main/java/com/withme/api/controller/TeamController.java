@@ -58,7 +58,7 @@ public class TeamController {
      * */
     @ResponseBody
     @PostMapping("/team/team-list")
-    private ResponseEntity selectTeam(@Valid @RequestBody(required = true) TeamSearchDto params){
+    private ResponseEntity selectTeam(@Valid@RequestBody(required = false) TeamSearchDto params){
         try {
             log.info("params = " + params);
             params.getSkills().forEach(v -> System.out.println("v = " + v));
@@ -104,18 +104,17 @@ public class TeamController {
     })
     @PostMapping("/team")
     private ResponseEntity createTeam(
-          @Valid @RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto
-        , @RequestHeader("Authorization") String authHeader
+           @RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto
+         , @RequestHeader("Authorization") String authHeader
     ) {
         Map<String, Object> res = new HashMap<>();
         try {
-
             // NOTE 팀 생성
-            int result = teamService.createTeam(createTeamRequestDto, authHeader);
-
+            Long teamIdx = teamService.createTeam(createTeamRequestDto, authHeader
+            );
             res.put("status", 201);
+            res.put("teamIdx", teamIdx);
             return new ResponseEntity<>(res, HttpStatus.CREATED);
-
 
         }catch (NullPointerException e){
             log.warn("[ERROR] : 팀을 생성한 사용자가 조회되지않음");

@@ -1,6 +1,11 @@
 package com.withme.api.controller.dto;
 
+import com.withme.api.domain.skill.Skill;
+import com.withme.api.domain.skill.SkillName;
+import com.withme.api.domain.team.Status;
+import com.withme.api.domain.team.Team;
 import com.withme.api.domain.team.TeamCategory;
+import com.withme.api.domain.teamSkill.TeamSkill;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
 @Schema(description = "팀 생성 요청 DTO")
@@ -18,11 +24,10 @@ import java.util.List;
 public class CreateTeamRequestDto {
 
     @Schema(description = "팀 카테고리", example = "PROJECT", required = true)
-    @NotBlank
-    @Size(min = 1, max = 100, message = "팀 목적은 100글자 이하입니다.")
+    @NotNull // NOTE NotNull이 아닐경우 오류
     private TeamCategory category;
     @Schema(description = "팀 스킬", allowableValues = {"nodejs", "java"}, required = true)
-    @NotBlank
+    @NotNull // NOTE NotNull이 아닐경우 오류
     private List<String> skills;
     @Schema(description = "팀 이름", example = "일반팀", required = true)
     @NotBlank
@@ -40,6 +45,32 @@ public class CreateTeamRequestDto {
         this.skills = skills;
         this.name = name;
         this.description = description;
+    }
+
+    public Team toTeam() {
+        return Team.builder()
+                .teamCategory(this.getCategory())
+                .teamDesc(this.getDescription())
+                .teamName(this.getName())
+                .status(Status.HIDDEN)
+                .build();
+    }
+
+    public Team setTeamSkill() {
+        Team team = toTeam();
+        Skill skill = new Skill();
+        TeamSkill teamSkill = new TeamSkill();
+        for (String skillName : this.getSkills()) {
+            skill = Skill.builder()
+                    .skillName(SkillName.valueOf(skillName))
+                    .build();
+            teamSkill = TeamSkill.builder()
+                    .team(team)
+                    .skill(skill)
+                    .build();
+            team.addTeamSkill(teamSkill);
+        }
+        return team;
     }
 
 }

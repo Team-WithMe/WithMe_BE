@@ -39,4 +39,5 @@ public class TeamUser {
         this.team = team;
         this.user = user;
     }
+
 }

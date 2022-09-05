@@ -49,12 +49,14 @@ public class TeamService {
 
         // NOTE 검색 조건 사용을 위해 TeamSkill 조회
         List<TeamSkill> teamSkills = teamSkillRepository.findAll();
+
         // NOTE 스킬 입력
         List<Skill> skillList = teamSearchDto.toSkillList();
         // NOTE 검색 조건 만들기
         List<TeamSkill> teamSkillList = toTeamListParams(skillList, teamSkills);
 
-        if (teamSkillList.size() <= 0){
+        // NOTE 검색 조건에 맞는 teamSkill이 없고 검색 조건의 Skill이 없으면
+        if (teamSkillList.size() == 0 && skillList.size() == 0){
             // NOTE 내림 차순
             if (teamSearchDto.getSort() == 0){
                 teamList = teamRepository.findAllByStatusOrderByCreatedTimeDesc(Status.DISPLAYED).orElseThrow(
@@ -67,12 +69,12 @@ public class TeamService {
             }
         }else{
             if (teamSearchDto.getSort() == 0){
-                teamList = teamRepository.findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeDesc(teamSkillList, Status.DISPLAYED)
+                teamList = teamRepository.findDistinctTeamsByTeamSkillsInAndStatusOrderByCreatedTimeDesc(teamSkillList, Status.DISPLAYED)
                         .orElseThrow(
                                 () -> new NullPointerException("팀 조회 오류 (검색O)")
                         );
             }else {
-                teamList = teamRepository.findTeamsByTeamSkillsInAndStatusOrderByCreatedTimeAsc(teamSkillList, Status.DISPLAYED)
+                teamList = teamRepository.findDistinctTeamsByTeamSkillsInAndStatusOrderByCreatedTimeAsc(teamSkillList, Status.DISPLAYED)
                         .orElseThrow(
                                 () -> new NullPointerException("팀 조회 오류 (검색O)")
                         );
@@ -91,8 +93,6 @@ public class TeamService {
                     .filter(teamSkill -> {
                         return teamSkill.getSkill().getSkillName().equals(skill.getSkillName());
                     })
-                    .peek(v ->
-                            System.out.println("v.getSkill().getSkillName() = " + v.getSkill().getSkillName()))
                     .collect(Collectors.toList());
             teamSkillsParamsList.add(teamSkillsParams);
         }
@@ -102,6 +102,8 @@ public class TeamService {
                 .flatMap(x -> x.stream())
                 .collect(Collectors.toList());
 
+        log.info("!23 :" + params.size());
+
         return params;
     }
 
@@ -109,31 +111,14 @@ public class TeamService {
      * 팀 등록
      * */
     @Transactional
-    public int createTeam(CreateTeamRequestDto createTeamDto, String authHeader) {
+    public Long createTeam(CreateTeamRequestDto createTeamDto
+            , String authHeader
+    ) {
         // NOTE 현재 접속한 유저 ID 구해서 적용필요
         Long user_idx = tokenProvider.getUserIdFromToken(authHeader);
-
-        Team team = Team.builder()
-                    .teamCategory(TeamCategory.PROJECT)
-                    .teamDesc(createTeamDto.getDescription())
-                    .teamName(createTeamDto.getName())
-                    .status(Status.HIDDEN)
-                    .build();
-
-            // NOTE 스킬 입력
-            Skill skill = new Skill();
-            TeamSkill teamSkill = new TeamSkill();
-            for (String skillName : createTeamDto.getSkills()) {
-                skill = Skill.builder()
-                        .skillName(SkillName.valueOf(skillName))
-                        .build();
-                teamSkill = TeamSkill.builder()
-                        .team(team)
-                        .skill(skill)
-                        .build();
-                team.addTeamSkill(teamSkill);
-            }
-
+        // NOTE 팀으로 변경
+        //Long user_idx = 1L;
+        Team team = createTeamDto.setTeamSkill();
 
             User user = userRepository.findById(user_idx).orElseThrow(
                     ()-> new NullPointerException("존재하지않는 사용자"));
@@ -146,9 +131,9 @@ public class TeamService {
                     .user(user)
                     .build();
             team.addTeamUser(teamUser);
-            teamRepository.save(team);
+        Team returnTeam = teamRepository.save(team);
 
-            return 1;
+        return returnTeam.getId();
     }
 
     @Transactional

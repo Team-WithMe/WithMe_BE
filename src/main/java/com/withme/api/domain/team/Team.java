@@ -65,7 +65,7 @@ public class Team extends BaseTimeEntity {
       teamSkills.add(teamSkill);
    }
    /**
-    *  팀 스킬 등록
+    *  팀 유저 등록
     * */
    public void addTeamUser(TeamUser teamUser){
       teamUsers.add(teamUser);
