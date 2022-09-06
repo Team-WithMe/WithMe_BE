@@ -28,7 +28,7 @@ public class CreateTeamRequestDto {
     private TeamCategory category;
     @Schema(description = "팀 스킬", allowableValues = {"nodejs", "java"}, required = true)
     @NotNull // NOTE NotNull이 아닐경우 오류
-    private List<String> skills;
+    private List<SkillName> skills;
     @Schema(description = "팀 이름", example = "일반팀", required = true)
     @NotBlank
     @Size(min = 1, max = 20, message = "팀 이름은 20글자 이하입니다.")
@@ -40,7 +40,7 @@ public class CreateTeamRequestDto {
     // title content
 
 
-    public CreateTeamRequestDto(TeamCategory category, List<String> skills, String name, String description) {
+    public CreateTeamRequestDto(TeamCategory category, List<SkillName> skills, String name, String description) {
         this.category = category;
         this.skills = skills;
         this.name = name;
@@ -60,9 +60,9 @@ public class CreateTeamRequestDto {
         Team team = toTeam();
         Skill skill = new Skill();
         TeamSkill teamSkill = new TeamSkill();
-        for (String skillName : this.getSkills()) {
+        for (SkillName skillName : this.getSkills()) {
             skill = Skill.builder()
-                    .skillName(SkillName.valueOf(skillName))
+                    .skillName(skillName)
                     .build();
             teamSkill = TeamSkill.builder()
                     .team(team)
