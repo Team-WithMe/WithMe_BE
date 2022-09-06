@@ -147,6 +147,150 @@ public class TeamControllerTest {
                 .map(TeamNotice::getTitle)).isEqualTo(Optional.of(title));
     }
 
+    @Test
+    @Transactional
+    public void 공지사항등록_실패_팀멤버아님() throws Exception{
+        //given
+        String testEmail = "123#123.com";
+        String testPw = "1!2@3#4$5%";
+        String testNick = "Shawn";
+
+        JoinRequestDto joinRequestDto = JoinRequestDto.builder()
+                .email(testEmail)
+                .password(testPw)
+                .nickname(testNick)
+                .build();
+
+        User user1 = userService.createUser(joinRequestDto);
+
+        this.jwtToken = this.mvc.perform(post("http://localhost:"+port+ "/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{" +
+                                "\"email\":\"" + testEmail + "\"" +
+                                ",\"password\":\"" + testPw + "\"" +
+                                "}"
+                        ))
+                .andReturn()
+                .getResponse()
+                .getHeaderValue(tokenProvider.AUTHORIZATION_HEADER)
+                .toString();
+
+        Team team1 = Team.builder()
+                .teamName("네트워크 공부하기")
+                .teamCategory(TeamCategory.STUDY)
+                .teamDesc("매주 주말에 카페에 모여 네트워크를 공부는 스터디 모임입니다.")
+                .status(Status.DISPLAYED)
+                .build();
+        Team team2 = Team.builder()
+                .teamName("OS 공부하기")
+                .teamCategory(TeamCategory.PROJECT)
+                .teamDesc("카페에 모여 토이프로젝트를 진행합니다.")
+                .status(Status.DISPLAYED)
+                .build();
+
+        TeamUser teamUser1 = TeamUser.builder()
+                .memberType(MemberType.LEADER)
+                .team(team2)
+                .user(user1)
+                .build();
+
+        teamRepository.saveAndFlush(team1);
+        teamRepository.saveAndFlush(team2);
+        teamUserRepository.saveAndFlush(teamUser1);
+
+        String title = "모임시간 공지";
+        String content = "모임은 매주 일요일 오후 1시에 사거리 카페에서 합니다.";
+
+        TeamNoticeCreateRequestDto dto = TeamNoticeCreateRequestDto.builder()
+                .title(title)
+                .content(content)
+                .build();
+
+        String apiUrl = "/api/v1/team/" + team1.getId() + "/notice";
+        String url = "http://localhost:" + port + apiUrl;
+
+        //when
+        mvc.perform(post(url)
+                        .header(tokenProvider.AUTHORIZATION_HEADER, this.jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(dto))
+                )
+                //then
+                .andExpect(status().isCreated());
+
+        assertThat(teamNoticeRepository.findById(1L)
+                .map(TeamNotice::getTitle)).isEqualTo(Optional.of(title));
+    }
+
+    @Test
+    @Transactional
+    public void 공지사항등록_실패_리더아님() throws Exception{
+        //given
+        String testEmail = "123#123.com";
+        String testPw = "1!2@3#4$5%";
+        String testNick = "Shawn";
+
+        JoinRequestDto joinRequestDto = JoinRequestDto.builder()
+                .email(testEmail)
+                .password(testPw)
+                .nickname(testNick)
+                .build();
+
+        User user1 = userService.createUser(joinRequestDto);
+
+        this.jwtToken = this.mvc.perform(post("http://localhost:"+port+ "/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{" +
+                                "\"email\":\"" + testEmail + "\"" +
+                                ",\"password\":\"" + testPw + "\"" +
+                                "}"
+                        ))
+                .andReturn()
+                .getResponse()
+                .getHeaderValue(tokenProvider.AUTHORIZATION_HEADER)
+                .toString();
+
+
+        Team team1 = Team.builder()
+                .teamName("네트워크 공부하기")
+                .teamCategory(TeamCategory.STUDY)
+                .teamDesc("매주 주말에 카페에 모여 네트워크를 공부는 스터디 모임입니다.")
+                .status(Status.DISPLAYED)
+                .build();
+
+        TeamUser teamUser1 = TeamUser.builder()
+                .memberType(MemberType.LEADER)
+                .team(team1)
+                .user(user1)
+                .build();
+
+        teamRepository.saveAndFlush(team1);
+        teamUserRepository.saveAndFlush(teamUser1);
+
+        String title = "모임시간 공지";
+        String content = "모임은 매주 일요일 오후 1시에 사거리 카페에서 합니다.";
+
+        TeamNoticeCreateRequestDto dto = TeamNoticeCreateRequestDto.builder()
+                .title(title)
+                .content(content)
+                .build();
+
+        String apiUrl = "/api/v1/team/" + team1.getId() + "/notice";
+        String url = "http://localhost:" + port + apiUrl;
+
+        //when
+        mvc.perform(post(url)
+                        .header(tokenProvider.AUTHORIZATION_HEADER, this.jwtToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(dto))
+                )
+                //then
+                .andExpect(status().isCreated());
+
+        assertThat(teamNoticeRepository.findById(1L)
+                .map(TeamNotice::getTitle)).isEqualTo(Optional.of(title));
+    }
+
 //    @Test
 //    @WithMockUser(roles = "USER")
 //    public void 공지사항조회_성공() throws Exception {
