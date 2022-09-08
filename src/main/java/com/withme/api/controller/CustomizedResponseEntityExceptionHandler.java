@@ -2,6 +2,7 @@ package com.withme.api.controller;
 
 import com.withme.api.controller.dto.ExceptionResponseDto;
 import com.withme.api.exception.UserAlreadyExistException;
+import com.withme.api.exception.UserNotInTeamException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import java.util.Map;
 @ControllerAdvice
 public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
+    // TODO: 2022/09/08 커스텀 에러처리 이대로 괜찮을까? 내부 에러코드로 대체하는 방법을 생각해봐야 할 것 같다. 
     @ExceptionHandler(UserAlreadyExistException.class)
     public final ResponseEntity<Object> handleUserAlreadyExistException(UserAlreadyExistException ex) {
         Map<String, Object> errorDetailsMap = new HashMap<>();
@@ -30,7 +32,7 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
 
         return ResponseEntity.badRequest().body(exceptionResponseDto);
     }
-
+    
     @ExceptionHandler(UsernameNotFoundException.class)
     public final ResponseEntity<Object> handleUsernameNotFoundException(UsernameNotFoundException ex) {
         ExceptionResponseDto exceptionResponseDto = new ExceptionResponseDto(ex.getMessage(), null);
@@ -43,6 +45,12 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(exceptionResponseDto);
     }
 
+    @ExceptionHandler(UserNotInTeamException.class)
+    public final ResponseEntity<Object> handleUserNotInTeamException(UserNotInTeamException ex) {
+        ExceptionResponseDto exceptionResponseDto = new ExceptionResponseDto(ex.getMessage(), null);
+        return ResponseEntity.badRequest().body(exceptionResponseDto);
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         Map<String, Object> errorDetailsMap = new HashMap<>();
@@ -52,9 +60,6 @@ public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExce
         ExceptionResponseDto exceptionResponseDto = new ExceptionResponseDto("Validation Failed", errorDetailsMap);
 
         return ResponseEntity.unprocessableEntity().body(exceptionResponseDto);
-
-
-
     }
 
 }

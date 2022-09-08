@@ -14,8 +14,8 @@ import com.withme.api.domain.teamUser.MemberType;
 import com.withme.api.domain.teamUser.TeamUser;
 import com.withme.api.domain.teamUser.TeamUserRepository;
 import com.withme.api.domain.user.User;
+import com.withme.api.domain.user.UserRepository;
 import com.withme.api.jwt.TokenProvider;
-import com.withme.api.service.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +34,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("local")
@@ -44,7 +45,10 @@ public class TeamControllerTest {
     private int port;
 
     @Autowired
-    private UserService userService;
+    private UserController userController;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private TeamRepository teamRepository;
@@ -76,6 +80,10 @@ public class TeamControllerTest {
 
     @AfterEach
     public void tearDown() {
+        teamUserRepository.deleteAll();
+        teamNoticeRepository.deleteAll();
+        teamRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
@@ -92,7 +100,7 @@ public class TeamControllerTest {
                 .nickname(testNick)
                 .build();
 
-        User user1 = userService.createUser(joinRequestDto);
+        userController.createUser(joinRequestDto);
 
         this.jwtToken = this.mvc.perform(post("http://localhost:"+port+ "/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -106,6 +114,8 @@ public class TeamControllerTest {
                 .getHeaderValue(tokenProvider.AUTHORIZATION_HEADER)
                 .toString();
 
+        User user1 = userRepository.findByNickname(testNick)
+                .orElseThrow();
 
         Team team1 = Team.builder()
                 .teamName("네트워크 공부하기")
@@ -120,8 +130,11 @@ public class TeamControllerTest {
                 .user(user1)
                 .build();
 
+        user1.getUserTeams().add(teamUser1);
+        team1.newUserJoined(teamUser1);
         teamRepository.saveAndFlush(team1);
-        teamUserRepository.saveAndFlush(teamUser1);
+
+//        teamUserRepository.saveAndFlush(teamUser1);
 
         String title = "모임시간 공지";
         String content = "모임은 매주 일요일 오후 1시에 사거리 카페에서 합니다.";
@@ -149,7 +162,7 @@ public class TeamControllerTest {
 
     @Test
     @Transactional
-    public void 공지사항등록_실패_팀멤버아님() throws Exception{
+    public void 공지사항등록_실패_팀리더아님() throws Exception{
         //given
         String testEmail = "123#123.com";
         String testPw = "1!2@3#4$5%";
@@ -161,7 +174,7 @@ public class TeamControllerTest {
                 .nickname(testNick)
                 .build();
 
-        User user1 = userService.createUser(joinRequestDto);
+        userController.createUser(joinRequestDto);
 
         this.jwtToken = this.mvc.perform(post("http://localhost:"+port+ "/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -175,6 +188,8 @@ public class TeamControllerTest {
                 .getHeaderValue(tokenProvider.AUTHORIZATION_HEADER)
                 .toString();
 
+        User user1 = userRepository.findByNickname(testNick)
+                .orElseThrow();
         Team team1 = Team.builder()
                 .teamName("네트워크 공부하기")
                 .teamCategory(TeamCategory.STUDY)
@@ -190,82 +205,13 @@ public class TeamControllerTest {
 
         TeamUser teamUser1 = TeamUser.builder()
                 .memberType(MemberType.LEADER)
-                .team(team2)
-                .user(user1)
-                .build();
-
-        teamRepository.saveAndFlush(team1);
-        teamRepository.saveAndFlush(team2);
-        teamUserRepository.saveAndFlush(teamUser1);
-
-        String title = "모임시간 공지";
-        String content = "모임은 매주 일요일 오후 1시에 사거리 카페에서 합니다.";
-
-        TeamNoticeCreateRequestDto dto = TeamNoticeCreateRequestDto.builder()
-                .title(title)
-                .content(content)
-                .build();
-
-        String apiUrl = "/api/v1/team/" + team1.getId() + "/notice";
-        String url = "http://localhost:" + port + apiUrl;
-
-        //when
-        mvc.perform(post(url)
-                        .header(tokenProvider.AUTHORIZATION_HEADER, this.jwtToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(dto))
-                )
-                //then
-                .andExpect(status().isCreated());
-
-        assertThat(teamNoticeRepository.findById(1L)
-                .map(TeamNotice::getTitle)).isEqualTo(Optional.of(title));
-    }
-
-    @Test
-    @Transactional
-    public void 공지사항등록_실패_리더아님() throws Exception{
-        //given
-        String testEmail = "123#123.com";
-        String testPw = "1!2@3#4$5%";
-        String testNick = "Shawn";
-
-        JoinRequestDto joinRequestDto = JoinRequestDto.builder()
-                .email(testEmail)
-                .password(testPw)
-                .nickname(testNick)
-                .build();
-
-        User user1 = userService.createUser(joinRequestDto);
-
-        this.jwtToken = this.mvc.perform(post("http://localhost:"+port+ "/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{" +
-                                "\"email\":\"" + testEmail + "\"" +
-                                ",\"password\":\"" + testPw + "\"" +
-                                "}"
-                        ))
-                .andReturn()
-                .getResponse()
-                .getHeaderValue(tokenProvider.AUTHORIZATION_HEADER)
-                .toString();
-
-
-        Team team1 = Team.builder()
-                .teamName("네트워크 공부하기")
-                .teamCategory(TeamCategory.STUDY)
-                .teamDesc("매주 주말에 카페에 모여 네트워크를 공부는 스터디 모임입니다.")
-                .status(Status.DISPLAYED)
-                .build();
-
-        TeamUser teamUser1 = TeamUser.builder()
-                .memberType(MemberType.LEADER)
                 .team(team1)
                 .user(user1)
                 .build();
 
-        teamRepository.saveAndFlush(team1);
-        teamUserRepository.saveAndFlush(teamUser1);
+        user1.getUserTeams().add(teamUser1);
+        team1.newUserJoined(teamUser1);
+        teamRepository.saveAndFlush(team2);
 
         String title = "모임시간 공지";
         String content = "모임은 매주 일요일 오후 1시에 사거리 카페에서 합니다.";
@@ -275,7 +221,7 @@ public class TeamControllerTest {
                 .content(content)
                 .build();
 
-        String apiUrl = "/api/v1/team/" + team1.getId() + "/notice";
+        String apiUrl = "/api/v1/team/" + team2.getId() + "/notice";
         String url = "http://localhost:" + port + apiUrl;
 
         //when
@@ -285,10 +231,8 @@ public class TeamControllerTest {
                         .content(new ObjectMapper().writeValueAsString(dto))
                 )
                 //then
-                .andExpect(status().isCreated());
-
-        assertThat(teamNoticeRepository.findById(1L)
-                .map(TeamNotice::getTitle)).isEqualTo(Optional.of(title));
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.message").value("This User is not a Leader of this Team."));
     }
 
 //    @Test

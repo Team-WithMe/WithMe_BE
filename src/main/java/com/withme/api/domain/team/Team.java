@@ -75,23 +75,23 @@ public class Team extends BaseTimeEntity {
       this.teamUsers.add(teamUser);
    }
 
-    public boolean isUserJoined(Long userId) {
-      this.teamUsers.forEach(teamUser -> {
-         if(teamUser.getUser().getId().equals(userId)) {
-            if(teamUser.getMemberType().equals(MemberType.LEADER)){
-               //여기는 작성 성공
-               return;
-            } else {
-               //리더가 아니라 작성 불가능
-               throw new RuntimeException("This Member is not a Leader of this Team");
-            }
-         } else {
-            //멤버가 아니라 작성 불가능
-            throw new RuntimeException("This User is not a Member of this Team.");
-         }
-      });
+    public boolean IsUserTeamMember(Long userId) {
+       for (TeamUser teamUser : this.teamUsers) {
+          if (teamUser.getUser().getId().equals(userId)) { return true; }
+       }
+       return false;
+    }
 
-      return true;
+    public boolean IsUserTeamLeader(Long userId) {
+       if (this.IsUserTeamMember(userId)) {
 
+          for (TeamUser teamUser : this.teamUsers) {
+             if (teamUser.getUser().getId().equals(userId) &&
+                     teamUser.getMemberType().equals(MemberType.LEADER)) {
+                return true;
+             }
+          }
+       }
+       return false;
     }
 }

@@ -59,7 +59,7 @@ public class UserControllerTest {
 
     @AfterEach
     public void tearDown() {
-        userRepository.findAll().forEach(user -> userRepository.delete(user));
+        userRepository.deleteAll();
     }
 
 

@@ -15,6 +15,7 @@ import com.withme.api.domain.teamUser.MemberType;
 import com.withme.api.domain.teamUser.TeamUser;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
+import com.withme.api.exception.UserNotInTeamException;
 import com.withme.api.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -150,17 +151,14 @@ public class TeamService {
 
     @Transactional
     public TeamNotice createTeamNotice(Long teamId, TeamNoticeCreateRequestDto dto, String authHeader) {
-        /**
-         * 1. authHeader 파싱해서 user id 가져오기
-         * 2. team에 uesr가 있는지 확인하기 -> 없으면 exception 발생
-         * 3. team에 공지사항 등록
-         */
-
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
 
         Long userIdFromToken = tokenProvider.getUserIdFromToken(authHeader);
-        team.isUserJoined(userIdFromToken);
+
+        if(!team.IsUserTeamLeader(userIdFromToken)) {
+            throw new UserNotInTeamException("This User is not a Leader of this Team.");
+        };
 
         User user = userRepository.findById(userIdFromToken)
                 .orElseThrow(() -> new UsernameNotFoundException("User not exist."));

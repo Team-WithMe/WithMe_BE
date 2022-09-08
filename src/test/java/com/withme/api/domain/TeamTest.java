@@ -19,7 +19,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ActiveProfiles("local")
 @SpringBootTest
@@ -43,6 +42,9 @@ class TeamTest {
 
     @AfterEach
     void tearDown() {
+        userRepository.deleteAll();
+        teamRepository.deleteAll();
+        teamUserRepository.deleteAll();
     }
 
     @Test
@@ -76,16 +78,54 @@ class TeamTest {
                 .user(user1)
                 .build();
 
-        assertThat(team1.isUserJoined(user1.getId())).isTrue();
+        user1.getUserTeams().add(teamUser1);
+        team1.newUserJoined(teamUser1);
 
-        assertThatThrownBy(() -> team2.isUserJoined(user1.getId()))
-                .isInstanceOf(RuntimeException.class)
-                        .hasMessageContaining("This User is not a Member");
+        assertThat(team1.IsUserTeamMember(user1.getId())).isTrue();
+        assertThat(team2.IsUserTeamMember(user1.getId())).isFalse();
 
-
+//        assertThatThrownBy(() -> team2.IsUserTeamMember(user1.getId()))
+//                .isInstanceOf(RuntimeException.class)
+//                        .hasMessageContaining("This User is not a Member");
     }
 
     @Test
     void isUserLeader() {
+        User user1 = User.builder()
+                .nickname("테스트")
+                .userImage("default")
+                .role("ROLE_USER")
+                .joinRoot("withMe")
+                .build();
+
+        userRepository.saveAndFlush(user1);
+
+        Team team1 = Team.builder()
+                .teamName("네트워크 공부하기")
+                .teamCategory(TeamCategory.STUDY)
+                .teamDesc("매주 주말에 카페에 모여 네트워크를 공부는 스터디 모임입니다.")
+                .status(Status.DISPLAYED)
+                .build();
+        Team team2 = Team.builder()
+                .teamName("OS 공부하기")
+                .teamCategory(TeamCategory.PROJECT)
+                .teamDesc("카페에 모여 토이프로젝트를 진행합니다.")
+                .status(Status.DISPLAYED)
+                .build();
+
+        TeamUser teamUser1 = TeamUser.builder()
+                .memberType(MemberType.LEADER)
+                .team(team1)
+                .user(user1)
+                .build();
+
+        user1.getUserTeams().add(teamUser1);
+        team1.newUserJoined(teamUser1);
+
+        user1.joinTeam(team2);
+
+        assertThat(team1.IsUserTeamLeader(user1.getId())).isTrue();
+        assertThat(team2.IsUserTeamLeader(user1.getId())).isFalse();
+
     }
 }
