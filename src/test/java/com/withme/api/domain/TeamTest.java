@@ -78,9 +78,6 @@ class TeamTest {
                 .user(user1)
                 .build();
 
-        user1.getUserTeams().add(teamUser1);
-        team1.newUserJoined(teamUser1);
-
         assertThat(team1.IsUserTeamMember(user1.getId())).isTrue();
         assertThat(team2.IsUserTeamMember(user1.getId())).isFalse();
 
@@ -118,9 +115,6 @@ class TeamTest {
                 .team(team1)
                 .user(user1)
                 .build();
-
-        user1.getUserTeams().add(teamUser1);
-        team1.newUserJoined(teamUser1);
 
         user1.joinTeam(team2);
 

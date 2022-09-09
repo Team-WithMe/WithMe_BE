@@ -131,8 +131,8 @@ public class TeamControllerTest {
                 .user(user1)
                 .build();
 
-        user1.getUserTeams().add(teamUser1);
-        team1.newUserJoined(teamUser1);
+//        user1.getUserTeams().add(teamUser1);
+//        team1.addNewUser(teamUser1);
         teamRepository.saveAndFlush(team1);
 
         String title = "모임시간 공지";
@@ -209,8 +209,8 @@ public class TeamControllerTest {
                 .user(user1)
                 .build();
 
-        user1.getUserTeams().add(teamUser1);
-        team1.newUserJoined(teamUser1);
+//        user1.getUserTeams().add(teamUser1);
+//        team1.addNewUser(teamUser1);
         teamRepository.saveAndFlush(team2);
 
         String title = "모임시간 공지";
@@ -279,8 +279,8 @@ public class TeamControllerTest {
                 .memberType(MemberType.MEMBER)
                 .build();
 
-        user1.getUserTeams().add(teamUser1);
-        team1.newUserJoined(teamUser1);
+//        user1.getUserTeams().add(teamUser1);
+//        team1.addNewUser(teamUser1);
         teamRepository.saveAndFlush(team1);
 
         String title1 = "title1";
@@ -300,9 +300,6 @@ public class TeamControllerTest {
                 .team(team1)
                 .writer(user1)
                 .build();
-
-        team1.getTeamNotice().add(teamNotice1);
-        team1.getTeamNotice().add(teamNotice2);
 
         String apiUrl = "/api/v1/team/" + team1.getId() + "/notice";
         String url = "http://localhost:" + port + apiUrl;

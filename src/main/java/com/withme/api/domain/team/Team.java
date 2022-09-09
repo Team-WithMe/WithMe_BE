@@ -71,10 +71,6 @@ public class Team extends BaseTimeEntity {
       teamUsers.add(teamUser);
    }
 
-   public void newUserJoined(TeamUser teamUser) {
-      this.teamUsers.add(teamUser);
-   }
-
     public boolean IsUserTeamMember(Long userId) {
        for (TeamUser teamUser : this.teamUsers) {
           if (teamUser.getUser().getId().equals(userId)) { return true; }
@@ -84,7 +80,6 @@ public class Team extends BaseTimeEntity {
 
     public boolean IsUserTeamLeader(Long userId) {
        if (this.IsUserTeamMember(userId)) {
-
           for (TeamUser teamUser : this.teamUsers) {
              if (teamUser.getUser().getId().equals(userId) &&
                      teamUser.getMemberType().equals(MemberType.LEADER)) {
