@@ -150,11 +150,9 @@ public class TeamService {
     }
 
     @Transactional
-    public TeamNotice createTeamNotice(Long teamId, TeamNoticeCreateRequestDto dto, String authHeader) {
+    public TeamNotice createTeamNotice(Long teamId, TeamNoticeCreateRequestDto dto, Long userIdFromToken) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
-
-        Long userIdFromToken = tokenProvider.getUserIdFromToken(authHeader);
 
         if(!team.IsUserTeamLeader(userIdFromToken)) {
             throw new UserNotInTeamException("This User is not a Leader of this Team.");
@@ -166,20 +164,20 @@ public class TeamService {
         return teamNoticeRepository.save(dto.toEntity(team, user));
     }
 
-//    @Transactional
-//    public List<TeamNoticeResponseDto> selectTeamNoticeList(Long teamId) {
-//        List<TeamNoticeResponseDto> teamNoticeResponseDtoList = new ArrayList<>();
-//
-//        Team team = teamRepository.findById(teamId)
-//                .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
-//
-//        List<TeamNotice> teamNoticeList = team.getTeamNotice();
-//        teamNoticeList.forEach(teamNotice -> {
-//            teamNoticeResponseDtoList.add(new TeamNoticeResponseDto(teamNotice));
-//        });
-//
-//        return teamNoticeResponseDtoList;
-//    }
+    @Transactional
+    public List<TeamNoticeResponseDto> selectTeamNoticeList(Long teamId) {
+        List<TeamNoticeResponseDto> teamNoticeResponseDtoList = new ArrayList<>();
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
+
+        List<TeamNotice> teamNoticeList = team.getTeamNotice();
+        teamNoticeList.forEach(teamNotice -> {
+            teamNoticeResponseDtoList.add(new TeamNoticeResponseDto(teamNotice));
+        });
+
+        return teamNoticeResponseDtoList;
+    }
 
     /**
      * 팀 상세 정보 조회
@@ -188,4 +186,5 @@ public class TeamService {
         return teamRepository.findTeamById(teamId)
                 .orElseThrow(() -> new NullPointerException("Team not found"));
     }
+
 }

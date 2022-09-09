@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -134,8 +135,6 @@ public class TeamControllerTest {
         team1.newUserJoined(teamUser1);
         teamRepository.saveAndFlush(team1);
 
-//        teamUserRepository.saveAndFlush(teamUser1);
-
         String title = "모임시간 공지";
         String content = "모임은 매주 일요일 오후 1시에 사거리 카페에서 합니다.";
 
@@ -190,6 +189,7 @@ public class TeamControllerTest {
 
         User user1 = userRepository.findByNickname(testNick)
                 .orElseThrow();
+
         Team team1 = Team.builder()
                 .teamName("네트워크 공부하기")
                 .teamCategory(TeamCategory.STUDY)
@@ -235,65 +235,91 @@ public class TeamControllerTest {
                 .andExpect(jsonPath("$.message").value("This User is not a Leader of this Team."));
     }
 
-//    @Test
-//    @WithMockUser(roles = "USER")
-//    public void 공지사항조회_성공() throws Exception {
-//        //given
-//        Team team1 = Team.builder()
-//                .teamName("네트워크 공부하기")
-//                .teamCategory(TeamCategory.STUDY)
-//                .teamDesc("매주 주말에 카페에 모여 네트워크를 공부는 스터디 모임입니다.")
-//                .status(Status.DISPLAYED)
-//                .build();
-//
-//        User user1 = User.builder()
-//                .nickname("승현")
-//                .userImage("default")
-//                .role("ROLE_USER")
-//                .joinRoot("WithMe")
-//                .build();
-//
-//        TeamUser teamUser1 = TeamUser.builder()
-//                .team(team1)
-//                .user(user1)
-//                .memberType(MemberType.MEMBER)
-//                .build();
-//
-//        teamRepository.saveAndFlush(team1);
-//
-//        String title1 = "title1";
-//        String content1 = "content1";
-//        String title2 = "title2";
-//        String content2 = "content2";
-//
-//        TeamNotice teamNotice1 = TeamNotice.builder()
-//                .title(title1)
-//                .content(content1)
-//                .team(team1)
-//                .writer(user1)
-//                .build();
-//        TeamNotice teamNotice2 = TeamNotice.builder()
-//                .title(title2)
-//                .content(content2)
-//                .team(team1)
-//                .writer(user1)
-//                .build();
-//
-//
-//        String apiUrl = "/api/v1/team/" + team1.getId() + "/notice";
-//        String url = "http://localhost:" + port + apiUrl;
-//
-//        String expectedId = "$.[?(@.id == '%s')]";
-//        String expectedTitle = "$.[?(@.title == '%s')]";
-//        String expected = "$.[?(@.title == '%s')]";
-//
-//        //when
-//        mvc.perform(get(url)
-//                        .header(tokenProvider.AUTHORIZATION_HEADER, this.jwtToken)
-//                )
-//                //then
-//                .andExpect(status().isOk());
-//
-//    }
+    @Test
+    @Transactional
+    public void 공지사항조회_성공() throws Exception {
+        //given
+        String testEmail = "123#123.com";
+        String testPw = "1!2@3#4$5%";
+        String testNick = "Shawn";
+
+        JoinRequestDto joinRequestDto = JoinRequestDto.builder()
+                .email(testEmail)
+                .password(testPw)
+                .nickname(testNick)
+                .build();
+
+        userController.createUser(joinRequestDto);
+
+        this.jwtToken = this.mvc.perform(post("http://localhost:"+port+ "/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{" +
+                                "\"email\":\"" + testEmail + "\"" +
+                                ",\"password\":\"" + testPw + "\"" +
+                                "}"
+                        ))
+                .andReturn()
+                .getResponse()
+                .getHeaderValue(tokenProvider.AUTHORIZATION_HEADER)
+                .toString();
+
+        User user1 = userRepository.findByNickname(testNick)
+                .orElseThrow();
+
+        Team team1 = Team.builder()
+                .teamName("네트워크 공부하기")
+                .teamCategory(TeamCategory.STUDY)
+                .teamDesc("매주 주말에 카페에 모여 네트워크를 공부는 스터디 모임입니다.")
+                .status(Status.DISPLAYED)
+                .build();
+
+        TeamUser teamUser1 = TeamUser.builder()
+                .team(team1)
+                .user(user1)
+                .memberType(MemberType.MEMBER)
+                .build();
+
+        user1.getUserTeams().add(teamUser1);
+        team1.newUserJoined(teamUser1);
+        teamRepository.saveAndFlush(team1);
+
+        String title1 = "title1";
+        String content1 = "content1";
+        String title2 = "title2";
+        String content2 = "content2";
+
+        TeamNotice teamNotice1 = TeamNotice.builder()
+                .title(title1)
+                .content(content1)
+                .team(team1)
+                .writer(user1)
+                .build();
+        TeamNotice teamNotice2 = TeamNotice.builder()
+                .title(title2)
+                .content(content2)
+                .team(team1)
+                .writer(user1)
+                .build();
+
+        team1.getTeamNotice().add(teamNotice1);
+        team1.getTeamNotice().add(teamNotice2);
+
+        String apiUrl = "/api/v1/team/" + team1.getId() + "/notice";
+        String url = "http://localhost:" + port + apiUrl;
+
+        //when
+        mvc.perform(get(url)
+                        .header(tokenProvider.AUTHORIZATION_HEADER, this.jwtToken)
+                )
+                //then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(teamNotice1.getId()))
+                .andExpect(jsonPath("$[0].title").value(teamNotice1.getTitle()))
+                .andExpect(jsonPath("$[0].content").value(teamNotice1.getContent()))
+                .andExpect(jsonPath("$[1].id").value(teamNotice2.getId()))
+                .andExpect(jsonPath("$[1].title").value(teamNotice2.getTitle()))
+                .andExpect(jsonPath("$[1].content").value(teamNotice2.getContent()))
+        ;
+    }
 
 }

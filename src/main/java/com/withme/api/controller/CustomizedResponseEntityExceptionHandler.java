@@ -22,7 +22,7 @@ import java.util.Map;
 @ControllerAdvice
 public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // TODO: 2022/09/08 커스텀 에러처리 이대로 괜찮을까? 내부 에러코드로 대체하는 방법을 생각해봐야 할 것 같다. 
+    // TODO: 2022/09/08 커스텀 에러처리 이대로 괜찮을까? 내부 에러코드로 대체하는 방법을 생각해봐야 할 것 같다.
     @ExceptionHandler(UserAlreadyExistException.class)
     public final ResponseEntity<Object> handleUserAlreadyExistException(UserAlreadyExistException ex) {
         Map<String, Object> errorDetailsMap = new HashMap<>();

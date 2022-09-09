@@ -4,7 +4,6 @@ package com.withme.api.controller;
 import com.withme.api.controller.dto.JoinRequestDto;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
-import com.withme.api.jwt.TokenProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,9 +39,6 @@ public class UserControllerTest {
 
     @Autowired
     private WebApplicationContext context;
-
-    @Autowired
-    private TokenProvider tokenProvider;
 
     private MockMvc mvc;
 
