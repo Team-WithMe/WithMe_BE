@@ -131,8 +131,6 @@ public class TeamControllerTest {
                 .user(user1)
                 .build();
 
-//        user1.getUserTeams().add(teamUser1);
-//        team1.addNewUser(teamUser1);
         teamRepository.saveAndFlush(team1);
 
         String title = "모임시간 공지";
@@ -209,8 +207,6 @@ public class TeamControllerTest {
                 .user(user1)
                 .build();
 
-//        user1.getUserTeams().add(teamUser1);
-//        team1.addNewUser(teamUser1);
         teamRepository.saveAndFlush(team2);
 
         String title = "모임시간 공지";
@@ -279,8 +275,6 @@ public class TeamControllerTest {
                 .memberType(MemberType.MEMBER)
                 .build();
 
-//        user1.getUserTeams().add(teamUser1);
-//        team1.addNewUser(teamUser1);
         teamRepository.saveAndFlush(team1);
 
         String title1 = "title1";
@@ -318,5 +312,129 @@ public class TeamControllerTest {
                 .andExpect(jsonPath("$[1].content").value(teamNotice2.getContent()))
         ;
     }
+
+    @Test
+    @Transactional
+    public void 공지사항조회_실패_팀없음() throws Exception {
+        //given
+        String testEmail = "123#123.com";
+        String testPw = "1!2@3#4$5%";
+        String testNick = "Shawn";
+
+        JoinRequestDto joinRequestDto = JoinRequestDto.builder()
+                .email(testEmail)
+                .password(testPw)
+                .nickname(testNick)
+                .build();
+
+        userController.createUser(joinRequestDto);
+
+        this.jwtToken = this.mvc.perform(post("http://localhost:"+port+ "/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{" +
+                                "\"email\":\"" + testEmail + "\"" +
+                                ",\"password\":\"" + testPw + "\"" +
+                                "}"
+                        ))
+                .andReturn()
+                .getResponse()
+                .getHeaderValue(tokenProvider.AUTHORIZATION_HEADER)
+                .toString();
+
+        User user1 = userRepository.findByNickname(testNick)
+                .orElseThrow();
+
+        Team team1 = Team.builder()
+                .teamName("네트워크 공부하기")
+                .teamCategory(TeamCategory.STUDY)
+                .teamDesc("매주 주말에 카페에 모여 네트워크를 공부는 스터디 모임입니다.")
+                .status(Status.DISPLAYED)
+                .build();
+
+        TeamUser teamUser1 = TeamUser.builder()
+                .team(team1)
+                .user(user1)
+                .memberType(MemberType.MEMBER)
+                .build();
+
+        teamRepository.saveAndFlush(team1);
+
+        String title1 = "title1";
+        String content1 = "content1";
+        String title2 = "title2";
+        String content2 = "content2";
+
+        TeamNotice teamNotice1 = TeamNotice.builder()
+                .title(title1)
+                .content(content1)
+                .team(team1)
+                .writer(user1)
+                .build();
+        TeamNotice teamNotice2 = TeamNotice.builder()
+                .title(title2)
+                .content(content2)
+                .team(team1)
+                .writer(user1)
+                .build();
+
+        String apiUrl = "/api/v1/team/" + 83460 + "/notice";
+        String url = "http://localhost:" + port + apiUrl;
+
+        //when
+        mvc.perform(get(url)
+                        .header(tokenProvider.AUTHORIZATION_HEADER, this.jwtToken)
+                )
+                //then
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.message").value("Team Id not exist."))
+        ;
+    }
+
+    public void 팀원조회_성공() throws Exception{
+        /**
+         * 1. 팀에 여러 회원 가입시킴
+         * 2. 해당 팀을 조회
+         */
+
+        User user1 = User.builder()
+                .role("ROLE_USER")
+                .nickname("위드미1")
+                .userImage("default")
+                .build();
+        User user2 = User.builder()
+                .role("ROLE_USER")
+                .nickname("위드미2")
+                .userImage("default")
+                .build();
+        User user3 = User.builder()
+                .role("ROLE_USER")
+                .nickname("위드미3")
+                .userImage("default")
+                .build();
+
+        Team team = Team.builder()
+                .teamCategory(TeamCategory.STUDY)
+                .teamDesc("스터디모임")
+                .teamName("위드미모임")
+                .status(Status.DISPLAYED)
+                .build();
+
+        user1.joinTeam(team);
+        user2.joinTeam(team);
+        user3.joinTeam(team);
+
+        teamRepository.saveAndFlush(team);
+
+        String apiUrl = "/api/v1/team/" + team.getId() + "/team-member";
+        String url = "http://localhost:" + port + apiUrl;
+
+        mvc.perform(get(url)
+        )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Team Id not exist."))
+                ;
+
+    }
+
 
 }
