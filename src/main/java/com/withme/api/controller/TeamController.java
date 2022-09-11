@@ -178,13 +178,18 @@ public class TeamController {
 
     @Operation(
         summary = "공지사항 목록 조회"
-        , description = "팀 공지사항 목록 조회한다."
+        , description = "팀 공지사항 목록을 조회한다."
     )
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200"
             , description = "팀 공지사항 목록 조회 성공"
             , content = @Content(schema = @Schema(implementation = TeamNoticeResponseDto.class))
+        )
+        , @ApiResponse(
+            responseCode = "406"
+            , description = "id에 일치하는 팀 없음."
+            , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
         )
     })
     @GetMapping("/team/{teamId}/notice")
@@ -193,6 +198,30 @@ public class TeamController {
 
         List<TeamNoticeResponseDto> teamNoticeResponseDtoList = teamService.selectTeamNoticeList(teamId);
         return ResponseEntity.ok().body(teamNoticeResponseDtoList);
+    }
+
+    @Operation(
+        summary = "팀원 목록 조회"
+        , description = "팀원 목록을 조회한다."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200"
+            , description = "팀원 목록 조회 성공"
+            , content = @Content(schema = @Schema(implementation = UserResponseDto.class))
+        )
+        , @ApiResponse(
+            responseCode = "406"
+            , description = "id에 일치하는 팀 없음."
+            , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
+        )
+    })
+    @GetMapping("/team/{teamId}/team-member")
+    public ResponseEntity<Object> selectTeamMember(@PathVariable Long teamId) {
+        log.debug("selectTeamMember {} invoked.", teamId);
+
+        List<UserResponseDto> userResponseDtoList = teamService.selectTeamMemberList(teamId);
+        return ResponseEntity.ok(userResponseDtoList);
     }
 
 }

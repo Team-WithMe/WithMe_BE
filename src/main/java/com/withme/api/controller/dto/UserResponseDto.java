@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Schema(description = "로그인 응답 DTO 객체")
 @Getter
 @NoArgsConstructor
-public class LoginResponseDto {
+public class UserResponseDto {
 
     @Schema(description = "유저 id", example = "1", required = true)
     private String id;
@@ -19,13 +19,19 @@ public class LoginResponseDto {
     @Schema(description = "유저 이미지 경로", example = "default or 경로", required = true)
     private String userImage;
 
-    @Schema(description = "토큰", example = "Bearer eic985...", required = true)
+    @Schema(description = "토큰", example = "Bearer eic985...")
     private String token;
 
-    public LoginResponseDto(User user, String token) {
+    public UserResponseDto(User user, String token) {
         this.id = String.valueOf(user.getId());
         this.nickname = user.getNickname();
         this.userImage = user.getUserImage();
         this.token = token;
+    }
+
+    public UserResponseDto(User user) {
+        this.id = String.valueOf(user.getId());
+        this.nickname = user.getNickname();
+        this.userImage = user.getUserImage();
     }
 }

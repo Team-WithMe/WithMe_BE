@@ -390,27 +390,31 @@ public class TeamControllerTest {
         ;
     }
 
+    @Test
+    @Transactional
     public void 팀원조회_성공() throws Exception{
-        /**
-         * 1. 팀에 여러 회원 가입시킴
-         * 2. 해당 팀을 조회
-         */
-
         User user1 = User.builder()
                 .role("ROLE_USER")
                 .nickname("위드미1")
                 .userImage("default")
+                .joinRoot("withMe")
                 .build();
         User user2 = User.builder()
                 .role("ROLE_USER")
                 .nickname("위드미2")
                 .userImage("default")
+                .joinRoot("withMe")
                 .build();
         User user3 = User.builder()
                 .role("ROLE_USER")
                 .nickname("위드미3")
                 .userImage("default")
+                .joinRoot("withMe")
                 .build();
+
+        userRepository.saveAndFlush(user1);
+        userRepository.saveAndFlush(user2);
+        userRepository.saveAndFlush(user3);
 
         Team team = Team.builder()
                 .teamCategory(TeamCategory.STUDY)
@@ -431,8 +435,63 @@ public class TeamControllerTest {
         mvc.perform(get(url)
         )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Team Id not exist."))
+                .andExpect(jsonPath("$[0].id").value(user1.getId()))
+                .andExpect(jsonPath("$[0].nickname").value(user1.getNickname()))
+                .andExpect(jsonPath("$[0].userImage").value(user1.getUserImage()))
+                .andExpect(jsonPath("$[1].id").value(user2.getId()))
+                .andExpect(jsonPath("$[1].nickname").value(user2.getNickname()))
+                .andExpect(jsonPath("$[1].userImage").value(user2.getUserImage()))
+                .andExpect(jsonPath("$[2].id").value(user3.getId()))
+                .andExpect(jsonPath("$[2].nickname").value(user3.getNickname()))
+                .andExpect(jsonPath("$[2].userImage").value(user3.getUserImage()))
+//                .andExpect(jsonPath("$.message").value("Team Id not exist."))
                 ;
+
+    }
+
+    @Test
+    @Transactional
+    public void 팀원조회_실패() throws Exception{
+        User user1 = User.builder()
+                .role("ROLE_USER")
+                .nickname("위드미1")
+                .userImage("default")
+                .joinRoot("withMe")
+                .build();
+        User user2 = User.builder()
+                .role("ROLE_USER")
+                .nickname("위드미2")
+                .userImage("default")
+                .joinRoot("withMe")
+                .build();
+        User user3 = User.builder()
+                .role("ROLE_USER")
+                .nickname("위드미3")
+                .userImage("default")
+                .joinRoot("withMe")
+                .build();
+
+        Team team = Team.builder()
+                .teamCategory(TeamCategory.STUDY)
+                .teamDesc("스터디모임")
+                .teamName("위드미모임")
+                .status(Status.DISPLAYED)
+                .build();
+
+        user1.joinTeam(team);
+        user2.joinTeam(team);
+        user3.joinTeam(team);
+
+        teamRepository.saveAndFlush(team);
+
+        String apiUrl = "/api/v1/team/" + 997967 + "/team-member";
+        String url = "http://localhost:" + port + apiUrl;
+
+        mvc.perform(get(url)
+                )
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.message").value("Team Id not exist."))
+        ;
 
     }
 

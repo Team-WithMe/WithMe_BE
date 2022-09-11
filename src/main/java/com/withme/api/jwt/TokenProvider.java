@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.withme.api.config.auth.CustomOauth2User;
 import com.withme.api.config.auth.PrincipalDetails;
-import com.withme.api.controller.dto.LoginResponseDto;
+import com.withme.api.controller.dto.UserResponseDto;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
 import io.jsonwebtoken.*;
@@ -113,7 +113,7 @@ public class TokenProvider implements InitializingBean {
      * @throws JsonProcessingException
      */
     private String setBody(User user, String jwt) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(new LoginResponseDto(user, jwt));
+        return objectMapper.writeValueAsString(new UserResponseDto(user, jwt));
     }
 
 

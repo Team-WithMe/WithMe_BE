@@ -187,4 +187,17 @@ public class TeamService {
                 .orElseThrow(() -> new NullPointerException("Team not found"));
     }
 
+    @Transactional
+    public List<UserResponseDto> selectTeamMemberList(Long teamId) {
+        List<UserResponseDto> userResponseDtoList = new ArrayList<>();
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
+        List<TeamUser> teamUserList = team.getTeamUsers();
+        teamUserList.forEach(teamUser -> {
+            userResponseDtoList.add(new UserResponseDto(teamUser.getUser()));
+        });
+
+        return userResponseDtoList;
+    }
 }
