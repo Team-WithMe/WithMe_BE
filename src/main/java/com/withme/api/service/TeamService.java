@@ -15,15 +15,16 @@ import com.withme.api.domain.teamUser.MemberType;
 import com.withme.api.domain.teamUser.TeamUser;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
-import com.withme.api.exception.UserNotInTeamException;
+import com.withme.api.exception.BusinessException;
 import com.withme.api.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -118,7 +119,7 @@ public class TeamService {
                     .status(Status.HIDDEN)
                     .build();
 
-            // NOTE 스킬 입력
+            // NOTE 스킬 입력ㅆ
             Skill skill = new Skill();
             TeamSkill teamSkill = new TeamSkill();
             for (String skillName : createTeamDto.getSkills()) {
@@ -152,14 +153,14 @@ public class TeamService {
     @Transactional
     public TeamNotice createTeamNotice(Long teamId, TeamNoticeCreateRequestDto dto, Long userIdFromToken) {
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
+                .orElseThrow(() -> new EntityNotFoundException("Team Not Found. id : " + teamId));
 
         if(!team.IsUserTeamLeader(userIdFromToken)) {
-            throw new UserNotInTeamException("This User is not a Leader of this Team.");
+            throw new BusinessException("This User is not the Leader of this Team.");
         };
 
         User user = userRepository.findById(userIdFromToken)
-                .orElseThrow(() -> new UsernameNotFoundException("User not exist."));
+                .orElseThrow(() -> new EntityNotFoundException("User Not Found. id :" + userIdFromToken));
 
         return teamNoticeRepository.save(dto.toEntity(team, user));
     }
@@ -169,7 +170,7 @@ public class TeamService {
         List<TeamNoticeResponseDto> teamNoticeResponseDtoList = new ArrayList<>();
 
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
+                .orElseThrow(() -> new EntityNotFoundException("Team Not Found. id : " + teamId));
 
         List<TeamNotice> teamNoticeList = team.getTeamNotice();
         teamNoticeList.forEach(teamNotice -> {
@@ -192,7 +193,7 @@ public class TeamService {
         List<UserResponseDto> userResponseDtoList = new ArrayList<>();
 
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
+                .orElseThrow(() -> new EntityNotFoundException("Team Not Found. id : " + teamId));
         List<TeamUser> teamUserList = team.getTeamUsers();
         teamUserList.forEach(teamUser -> {
             userResponseDtoList.add(new UserResponseDto(teamUser.getUser()));

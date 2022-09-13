@@ -228,7 +228,7 @@ public class TeamControllerTest {
                 )
                 //then
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.message").value("This User is not a Leader of this Team."));
+                .andExpect(jsonPath("$.message").value("This User is not the Leader of this Team."));
     }
 
     @Test
@@ -386,7 +386,7 @@ public class TeamControllerTest {
                 )
                 //then
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.message").value("Team Id not exist."))
+                .andExpect(jsonPath("$.message","Team Not Found.").exists())
         ;
     }
 
