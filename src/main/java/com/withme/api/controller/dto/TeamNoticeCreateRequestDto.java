@@ -4,10 +4,7 @@ import com.withme.api.domain.team.Team;
 import com.withme.api.domain.teamNotice.TeamNotice;
 import com.withme.api.domain.user.User;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;

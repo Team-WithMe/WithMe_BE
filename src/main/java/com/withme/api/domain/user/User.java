@@ -1,5 +1,6 @@
 package com.withme.api.domain.user;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.withme.api.domain.BaseTimeEntity;
 import com.withme.api.domain.team.Team;
 import com.withme.api.domain.teamNotice.TeamNotice;
@@ -49,6 +50,7 @@ public class User extends BaseTimeEntity {
     @Column
     private String nameAttributeValue;
 
+    @JsonBackReference // NOTE JSON 직렬화 방향 명시
     @OneToMany(mappedBy = "user")
     private List<TeamUser> userTeams = new ArrayList<>();
 

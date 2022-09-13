@@ -104,13 +104,14 @@ public class TeamController {
     })
     @PostMapping("/team")
     private ResponseEntity createTeam(
-           @RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto
-         , @RequestHeader("Authorization") String authHeader
+           @Valid @RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto
+         // , @RequestHeader("Authorization") String authHeader
     ) {
         Map<String, Object> res = new HashMap<>();
         try {
             // NOTE 팀 생성
-            Long teamIdx = teamService.createTeam(createTeamRequestDto, authHeader
+            Long teamIdx = teamService.createTeam(createTeamRequestDto
+                    // ,authHeader
             );
             res.put("status", 201);
             res.put("teamIdx", teamIdx);
@@ -137,20 +138,68 @@ public class TeamController {
             @ApiResponse(
                     responseCode = "201"
                     , description = "팀 상세정보 조회 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "422"
+                    , description = "팀 상세정보 조회 실패"
+            ),
+            @ApiResponse(
+                    responseCode = "500"
+                    , description = "팀 상세정보 조회 중 서버오류"
             )
     })
     @GetMapping("/team/{teamId}/detail")
     public ResponseEntity teamDetail(@PathVariable(value = "teamId") Long teamId) {
         Map<String, Object> result = new HashMap<>();
         try{
-            TeamListResponseMapping team = teamService.getTeamListByTeamId(teamId);
-            return new ResponseEntity<>(team, HttpStatus.OK);
+            result.put("teamDetail", teamService.getTeamListByTeamId(teamId));
+            result.put("status", 201);
+            return new ResponseEntity<>(result, HttpStatus.CREATED);
         }catch (NullPointerException e){
             e.printStackTrace();
-            result.put("des", "팀 상세정보가 없음");
+            result.put("status", 422);
             return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.put("status", 500);
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
+    }
+    @Operation(
+            summary = "팀 게시물 제목, 내용 업데이트"
+            , description = "팀 제목, 내용을 업데이트한다."
+    )@ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201"
+                    , description = "팀 제목, 내용을 업데이트 성공"
+            )
+    })
+    @PutMapping("/team/{teamId}/post")
+    public ResponseEntity teamPostUpdate(@Valid @RequestBody TeamPostUpdateRequestDto teamPostUpdateRequestDto,
+                                         @PathVariable(value = "teamId") Long teamId){
+        Map<String, Object> result = new HashMap<>();
+        Long teamIdx = teamService.teamPostUpdate(teamPostUpdateRequestDto, teamId);
+        result.put("teamIdx", teamIdx);
+        result.put("status", 201);
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
+    }
+    @Operation(
+            summary = "팀 게시물 댓글 추가"
+            , description = "팀 댓글을 추가한다."
+    )@ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201"
+                    , description = "팀 댓글 추가 성공"
+            )
+    })
+    @PostMapping("/team/{teamId}/comment")
+    public ResponseEntity teamCommentRegister(@Valid @RequestBody TeamCommentAddRequestDto dto,
+                                         @PathVariable(value = "teamId") Long teamId){
+        Map<String, Object> result = new HashMap<>();
+        Long teamIdx = teamService.addTeamComment(dto.getContent(), teamId);
+        result.put("teamIdx", teamIdx);
+        result.put("status", 201);
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
     @Operation(

@@ -1,5 +1,7 @@
 package com.withme.api.domain.team;
 
+import com.withme.api.controller.dto.TeamDetailResponseDto;
+import com.withme.api.controller.dto.TeamDetailResponseMapping;
 import com.withme.api.controller.dto.TeamListResponseDto;
 import com.withme.api.controller.dto.TeamListResponseMapping;
 import com.withme.api.domain.skill.Skill;
@@ -34,7 +36,6 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     // NOTE 테스트용
     Optional<List<TeamListResponseMapping>> findAllByOrderByCreatedTimeDesc();
 
-   Optional<TeamListResponseMapping> findTeamById(@Param("teamId") Long teamId);
-
+   Optional<Team> findTeamById(@Param("teamId") Long teamId);
 
 }

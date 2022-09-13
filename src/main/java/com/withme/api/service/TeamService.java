@@ -1,21 +1,18 @@
 package com.withme.api.service;
 
-import com.withme.api.controller.dto.CreateTeamRequestDto;
-import com.withme.api.controller.dto.TeamListResponseMapping;
-import com.withme.api.controller.dto.TeamNoticeCreateRequestDto;
-import com.withme.api.controller.dto.TeamSearchDto;
+import com.withme.api.controller.dto.*;
 import com.withme.api.domain.skill.Skill;
 import com.withme.api.domain.skill.SkillName;
-import com.withme.api.domain.team.Status;
-import com.withme.api.domain.team.Team;
-import com.withme.api.domain.team.TeamCategory;
-import com.withme.api.domain.team.TeamRepository;
+import com.withme.api.domain.team.*;
+import com.withme.api.domain.teamComment.TeamComment;
+import com.withme.api.domain.teamComment.TeamCommentRepository;
 import com.withme.api.domain.teamNotice.TeamNotice;
 import com.withme.api.domain.teamNotice.TeamNoticeRepository;
 import com.withme.api.domain.teamSkill.TeamSkill;
 import com.withme.api.domain.teamSkill.TeamSkillRepository;
 import com.withme.api.domain.teamUser.MemberType;
 import com.withme.api.domain.teamUser.TeamUser;
+import com.withme.api.domain.teamUser.TeamUserRepository;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
 import com.withme.api.jwt.TokenProvider;
@@ -36,10 +33,12 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
 
+    private final TeamUserRepository teamUserRepository;
+
     private final TokenProvider tokenProvider;
     private final TeamNoticeRepository teamNoticeRepository;
 
-
+    private final TeamCommentRepository teamCommentRepository;
     private final TeamSkillRepository teamSkillRepository;
 
     @Transactional
@@ -112,12 +111,12 @@ public class TeamService {
      * */
     @Transactional
     public Long createTeam(CreateTeamRequestDto createTeamDto
-            , String authHeader
+            // , String authHeader
     ) {
         // NOTE 현재 접속한 유저 ID 구해서 적용필요
-        Long user_idx = tokenProvider.getUserIdFromToken(authHeader);
+        // Long user_idx = tokenProvider.getUserIdFromToken(authHeader);
         // NOTE 팀으로 변경
-        //Long user_idx = 1L;
+        Long user_idx = 1L;
         Team team = createTeamDto.setTeamSkill();
 
             User user = userRepository.findById(user_idx).orElseThrow(
@@ -156,10 +155,70 @@ public class TeamService {
         return teamNoticeRepository.save(dto.toEntity(team, user));
     }
     /**
-     * 팀 상세 정보 조회
+     * 팀 게시물 상세 정보 조회
      * */
-    public TeamListResponseMapping getTeamListByTeamId(Long teamId) {
-        return teamRepository.findTeamById(teamId)
+    @Transactional
+    public TeamDetailResponseDto getTeamListByTeamId(Long teamId) {
+        Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new NullPointerException("Team not found"));
+
+        TeamUser teamUser = teamUserRepository.findTeamUserByTeamAndMemberType(team, MemberType.LEADER)
+                .orElseThrow(() -> new NullPointerException("TeamUser not found"));
+
+        Team resultTeam = teamRepository.findTeamById(teamId)
+                .orElseThrow(() -> new NullPointerException("Team not found"));
+
+        List<TeamComment> teamComments = teamCommentRepository.findTeamCommentByTeamAndParentIsNullOrderByIdDesc(team).get();
+        TeamDetailResponseDto resultTeamDto = new TeamDetailResponseDto(resultTeam, teamComments, teamUser);
+
+        // NOTE 조회수 증가
+        resultTeam.addViewCount();
+
+        return resultTeamDto;
+    }
+    /**
+     * 팀상세 게시글 조회 상세 로직
+     * */
+    @Transactional
+    public void getTeamAndComment(Long teamId, TeamDetailResponseDto dto) {
+        dto.getTeamComments()
+                .forEach(teamComment -> {
+                    List<TeamComment> teamCommentsByTeamIdAndId = teamCommentRepository.findTeamCommentsByTeamIdAndId(teamId, teamComment.getId());
+                    teamComment.setChildren(teamCommentsByTeamIdAndId);
+                });
+    }
+
+    /**
+     * 팀 게시물 제목, 내용 수정
+     * */
+    public Long teamPostUpdate(TeamPostUpdateRequestDto teamPostUpdateRequestDto, Long teamId) {
+        String title = teamPostUpdateRequestDto.getTitle();
+        String content = teamPostUpdateRequestDto.getContent();
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new NullPointerException("Team not found"));
+
+        team.toTeamByTeamPost(title, content);
+
+        Team returnTeam = teamRepository.save(team);
+
+        return returnTeam.getId();
+    }
+    /**
+     * 팀 댓글 추가
+     * */
+    public Long addTeamComment(String content, Long teamId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new NullPointerException("Team not found"));
+        // NOTE 접속한 사용자
+        Long user_id = 1L;
+        User user = userRepository.findById(user_id)
+                .orElseThrow(() -> new NullPointerException("User not found"));
+
+
+        TeamComment teamComment = new TeamComment(content, user, team);
+
+        //teamCommentRepository.findTeamCommentByTeam(team);
+        return teamId;
     }
 }
