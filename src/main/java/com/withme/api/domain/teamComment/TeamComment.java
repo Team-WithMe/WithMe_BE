@@ -1,6 +1,7 @@
 package com.withme.api.domain.teamComment;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.withme.api.domain.BaseTimeEntity;
 import com.withme.api.domain.team.Team;
@@ -15,6 +16,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static javax.persistence.FetchType.EAGER;
 import static javax.persistence.FetchType.LAZY;
 import static javax.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -33,19 +35,21 @@ public class TeamComment extends BaseTimeEntity {
     @Column(nullable = false, length = 1000)
     private String content;
 
-    @JsonManagedReference
+    @JsonBackReference
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "parent_id")
     private TeamComment parent;
 
-    @JsonBackReference
-    @OneToMany(mappedBy = "parent", orphanRemoval = true)
+    @JsonManagedReference
+    @OneToMany(mappedBy = "parent")// , orphanRemoval = true
     private List<TeamComment> children = new ArrayList<>();
 
+    @JsonIgnore
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
+    @JsonIgnore
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "team_id")
     private Team team;

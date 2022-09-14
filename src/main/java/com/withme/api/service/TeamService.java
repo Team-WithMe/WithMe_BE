@@ -159,33 +159,55 @@ public class TeamService {
      * */
     @Transactional
     public TeamDetailResponseDto getTeamListByTeamId(Long teamId) {
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new NullPointerException("Team not found"));
-
-        TeamUser teamUser = teamUserRepository.findTeamUserByTeamAndMemberType(team, MemberType.LEADER)
-                .orElseThrow(() -> new NullPointerException("TeamUser not found"));
-
         Team resultTeam = teamRepository.findTeamById(teamId)
                 .orElseThrow(() -> new NullPointerException("Team not found"));
 
-        List<TeamComment> teamComments = teamCommentRepository.findTeamCommentByTeamAndParentIsNullOrderByIdDesc(team).get();
-        TeamDetailResponseDto resultTeamDto = new TeamDetailResponseDto(resultTeam, teamComments, teamUser);
+        TeamUser teamUser = teamUserRepository.findTeamUserByTeamAndMemberType(resultTeam, MemberType.LEADER)
+                .orElseThrow(() -> new NullPointerException("TeamUser not found"));
 
         // NOTE 조회수 증가
         resultTeam.addViewCount();
+
+        List<TeamComment> teamComments = teamCommentRepository.findTeamCommentByTeamAndParentIsNullOrderByIdDesc(resultTeam).get();
+        String commentCheck = "comment";
+        List<TeamCommentResponseDto> teamCommentResponseDtos = toCommentDtoByTeamCommentAndCommentCheck(teamComments, commentCheck);
+
+        TeamDetailResponseDto resultTeamDto = new TeamDetailResponseDto(resultTeam, teamCommentResponseDtos, teamUser);
+        getTeamAndComment(teamId, resultTeamDto);
 
         return resultTeamDto;
     }
     /**
      * 팀상세 게시글 조회 상세 로직
      * */
-    @Transactional
     public void getTeamAndComment(Long teamId, TeamDetailResponseDto dto) {
+        String commentCheck = "childrenComment";
         dto.getTeamComments()
                 .forEach(teamComment -> {
-                    List<TeamComment> teamCommentsByTeamIdAndId = teamCommentRepository.findTeamCommentsByTeamIdAndId(teamId, teamComment.getId());
-                    teamComment.setChildren(teamCommentsByTeamIdAndId);
+                    List<TeamComment> teamComments = teamCommentRepository.findTeamCommentsByTeamIdAndId(teamId, teamComment.getId());
+                    List<TeamChildrenCommentResponse> teamChildrenCommentResponses = toCommentDtoByTeamCommentAndCommentCheck(teamComments, commentCheck);
+                    teamComment.setCommentChildren(teamChildrenCommentResponses);
                 });
+    }
+    /**
+     * 댓글 대댓글 DTO <- Entity 작업
+     * */
+    public <T> T toCommentDtoByTeamCommentAndCommentCheck(List<TeamComment> teamComments, String commentCheck) {
+        if ("comment".equals(commentCheck)){
+            List<TeamCommentResponseDto> teamCommentResponseDtos = new ArrayList<>();
+            for (TeamComment teamComment : teamComments) {
+                TeamCommentResponseDto teamCommentResponseDto = new TeamCommentResponseDto();
+                teamCommentResponseDtos.add(teamCommentResponseDto.setTeamCommentResponseDto(teamComment));
+            }
+            return (T) teamCommentResponseDtos;
+        }else {
+            List<TeamChildrenCommentResponse> teamCommentChildrenResponseDtos = new ArrayList<>();
+            for (TeamComment teamComment : teamComments) {
+                TeamChildrenCommentResponse teamChildrenCommentResponseDto = new TeamChildrenCommentResponse();
+                teamCommentChildrenResponseDtos.add(teamChildrenCommentResponseDto.setTeamChildrenCommentResponse(teamComment));
+            }
+            return (T) teamCommentChildrenResponseDtos;
+        }
     }
 
     /**
