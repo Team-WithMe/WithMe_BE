@@ -9,10 +9,10 @@ import java.util.Map;
 @Getter
 public class ExceptionResponseDto {
 
-    @Schema(description = "Exception 상태 코드", example = "400")
+    @Schema(description = "Exception 상태 코드")
     private int statusCode;
 
-    @Schema(description = "Exception 원인에 대한 간단한 내용", example = "User Id Not Exist.")
+    @Schema(description = "Exception 원인에 대한 간단한 내용")
     private String message;
 
     @Schema(description = "Exception 원인에 대한 Key-Value")

@@ -157,7 +157,8 @@ public class TeamController {
     @Operation(summary = "공지사항 작성", description = "팀 공지사항을 작성한다.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "팀 공지사항 작성 성공")
-        , @ApiResponse(responseCode = "400", description = "팀 리더가 아ㅖㄷ", content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class)))
+        , @ApiResponse(responseCode = "400", description = "팀 리더가 아님", content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class)))
+        , @ApiResponse(responseCode = "401", description = "접근 권한 없음")
         , @ApiResponse(responseCode = "404", description = "id에 일치하는 엔티티 없음", content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class)))
     })
     @PostMapping("/team/{teamId}/notice")

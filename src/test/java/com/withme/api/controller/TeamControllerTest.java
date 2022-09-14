@@ -451,7 +451,7 @@ public class TeamControllerTest {
 
     @Test
     @Transactional
-    public void 팀원조회_실패() throws Exception{
+    public void 팀원조회_실패_팀없음() throws Exception{
         User user1 = User.builder()
                 .role("ROLE_USER")
                 .nickname("위드미1")
@@ -490,7 +490,7 @@ public class TeamControllerTest {
         mvc.perform(get(url)
                 )
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.message").value("Team Id not exist."))
+                .andExpect(jsonPath("$.message", "Team Not Found.").exists())
         ;
 
     }
