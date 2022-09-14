@@ -196,7 +196,7 @@ public class TeamController {
     public ResponseEntity teamCommentRegister(@Valid @RequestBody TeamCommentAddRequestDto dto,
                                          @PathVariable(value = "teamId") Long teamId){
         Map<String, Object> result = new HashMap<>();
-        Long teamIdx = teamService.addTeamComment(dto.getContent(), teamId);
+        Long teamIdx = teamService.addTeamComment(dto, teamId);
         result.put("teamIdx", teamIdx);
         result.put("status", 201);
         return new ResponseEntity<>(result, HttpStatus.CREATED);

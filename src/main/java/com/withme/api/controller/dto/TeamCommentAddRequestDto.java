@@ -18,4 +18,10 @@ public class TeamCommentAddRequestDto {
     @Size(min = 1, max = 1000, message = "팀 댓글 내용은 1000글자 이하입니다.")
     @NotNull // NOTE NotNull이 아닐경우 오류
     private String content;
+
+    @Schema(description = "팀 부모 댓글 번호", example = "0", required = true, defaultValue = "0")
+    //@Size(min = 1, max = 1000, message = "팀 부모 댓글 번호는 1000글자 이하입니다.")
+    @NotNull // NOTE NotNull이 아닐경우 오류
+    private Long parentId;
+
 }

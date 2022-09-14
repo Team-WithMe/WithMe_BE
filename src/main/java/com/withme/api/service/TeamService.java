@@ -229,17 +229,30 @@ public class TeamService {
     /**
      * 팀 댓글 추가
      * */
-    public Long addTeamComment(String content, Long teamId) {
+    @Transactional
+    public Long addTeamComment(TeamCommentAddRequestDto dto, Long teamId) {
+        // NOTE 팀 검색
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new NullPointerException("Team not found"));
+
         // NOTE 접속한 사용자
         Long user_id = 1L;
         User user = userRepository.findById(user_id)
                 .orElseThrow(() -> new NullPointerException("User not found"));
-
-
-        TeamComment teamComment = new TeamComment(content, user, team);
-
+        // NOTE 댓글 등록
+        if (dto.getParentId() == 0){
+        TeamComment teamComment = new TeamComment(dto.getContent(), user, team);
+        teamCommentRepository.save(teamComment);
+        // NOTE 대댓글 등록
+        }else if (dto.getParentId() != 0){
+            TeamComment teamComment = teamCommentRepository.findTeamCommentByTeamIdAndId(teamId, dto.getParentId());
+            TeamComment teamComment2 = new TeamComment(dto.getContent(), user, team);
+            List<TeamComment> teamComments = new ArrayList<>();
+            teamComment2.setParent(teamComment);
+            teamComments.add(teamComment);
+            teamComment2.setChildren(teamComments);
+            teamCommentRepository.save(teamComment2);
+        }
         //teamCommentRepository.findTeamCommentByTeam(team);
         return teamId;
     }
