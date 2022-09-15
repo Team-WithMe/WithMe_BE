@@ -66,7 +66,7 @@ public class UserControllerTest {
         String password = "1234qwer%T";
         String nickname = "vV위드미Vv";
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)
@@ -100,7 +100,7 @@ public class UserControllerTest {
         String password = "12345";
         String nickname = "v";
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)
@@ -142,7 +142,7 @@ public class UserControllerTest {
         String password = "1234qwer%T";
         String nickname = "vV위드미VvV";
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)
@@ -185,7 +185,7 @@ public class UserControllerTest {
         String password = "1234qwer%T";
         String nickname = this.setupNick;
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)
