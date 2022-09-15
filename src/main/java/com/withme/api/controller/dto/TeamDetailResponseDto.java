@@ -4,18 +4,14 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.withme.api.domain.skill.SkillName;
 import com.withme.api.domain.team.Team;
 import com.withme.api.domain.team.TeamCategory;
-import com.withme.api.domain.teamComment.TeamComment;
-import com.withme.api.domain.teamSkill.TeamSkill;
 import com.withme.api.domain.teamUser.TeamUser;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Schema(description = "팀 게시물 상세정보 응답 DTO 객체")
 @Getter
@@ -43,6 +39,9 @@ public class TeamDetailResponseDto {
 
     @Schema(description = "팀 게시물 조회수", example = "1")
     private Integer viewCount;
+
+    @Schema(description = "팀 댓글 카운트", example = "10")
+    private Integer commentCount;
 
     @Schema(description = "팀 스킬", example = "{'java', 'mysql'}")
     private List<SkillName> teamSkills;
@@ -72,6 +71,7 @@ public class TeamDetailResponseDto {
         this.teamDesc = team.getTeamDesc();
         this.teamCategory = team.getTeamCategory();
         this.viewCount = team.getViewCount();
+        this.commentCount = team.getCommentCount();
         this.teamComments = teamComments;
         this.teamUserid = teamUser.getUser().getId();
         this.teamUserNickName = teamUser.getUser().getNickname();

@@ -2,7 +2,6 @@ package com.withme.api.service;
 
 import com.withme.api.controller.dto.*;
 import com.withme.api.domain.skill.Skill;
-import com.withme.api.domain.skill.SkillName;
 import com.withme.api.domain.team.*;
 import com.withme.api.domain.teamComment.TeamComment;
 import com.withme.api.domain.teamComment.TeamCommentRepository;

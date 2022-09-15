@@ -1,7 +1,6 @@
 package com.withme.api.domain.team;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.withme.api.controller.dto.TeamDetailResponseDto;
 import com.withme.api.domain.BaseTimeEntity;
 import com.withme.api.domain.skill.SkillName;
 import com.withme.api.domain.teamComment.TeamComment;
@@ -13,13 +12,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
+@DynamicInsert
 @Getter
 @NoArgsConstructor
 @Table(uniqueConstraints = {
