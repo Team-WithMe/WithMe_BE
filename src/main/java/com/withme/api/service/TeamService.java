@@ -42,9 +42,9 @@ public class TeamService {
     private final TeamSkillRepository teamSkillRepository;
 
     @Transactional
-    public List<TeamListResponseMapping> getTeamList(TeamSearchDto teamSearchDto) throws Exception {
+    public List<TeamListResponseDto> getTeamList(TeamSearchDto teamSearchDto) throws Exception {
 
-        List<TeamListResponseMapping> teamList = new ArrayList<>();
+        List<Team> teamList = new ArrayList<>();
 
         // NOTE 검색 조건 사용을 위해 TeamSkill 조회
         List<TeamSkill> teamSkills = teamSkillRepository.findAll();
@@ -80,7 +80,13 @@ public class TeamService {
             }
         }
 
-        return teamList;
+        List<TeamListResponseDto> teamListResponse = new ArrayList<>();
+        for (Team team : teamList) {
+            TeamListResponseDto teamListResponseDto = new TeamListResponseDto();
+            teamListResponse.add(teamListResponseDto.toTeamListResponseDto(team));
+        }
+
+        return teamListResponse;
     }
     // NOTE 팀 검색 조건 처리 로직
     public List<TeamSkill> toTeamListParams(List<Skill> skills, List<TeamSkill> teamSkills) {
@@ -100,8 +106,6 @@ public class TeamService {
         List<TeamSkill> params = teamSkillsParamsList.stream()
                 .flatMap(x -> x.stream())
                 .collect(Collectors.toList());
-
-        log.info("!23 :" + params.size());
 
         return params;
     }
@@ -246,6 +250,10 @@ public class TeamService {
         // NOTE 대댓글 등록
         }else if (dto.getParentId() != 0){
             TeamComment teamComment = teamCommentRepository.findTeamCommentByTeamIdAndId(teamId, dto.getParentId());
+            // NOTE 대댓글의 댓글은 불가
+            if (teamComment.getParent() != null){
+                throw new NullPointerException("대대댓글은 불가");
+            }
             TeamComment teamComment2 = new TeamComment(dto.getContent(), user, team);
             List<TeamComment> teamComments = new ArrayList<>();
             teamComment2.setParent(teamComment);

@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -56,8 +57,13 @@ public class Team extends BaseTimeEntity {
 
    // NOTE 팅 조회수
    @ColumnDefault("0")
-   @Column(name = "viewCount", length = 100000)
+   @Column(name = "view_count", length = 100000)
    private Integer viewCount;
+
+   @Formula("(select count(1) from team_comment tc where tc.team_id = team_idx)")
+   @ColumnDefault("0")
+   @Column(name = "comment_count", length = 1000)
+   private Integer commentCount;
 
    @JsonManagedReference
    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -73,6 +79,8 @@ public class Team extends BaseTimeEntity {
    // NOTE 팀 댓글
    @OneToMany(mappedBy = "team", orphanRemoval = true)
    private List<TeamComment> comments = new ArrayList<>();
+
+
 
    @Builder
    public Team(String teamName, TeamCategory teamCategory, String teamDesc, Status status) {

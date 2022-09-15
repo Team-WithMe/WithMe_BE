@@ -62,7 +62,7 @@ public class TeamController {
         try {
             log.info("params = " + params);
             params.getSkills().forEach(v -> System.out.println("v = " + v));
-            List<TeamListResponseMapping> teamData = teamService.getTeamList(params);
+            List<TeamListResponseDto> teamData = teamService.getTeamList(params);
             log.info("teamData : " + teamData);
             if (teamData != null){
                 return new ResponseEntity<>(teamData, HttpStatus.OK);
