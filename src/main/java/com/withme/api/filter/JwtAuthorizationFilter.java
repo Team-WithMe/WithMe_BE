@@ -2,6 +2,7 @@ package com.withme.api.filter;
 
 import com.withme.api.jwt.TokenProvider;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,7 +37,12 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         String requestURI = request.getRequestURI();
 
         if (tokenProvider.validateToken(jwt)) {
-            saveAuthenticationOnSecurityContext(jwt, requestURI);
+            try {
+                saveAuthenticationOnSecurityContext(jwt, requestURI);
+            } catch(AccessDeniedException ex) {
+                // TODO: 2022/09/15 토큰에 문제가 없지만 토큰의 유저가 없는 경우에 403 에러를 던지고 싶은데 sendError를 해도 500 AccessDenied로 Return 됨.
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            }
         } else {
             log.info("유효한 JWT 토큰 없음. uri : {}", requestURI);
         }

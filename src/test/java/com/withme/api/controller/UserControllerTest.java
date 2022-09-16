@@ -4,7 +4,6 @@ package com.withme.api.controller;
 import com.withme.api.controller.dto.JoinRequestDto;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
-import com.withme.api.jwt.TokenProvider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,9 +40,6 @@ public class UserControllerTest {
     @Autowired
     private WebApplicationContext context;
 
-    @Autowired
-    private TokenProvider tokenProvider;
-
     private MockMvc mvc;
 
     private final String setupEmail = "set@up.com";
@@ -59,7 +55,7 @@ public class UserControllerTest {
 
     @AfterEach
     public void tearDown() {
-        userRepository.findAll().forEach(user -> userRepository.delete(user));
+        userRepository.deleteAll();
     }
 
 
@@ -70,7 +66,7 @@ public class UserControllerTest {
         String password = "1234qwer%T";
         String nickname = "vV위드미Vv";
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)
@@ -104,7 +100,7 @@ public class UserControllerTest {
         String password = "12345";
         String nickname = "v";
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)
@@ -146,7 +142,7 @@ public class UserControllerTest {
         String password = "1234qwer%T";
         String nickname = "vV위드미VvV";
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)
@@ -189,7 +185,7 @@ public class UserControllerTest {
         String password = "1234qwer%T";
         String nickname = this.setupNick;
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)

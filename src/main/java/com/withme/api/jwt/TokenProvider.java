@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.withme.api.config.auth.CustomOauth2User;
 import com.withme.api.config.auth.PrincipalDetails;
-import com.withme.api.controller.dto.LoginResponseDto;
+import com.withme.api.controller.dto.UserResponseDto;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
 import io.jsonwebtoken.*;
@@ -15,10 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletResponse;
@@ -113,7 +113,7 @@ public class TokenProvider implements InitializingBean {
      * @throws JsonProcessingException
      */
     private String setBody(User user, String jwt) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(new LoginResponseDto(user, jwt));
+        return objectMapper.writeValueAsString(new UserResponseDto(user, jwt));
     }
 
 
@@ -158,9 +158,10 @@ public class TokenProvider implements InitializingBean {
      * @param token
      * @return Authentication 객체
      */
-    public Authentication getAuthentication(String token) {
-        User user = userRepository.findById(this.getUserIdFromToken(token))
-                .orElseThrow(() -> new UsernameNotFoundException("User not exist."));
+    public Authentication getAuthentication(String token) throws AccessDeniedException{
+        Long userIdFromToken = this.getUserIdFromToken(token);
+        User user = userRepository.findById(userIdFromToken)
+                .orElseThrow(() -> new AccessDeniedException("User In Token Not Found. id : " + userIdFromToken));
 
         PrincipalDetails principalDetails = new PrincipalDetails(user);
 
@@ -195,12 +196,11 @@ public class TokenProvider implements InitializingBean {
      * @return
      */
     public boolean validateToken(String token) {
-        token = token.substring(7);
         try {
             if(token.equals("No Token")){
                 return false;
             } else {
-                Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+                Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token.substring(7));
                 return true;
             }
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {

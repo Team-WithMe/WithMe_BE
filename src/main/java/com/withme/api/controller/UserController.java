@@ -27,27 +27,13 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(
-        summary = "회원가입"
-        , description = "새로운 유저의 정보를 DB에 저장한다."
-    )
+    @Operation(summary = "회원가입", description = "새로운 유저의 정보를 DB에 저장한다.")
     @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "201"
-            , description = "회원가입 성공"
-        )
-        , @ApiResponse(
-            responseCode = "422"
-            , description = "파라미터 유효성 부적합"
-            , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
-        )
-        , @ApiResponse(
-            responseCode = "400"
-            , description = "이메일 혹은 닉네임 중복"
-            , content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))
-        )
+        @ApiResponse(responseCode = "201", description = "회원가입 성공")
+        , @ApiResponse(responseCode = "400", description = "이메일 혹은 닉네임 중복", content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class)))
+        , @ApiResponse(responseCode = "417", description = "파라미터 유효성 부적합", content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class)))
     })
-    @PostMapping("/join")
+    @PostMapping("/user")
     public ResponseEntity<Object> createUser(@Valid @RequestBody JoinRequestDto dto) {
         log.debug("createUser{} invoked", dto);
         userService.createUser(dto);

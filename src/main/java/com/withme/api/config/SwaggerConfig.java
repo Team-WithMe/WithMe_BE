@@ -1,8 +1,7 @@
 package com.withme.api.config;
 
 import com.fasterxml.classmate.TypeResolver;
-import com.withme.api.controller.dto.ExceptionResponseDto;
-import com.withme.api.controller.dto.MyPageResponseDto;
+import com.withme.api.controller.dto.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -24,6 +23,11 @@ public class SwaggerConfig {
                 .additionalModels(
                         typeResolver.resolve(ExceptionResponseDto.class)
                         , typeResolver.resolve(MyPageResponseDto.class)
+                        , typeResolver.resolve(TeamListResponseDto.class)
+                        , typeResolver.resolve(TeamNoticeResponseDto.class)
+                        , typeResolver.resolve(TeamResponseDto.class)
+                        , typeResolver.resolve(TeamSearchResponseDto.class)
+                        , typeResolver.resolve(UserResponseDto.class)
                 )
                 .useDefaultResponseMessages(false)
                 .apiInfo(apiInfo())

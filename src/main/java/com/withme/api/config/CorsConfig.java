@@ -18,7 +18,6 @@ public class CorsConfig {
         config.addAllowedOrigin("http://localhost:3000");   //허용할 ip
         config.addAllowedHeader("*");   //허용할 header
         config.addAllowedMethod("*");   //허용할 httpMehod(GET, POST, etc..)
-        //
         source.registerCorsConfiguration("/**", config);
 
         return new CorsFilter(source);

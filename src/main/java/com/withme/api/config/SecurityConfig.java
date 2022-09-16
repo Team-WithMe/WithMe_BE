@@ -11,6 +11,7 @@ import com.withme.api.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -62,9 +63,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(new JwtAuthorizationFilter(authenticationManager(), tokenProvider))
 
                 .authorizeRequests()
-                .antMatchers("/api/v1/user/**").authenticated()
-                .antMatchers("/api/v1/admin/**").access("hasRole('ROLE_ADMIN')")
-                .anyRequest().permitAll()
+                /** UserController */
+                .antMatchers(HttpMethod.POST,"/api/v1/user").permitAll()
+                /** MyPageController */
+                .antMatchers(HttpMethod.GET, "/api/v1/user/mypage/{userId}").authenticated()
+                .antMatchers(HttpMethod.PUT, "/api/v1/user/nickname/{userId}").authenticated()
+                /** TeamController */
+                .antMatchers(HttpMethod.GET, "/api/v1/team/{teamId}/notice").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/team/{teamId}/notice").authenticated()
+                .antMatchers(HttpMethod.GET, "/api/v1/team/{teamId}/team-member").permitAll()
+               .anyRequest().permitAll()
 
                 .and()
                 .oauth2Login()
