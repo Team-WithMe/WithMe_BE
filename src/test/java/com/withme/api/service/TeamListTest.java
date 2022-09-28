@@ -152,9 +152,9 @@ public class TeamListTest {
     }
 
     CreateTeamRequestDto getTeamRequestDto() {
-        List<String> skillNames = new ArrayList<>();
-        skillNames.add("docker");
-        skillNames.add("java");
+        List<SkillName> skillNames = new ArrayList<>();
+        skillNames.add(SkillName.docker);
+        skillNames.add(SkillName.java);
 
         return CreateTeamRequestDto.builder()
                 .category(TeamCategory.PROJECT)

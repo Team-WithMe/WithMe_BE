@@ -2,6 +2,7 @@ package com.withme.api.domain.team;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.withme.api.domain.BaseTimeEntity;
+import com.withme.api.domain.commentLike.CommentLike;
 import com.withme.api.domain.skill.SkillName;
 import com.withme.api.domain.teamComment.TeamComment;
 import com.withme.api.domain.teamLike.TeamLike;
@@ -86,8 +87,12 @@ public class Team extends BaseTimeEntity {
    private List<TeamComment> comments = new ArrayList<>();
 
    // NOTE 팀 추천
-   @OneToMany(mappedBy = "team")
+   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
    private List<TeamLike> teamLike = new ArrayList<>();
+
+   // NOTE 댓글 추천
+   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+   private List<CommentLike> commentLike = new ArrayList<>();
 
    @Builder
    public Team(String teamName, TeamCategory teamCategory, String teamDesc, Status status) {

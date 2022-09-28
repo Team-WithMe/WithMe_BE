@@ -255,4 +255,24 @@ public class TeamController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @Operation(
+            summary = "댓글 좋아요 등록, 삭제"
+            , description = "팀를 좋아요 등록, 삭제한다"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201"
+                    , description = "댓글 좋아요 등록, 삭제 성공"
+            )
+    })
+    @PostMapping("/team/{teamId}/comment-like")
+    public ResponseEntity createCommnetLike(
+            @PathVariable(value = "teamId") Long teamId
+            ,@RequestBody @Valid CommentLikeRequestDto dto
+            ,@RequestHeader("Authorization") String authHeader
+    ) {
+        teamService.commentLike(teamId, dto, authHeader);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
 }

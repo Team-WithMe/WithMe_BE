@@ -68,16 +68,4 @@ public class TeamListResponseDto {
         this.teamLikeCount = team.getTeamLikeCount();
     }
 
-    public TeamListResponseDto toTeamListResponseDto(Team team) {
-        this.id = team.getId();
-        this.title = team.getTitle();
-        this.teamName = team.getTeamName();
-        this.teamCategory = team.getTeamCategory();
-        this.createDate = team.getCreatedTime();
-        this.updateDate = team.getModifiedTime();
-        this.teamSkills = team.getTeamSkillNameList();
-        this.viewCount = team.getViewCount();
-        this.commentCount = team.getCommentCount();
-        return this;
-    }
 }

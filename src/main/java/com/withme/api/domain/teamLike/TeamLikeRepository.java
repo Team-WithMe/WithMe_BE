@@ -12,6 +12,6 @@ public interface TeamLikeRepository extends JpaRepository<TeamLike, Long> {
 
     // NOTE 사용자의 게시물 좋아요 여부 체크
     @Query(value = "SELECT * FROM TEAM_LIKE TL WHERE TL.TEAM_IDX =:team_id AND TL.USER_IDX =:user_id", nativeQuery = true)
-    Optional<TeamLike> countTeamLikesByTeamAndUser(@Param("team_id") Long team_id, @Param("user_id") Long user_id);
+    Optional<TeamLike> findTeamLikeByTeamAndUser(@Param("team_id") Long team_id, @Param("user_id") Long user_id);
 
 }

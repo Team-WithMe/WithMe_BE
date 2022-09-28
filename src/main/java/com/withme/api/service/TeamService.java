@@ -1,6 +1,8 @@
 package com.withme.api.service;
 
 import com.withme.api.controller.dto.*;
+import com.withme.api.domain.commentLike.CommentLike;
+import com.withme.api.domain.commentLike.CommentLikeRepository;
 import com.withme.api.domain.skill.Skill;
 import com.withme.api.domain.team.*;
 import com.withme.api.domain.teamComment.TeamComment;
@@ -45,6 +47,8 @@ public class TeamService {
     private final TeamSkillRepository teamSkillRepository;
 
     private final TeamLikeRepository teamLikeRepository;
+
+    private final CommentLikeRepository commentLikeRepository;
 
     @Transactional
     public List<TeamListResponseDto> getTeamList(TeamSearchDto teamSearchDto) throws Exception {
@@ -211,13 +215,10 @@ public class TeamService {
         String content = teamPostUpdateRequestDto.getContent();
 
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new NullPointerException("Team not found"));
+                .orElseThrow(() -> new NullPointerException("Team not found"))
+                .toTeamByTeamPost(title, content);
 
-        team.toTeamByTeamPost(title, content);
-
-        Team returnTeam = teamRepository.save(team);
-
-        return returnTeam.getId();
+        return teamRepository.save(team).getId();
     }
     /**
      * 팀 댓글 추가
@@ -272,7 +273,7 @@ public class TeamService {
     public void teamLike(Long teamId, String authHeader) {
         Long userId = tokenProvider.getUserIdFromToken(authHeader);
 
-        TeamLike teamLike = teamLikeRepository.countTeamLikesByTeamAndUser(teamId, userId)
+        TeamLike teamLike = teamLikeRepository.findTeamLikeByTeamAndUser(teamId, userId)
                 .orElseGet(() -> new TeamLike());
 
         Team team = teamRepository.findById(teamId)
@@ -283,9 +284,33 @@ public class TeamService {
         // NOTE 이미 좋아요 있음 (좋아요 취소)
         if (teamLike.getId() != null){
             teamLikeRepository.deleteById(teamLike.getId());
-        // NOTE 좋아요 등록 (좋아요 등록)
+        // NOTE 좋아요 없음 (좋아요 등록)
         }else {
             teamLikeRepository.save(new TeamLike(team, user));
         }
+    }
+
+    public void commentLike(Long teamId, CommentLikeRequestDto dto, String authHeader) {
+        Long commentId = dto.getCommentId();
+        Long userId = tokenProvider.getUserIdFromToken(authHeader);
+
+        CommentLike commentLike = commentLikeRepository.findCommentLikeByTeamAndUserAndTeamComment(teamId, userId, commentId)
+                .orElseGet(() -> new CommentLike());
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new NullPointerException("not found team"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NullPointerException("not found user"));
+        TeamComment teamComment = teamCommentRepository.findById(commentId)
+                .orElseThrow(() -> new NullPointerException("not found teamComment"));
+
+        // NOTE 이미 좋아요 있음 (좋아요 취소)
+        if (commentLike.getId() != null){
+            commentLikeRepository.deleteById(commentLike.getId());
+            // NOTE 좋아요 없음 (좋아요 등록)
+        }else {
+            commentLikeRepository.save(new CommentLike(team, user, teamComment));
+        }
+
     }
 }

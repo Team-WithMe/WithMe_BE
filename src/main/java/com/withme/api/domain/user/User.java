@@ -2,6 +2,7 @@ package com.withme.api.domain.user;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.withme.api.domain.BaseTimeEntity;
+import com.withme.api.domain.commentLike.CommentLike;
 import com.withme.api.domain.team.Team;
 import com.withme.api.domain.teamLike.TeamLike;
 import com.withme.api.domain.teamNotice.TeamNotice;
@@ -61,6 +62,10 @@ public class User extends BaseTimeEntity {
     // NOTE 팀 추천
     @OneToMany(mappedBy = "user")
     private List<TeamLike> teamLike = new ArrayList<>();
+
+    // NOTE 댓글 추천
+    @OneToMany(mappedBy = "user")
+    private List<CommentLike> commentLike = new ArrayList<>();
 
     @Builder
     public User(String email, String password, String nickname, String userImage, String role, String joinRoot, String nameAttributeValue) {

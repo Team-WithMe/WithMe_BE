@@ -4,12 +4,9 @@ import com.withme.api.domain.team.Team;
 import com.withme.api.domain.user.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
 
-@DynamicInsert
 @Getter
 @NoArgsConstructor
 @Table(uniqueConstraints = {

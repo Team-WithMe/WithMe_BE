@@ -29,6 +29,9 @@ public class TeamChildrenCommentResponse {
     @Schema(description = "팀 댓글 작성자 닉네임", example = "닉네임")
     private String teamUserNickName;
 
+    @Schema(description = "팀 댓글 좋아요 카운트")
+    private Integer commentLikeCount;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createDate;
 
@@ -47,20 +50,7 @@ public class TeamChildrenCommentResponse {
         this.teamUserNickName = teamComment.getUser().getNickname();
         this.createDate = teamComment.getCreatedTime();
         this.updateDate = teamComment.getModifiedTime();
+        this.commentLikeCount = teamComment.getCommentLikeCount();
     }
 
-    public TeamChildrenCommentResponse setTeamChildrenCommentResponse(TeamComment teamComment) {
-        if (teamComment.getParent() == null || teamComment.getParent().getId() == null){
-            this.parentId = 0L;
-        }else{
-            this.parentId = teamComment.getParent().getId();
-        }
-        this.id = teamComment.getId();
-        this.content = teamComment.getContent();
-        this.teamUserid = teamComment.getUser().getId();
-        this.teamUserNickName = teamComment.getUser().getNickname();
-        this.createDate = teamComment.getCreatedTime();
-        this.updateDate = teamComment.getModifiedTime();
-        return this;
-    }
 }
