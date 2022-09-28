@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface TeamCommentRepository extends JpaRepository<TeamComment, Long> {
 
     Optional<List<TeamComment>> findTeamCommentByTeamAndParentIsNullOrderByIdDesc(@Param("team") Team team);
+
     @Query("SELECT TC FROM TeamComment TC INNER JOIN TC.parent TCP INNER JOIN TC.team TCT INNER JOIN TC.user TCU WHERE TCT.id =:team_id AND TCP.id =:comment_id ORDER BY TC.id ASC")
     List<TeamComment> findTeamCommentsByTeamIdAndId(@Param("team_id") Long team_id, @Param("comment_id") Long comment_id);
 

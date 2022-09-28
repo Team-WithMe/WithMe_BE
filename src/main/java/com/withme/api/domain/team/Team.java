@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.withme.api.domain.BaseTimeEntity;
 import com.withme.api.domain.skill.SkillName;
 import com.withme.api.domain.teamComment.TeamComment;
+import com.withme.api.domain.teamLike.TeamLike;
 import com.withme.api.domain.teamNotice.TeamNotice;
 import com.withme.api.domain.teamSkill.TeamSkill;
 import com.withme.api.domain.teamUser.MemberType;
@@ -65,10 +66,9 @@ public class Team extends BaseTimeEntity {
    @Column(name = "comment_count", length = 1000)
    private Integer commentCount;
 
-   @JsonManagedReference
    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
    private List<TeamSkill> teamSkills = new ArrayList<>();
-   @JsonManagedReference
+
    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)// NOTE cascade = CascadeType.ALL 해야 팀 생성시 팀 유저 정보도 저장됨
    private List<TeamUser> teamUsers = new ArrayList<>();
 
@@ -80,7 +80,9 @@ public class Team extends BaseTimeEntity {
    @OneToMany(mappedBy = "team", orphanRemoval = true)
    private List<TeamComment> comments = new ArrayList<>();
 
-
+   // NOTE 팀 추천
+   @OneToMany(mappedBy = "team")
+   private List<TeamLike> teamLike = new ArrayList<>();
 
    @Builder
    public Team(String teamName, TeamCategory teamCategory, String teamDesc, Status status) {

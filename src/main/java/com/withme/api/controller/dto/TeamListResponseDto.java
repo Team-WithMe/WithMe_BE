@@ -39,6 +39,10 @@ public class TeamListResponseDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createDate;
 
+    @Schema(description = "팀 게시물 수정 날짜", example = "2022-01-01 14:21:12")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    private LocalDateTime updateDate;
+
     @Schema(description = "팀 스킬", example = "{'java', 'mysql'}")
     private List<SkillName> teamSkills;
 
@@ -54,6 +58,7 @@ public class TeamListResponseDto {
         this.teamName = team.getTeamName();
         this.teamCategory = team.getTeamCategory();
         this.createDate = team.getCreatedTime();
+        this.updateDate = team.getModifiedTime();
         this.teamSkills = team.getTeamSkillNameList();
         this.viewCount = team.getViewCount();
         this.commentCount = team.getCommentCount();

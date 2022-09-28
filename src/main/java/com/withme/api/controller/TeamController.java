@@ -10,10 +10,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
@@ -105,13 +107,13 @@ public class TeamController {
     @PostMapping("/team")
     private ResponseEntity createTeam(
            @Valid @RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto
-         // , @RequestHeader("Authorization") String authHeader
+         , @RequestHeader("Authorization") String authHeader
     ) {
         Map<String, Object> res = new HashMap<>();
         try {
             // NOTE 팀 생성
             Long teamIdx = teamService.createTeam(createTeamRequestDto
-                    // ,authHeader
+                    ,authHeader
             );
             res.put("status", 201);
             res.put("teamIdx", teamIdx);
@@ -122,7 +124,13 @@ public class TeamController {
             e.printStackTrace();
             res.put("status", 422);
             return new ResponseEntity<>(res,  HttpStatus.BAD_REQUEST);
-        }catch (Exception e){
+        }catch (DuplicateKeyException e){
+            log.warn("[ERROR] : 팀이름이 중복됨");
+            e.printStackTrace();
+            res.put("status", 400);
+            res.put("msg", "팀이름이 중복됨 -> " + createTeamRequestDto.getName());
+            return new ResponseEntity<>(res,  HttpStatus.BAD_REQUEST);
+        }catch(Exception e){
             log.warn("[ERROR] : 팀등록 중 오류");
             e.printStackTrace();
             res.put("status", 500);
@@ -149,10 +157,12 @@ public class TeamController {
             )
     })
     @GetMapping("/team/{teamId}/detail")
-    public ResponseEntity teamDetail(@PathVariable(value = "teamId") Long teamId) {
+    public ResponseEntity teamDetail(@PathVariable(value = "teamId") Long teamId, HttpServletRequest request
+            ) {
         Map<String, Object> result = new HashMap<>();
         try{
             result.put("teamDetail", teamService.getTeamListByTeamId(teamId));
+            result.put("teamReco", teamService.getTeamRecommend(teamId));
             result.put("status", 201);
             return new ResponseEntity<>(result, HttpStatus.CREATED);
         }catch (NullPointerException e){
@@ -202,6 +212,8 @@ public class TeamController {
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
+
+
     @Operation(
             summary = "공지사항 작성"
             , description = "팀 공지사항을 작성한다."
@@ -221,6 +233,25 @@ public class TeamController {
         log.debug("createTeamNotice {}, {} invoked", teamId, dto);
 
         teamService.createTeamNotice(teamId, dto, authHeader);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @Operation(
+            summary = "팀 추천"
+            , description = "팀을 추천한다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201"
+                    , description = "팀 추천 성공"
+            )
+    })
+    @PostMapping("/team/{teamId}/team-like")
+    public ResponseEntity createTeamLike(
+            @PathVariable(value = "teamId") Long teamId
+            ,@RequestHeader("Authorization") String authHeader
+    ) {
+        teamService.addTeamLike(teamId, authHeader);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

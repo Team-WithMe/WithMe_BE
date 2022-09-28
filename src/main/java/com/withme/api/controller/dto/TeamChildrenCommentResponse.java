@@ -35,6 +35,20 @@ public class TeamChildrenCommentResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime updateDate;
 
+    public TeamChildrenCommentResponse(TeamComment teamComment) {
+        if (teamComment.getParent() == null || teamComment.getParent().getId() == null){
+            this.parentId = 0L;
+        }else{
+            this.parentId = teamComment.getParent().getId();
+        }
+        this.id = teamComment.getId();
+        this.content = teamComment.getContent();
+        this.teamUserid = teamComment.getUser().getId();
+        this.teamUserNickName = teamComment.getUser().getNickname();
+        this.createDate = teamComment.getCreatedTime();
+        this.updateDate = teamComment.getModifiedTime();
+    }
+
     public TeamChildrenCommentResponse setTeamChildrenCommentResponse(TeamComment teamComment) {
         if (teamComment.getParent() == null || teamComment.getParent().getId() == null){
             this.parentId = 0L;

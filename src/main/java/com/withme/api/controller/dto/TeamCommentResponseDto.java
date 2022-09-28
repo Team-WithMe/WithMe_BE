@@ -39,6 +39,20 @@ public class TeamCommentResponseDto {
     @Schema(description = "팀 댓글 작성자 닉네임", example = "닉네임")
     private List<TeamChildrenCommentResponse> commentChildren;
 
+    public TeamCommentResponseDto(TeamComment teamComment) {
+        if (teamComment.getParent() == null || teamComment.getParent().getId() == null){
+            this.parentId = 0L;
+        }else{
+            this.parentId = teamComment.getParent().getId();
+        }
+        this.id = teamComment.getId();
+        this.content = teamComment.getContent();
+        this.teamUserid = teamComment.getUser().getId();
+        this.teamUserNickName = teamComment.getUser().getNickname();
+        this.createDate = teamComment.getCreatedTime();
+        this.updateDate = teamComment.getModifiedTime();
+    }
+
     public TeamCommentResponseDto setTeamCommentResponseDto(TeamComment teamComment) {
         if (teamComment.getParent() == null || teamComment.getParent().getId() == null){
             this.parentId = 0L;

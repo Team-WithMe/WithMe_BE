@@ -19,11 +19,9 @@ import java.util.Set;
 @Repository
 public interface TeamRepository extends JpaRepository<Team, Long> {
 
-    // NOTE 기본적인 팀조회
-    //String findTeams = "SELECT new map (T.id as team_idx, T.teamName as team_name, T.teamCategory as caregoty, T.teamDesc as desc, SK.skillTeams as skillTeams, U.nickname as nickname) FROM Team T INNER JOIN TeamSkill TS INNER JOIN Skill SK LEFT JOIN TeamUser TU LEFT JOIN User U ORDER BY T.id DESC";
-    //String findAll = "SELECT T FROM Team T fetch all properties ORDER BY T.createdTime DESC";
-
       int countTeamBy();
+
+    int countTeamByTeamNameEquals(@Param("team_name") String team_name);
     Optional<List<Team>> findAllByStatusOrderByCreatedTimeDesc(@Param("status")Status status);
 
     Optional<List<Team>> findAllByStatusOrderByCreatedTimeAsc(@Param("status")Status status);
@@ -37,5 +35,7 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     Optional<List<TeamListResponseMapping>> findAllByOrderByCreatedTimeDesc();
 
    Optional<Team> findTeamById(@Param("teamId") Long teamId);
+
+   Optional<List<Team>> findTop5ByStatusOrderByViewCount(@Param("status") Status status);
 
 }

@@ -27,7 +27,6 @@ public class TeamUser {
     @Enumerated(EnumType.STRING)
     private MemberType memberType;
 
-    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_idx")
     private Team team;

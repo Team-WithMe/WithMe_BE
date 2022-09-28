@@ -5,6 +5,8 @@ import com.withme.api.domain.skill.Skill;
 import com.withme.api.domain.team.*;
 import com.withme.api.domain.teamComment.TeamComment;
 import com.withme.api.domain.teamComment.TeamCommentRepository;
+import com.withme.api.domain.teamLike.TeamLike;
+import com.withme.api.domain.teamLike.TeamLikeRepository;
 import com.withme.api.domain.teamNotice.TeamNotice;
 import com.withme.api.domain.teamNotice.TeamNoticeRepository;
 import com.withme.api.domain.teamSkill.TeamSkill;
@@ -17,11 +19,13 @@ import com.withme.api.domain.user.UserRepository;
 import com.withme.api.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,6 +43,8 @@ public class TeamService {
 
     private final TeamCommentRepository teamCommentRepository;
     private final TeamSkillRepository teamSkillRepository;
+
+    private final TeamLikeRepository teamLikeRepository;
 
     @Transactional
     public List<TeamListResponseDto> getTeamList(TeamSearchDto teamSearchDto) throws Exception {
@@ -114,25 +120,30 @@ public class TeamService {
      * */
     @Transactional
     public Long createTeam(CreateTeamRequestDto createTeamDto
-            // , String authHeader
+            , String authHeader
     ) {
         // NOTE 현재 접속한 유저 ID 구해서 적용필요
-        // Long user_idx = tokenProvider.getUserIdFromToken(authHeader);
+        Long user_idx = tokenProvider.getUserIdFromToken(authHeader);
         // NOTE 팀으로 변경
-        Long user_idx = 1L;
+        //Long user_idx = 1L;
         Team team = createTeamDto.setTeamSkill();
 
-            User user = userRepository.findById(user_idx).orElseThrow(
-                    ()-> new NullPointerException("존재하지않는 사용자"));
+        User user = userRepository.findById(user_idx).orElseThrow(
+                ()-> new NullPointerException("존재하지않는 사용자"));
 
-            log.info("team ::: " + user);
-            // NOTE 팀등록
-            TeamUser teamUser = TeamUser.builder()
-                    .memberType(MemberType.LEADER)
-                    .team(team)
-                    .user(user)
-                    .build();
-            team.addTeamUser(teamUser);
+        int teamNameUniqueCheck = teamRepository.countTeamByTeamNameEquals(team.getTeamName());
+
+        // NOTE 팀 중복여부 확인
+        if (teamNameUniqueCheck > 0) throw new DuplicateKeyException("팀등록시 팀이름이 중복");
+
+        log.info("team ::: " + user);
+        // NOTE 팀등록
+        TeamUser teamUser = TeamUser.builder()
+                .memberType(MemberType.LEADER)
+                .team(team)
+                .user(user)
+                .build();
+        team.addTeamUser(teamUser);
         Team returnTeam = teamRepository.save(team);
 
         return returnTeam.getId();
@@ -172,8 +183,10 @@ public class TeamService {
         resultTeam.addViewCount();
 
         List<TeamComment> teamComments = teamCommentRepository.findTeamCommentByTeamAndParentIsNullOrderByIdDesc(resultTeam).get();
-        String commentCheck = "comment";
-        List<TeamCommentResponseDto> teamCommentResponseDtos = toCommentDtoByTeamCommentAndCommentCheck(teamComments, commentCheck);
+
+        List<TeamCommentResponseDto> teamCommentResponseDtos = teamComments.stream()
+                .map(TeamCommentResponseDto::new)
+                .collect(Collectors.toList());
 
         TeamDetailResponseDto resultTeamDto = new TeamDetailResponseDto(resultTeam, teamCommentResponseDtos, teamUser);
         getTeamAndComment(teamId, resultTeamDto);
@@ -181,36 +194,17 @@ public class TeamService {
         return resultTeamDto;
     }
     /**
-     * 팀상세 게시글 조회 상세 로직
+     * 팀상세 게시글 댓글 조회 상세 로직
      * */
     public void getTeamAndComment(Long teamId, TeamDetailResponseDto dto) {
-        String commentCheck = "childrenComment";
         dto.getTeamComments()
                 .forEach(teamComment -> {
                     List<TeamComment> teamComments = teamCommentRepository.findTeamCommentsByTeamIdAndId(teamId, teamComment.getId());
-                    List<TeamChildrenCommentResponse> teamChildrenCommentResponses = toCommentDtoByTeamCommentAndCommentCheck(teamComments, commentCheck);
+                    List<TeamChildrenCommentResponse> teamChildrenCommentResponses = teamComments.stream()
+                            .map(TeamChildrenCommentResponse::new)
+                            .collect(Collectors.toList());
                     teamComment.setCommentChildren(teamChildrenCommentResponses);
                 });
-    }
-    /**
-     * 댓글 대댓글 DTO <- Entity 작업
-     * */
-    public <T> T toCommentDtoByTeamCommentAndCommentCheck(List<TeamComment> teamComments, String commentCheck) {
-        if ("comment".equals(commentCheck)){
-            List<TeamCommentResponseDto> teamCommentResponseDtos = new ArrayList<>();
-            for (TeamComment teamComment : teamComments) {
-                TeamCommentResponseDto teamCommentResponseDto = new TeamCommentResponseDto();
-                teamCommentResponseDtos.add(teamCommentResponseDto.setTeamCommentResponseDto(teamComment));
-            }
-            return (T) teamCommentResponseDtos;
-        }else {
-            List<TeamChildrenCommentResponse> teamCommentChildrenResponseDtos = new ArrayList<>();
-            for (TeamComment teamComment : teamComments) {
-                TeamChildrenCommentResponse teamChildrenCommentResponseDto = new TeamChildrenCommentResponse();
-                teamCommentChildrenResponseDtos.add(teamChildrenCommentResponseDto.setTeamChildrenCommentResponse(teamComment));
-            }
-            return (T) teamCommentChildrenResponseDtos;
-        }
     }
 
     /**
@@ -260,7 +254,42 @@ public class TeamService {
             teamComment2.setChildren(teamComments);
             teamCommentRepository.save(teamComment2);
         }
-        //teamCommentRepository.findTeamCommentByTeam(team);
         return teamId;
+    }
+    /**
+     *  팀 추천 (조회수순으로 가져와서 섞음)
+     * */
+    public List<TeamDetailRecommendReaponseDto> getTeamRecommend(Long teamId) {
+        List<Team> teams = teamRepository.findTop5ByStatusOrderByViewCount(Status.DISPLAYED)
+                .orElseThrow(() -> new NullPointerException("not found team"));
+
+        Collections.shuffle(teams);
+
+        return teams.stream()
+                .map(TeamDetailRecommendReaponseDto::new)
+                .collect(Collectors.toList());
+    }
+    /**
+     *  팀 좋아요 추가 기능
+     * */
+    @Transactional
+    public void addTeamLike(Long teamId, String authHeader) {
+        Long userId = tokenProvider.getUserIdFromToken(authHeader);
+
+        TeamLike teamLike = teamLikeRepository.countTeamLikesByTeamAndUser(teamId, userId)
+                .orElseGet(() -> new TeamLike());
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new NullPointerException("not found team"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NullPointerException("not found user"));
+
+        // NOTE 이미 좋아요 있음 (좋아요 취소)
+        if (teamLike.getId() != null){
+            teamLikeRepository.deleteById(teamLike.getId());
+        // NOTE 좋아요 등록 (좋아요 등록)
+        }else {
+            teamLikeRepository.save(new TeamLike(team, user));
+        }
     }
 }
