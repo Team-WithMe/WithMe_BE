@@ -237,13 +237,13 @@ public class TeamController {
     }
 
     @Operation(
-            summary = "팀 추천"
-            , description = "팀을 추천한다."
+            summary = "팀 좋아요 등록, 삭제"
+            , description = "팀를 좋아요 등록, 삭제한다"
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201"
-                    , description = "팀 추천 성공"
+                    , description = "팀 좋아요 등록, 삭제 성공"
             )
     })
     @PostMapping("/team/{teamId}/team-like")
@@ -251,7 +251,7 @@ public class TeamController {
             @PathVariable(value = "teamId") Long teamId
             ,@RequestHeader("Authorization") String authHeader
     ) {
-        teamService.addTeamLike(teamId, authHeader);
+        teamService.teamLike(teamId, authHeader);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

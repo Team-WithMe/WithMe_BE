@@ -43,6 +43,9 @@ public class TeamDetailResponseDto {
     @Schema(description = "팀 댓글 카운트", example = "10")
     private Integer commentCount;
 
+    @Schema(description = "팀 좋아요 카운트", example = "10")
+    private Integer teamLikeCount;
+
     @Schema(description = "팀 스킬", example = "{'java', 'mysql'}")
     private List<SkillName> teamSkills;
 
@@ -72,6 +75,7 @@ public class TeamDetailResponseDto {
         this.teamCategory = team.getTeamCategory();
         this.viewCount = team.getViewCount();
         this.commentCount = team.getCommentCount();
+        this.teamLikeCount = team.getTeamLikeCount();
         this.teamComments = teamComments;
         this.teamUserid = teamUser.getUser().getId();
         this.teamUserNickName = teamUser.getUser().getNickname();

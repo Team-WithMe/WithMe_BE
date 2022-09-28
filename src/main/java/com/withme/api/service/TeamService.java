@@ -85,13 +85,9 @@ public class TeamService {
             }
         }
 
-        List<TeamListResponseDto> teamListResponse = new ArrayList<>();
-        for (Team team : teamList) {
-            TeamListResponseDto teamListResponseDto = new TeamListResponseDto();
-            teamListResponse.add(teamListResponseDto.toTeamListResponseDto(team));
-        }
-
-        return teamListResponse;
+        return teamList.stream()
+                .map(TeamListResponseDto::new)
+                .collect(Collectors.toList());
     }
     // NOTE 팀 검색 조건 처리 로직
     public List<TeamSkill> toTeamListParams(List<Skill> skills, List<TeamSkill> teamSkills) {
@@ -270,10 +266,10 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
     /**
-     *  팀 좋아요 추가 기능
+     *  팀 좋아요 기능
      * */
     @Transactional
-    public void addTeamLike(Long teamId, String authHeader) {
+    public void teamLike(Long teamId, String authHeader) {
         Long userId = tokenProvider.getUserIdFromToken(authHeader);
 
         TeamLike teamLike = teamLikeRepository.countTeamLikesByTeamAndUser(teamId, userId)

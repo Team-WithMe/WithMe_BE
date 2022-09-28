@@ -66,6 +66,11 @@ public class Team extends BaseTimeEntity {
    @Column(name = "comment_count", length = 1000)
    private Integer commentCount;
 
+   @Formula("(select count(1) from team_like tl where tl.team_idx = team_idx)")
+   @ColumnDefault("0")
+   @Column(name = "team_like_count", length = 1000)
+   private Integer teamLikeCount;
+
    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
    private List<TeamSkill> teamSkills = new ArrayList<>();
 
