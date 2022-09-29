@@ -173,35 +173,34 @@ public class TeamService {
      * */
     @Transactional
     public TeamDetailResponseDto getTeamListByTeamId(Long teamId) {
+        Long userId = 1L;
         Team resultTeam = teamRepository.findTeamById(teamId)
-                .orElseThrow(() -> new NullPointerException("Team not found"));
+                .orElseThrow(() -> new NullPointerException("Team not found"))
+                .addViewCount();
 
         TeamUser teamUser = teamUserRepository.findTeamUserByTeamAndMemberType(resultTeam, MemberType.LEADER)
                 .orElseThrow(() -> new NullPointerException("TeamUser not found"));
 
-        // NOTE 조회수 증가
-        resultTeam.addViewCount();
-
         List<TeamComment> teamComments = teamCommentRepository.findTeamCommentByTeamAndParentIsNullOrderByIdDesc(resultTeam).get();
 
         List<TeamCommentResponseDto> teamCommentResponseDtos = teamComments.stream()
-                .map(TeamCommentResponseDto::new)
+                .map(v -> new TeamCommentResponseDto(v, userId))
                 .collect(Collectors.toList());
 
-        TeamDetailResponseDto resultTeamDto = new TeamDetailResponseDto(resultTeam, teamCommentResponseDtos, teamUser);
-        getTeamAndComment(teamId, resultTeamDto);
+        TeamDetailResponseDto resultTeamDto = new TeamDetailResponseDto(resultTeam, teamCommentResponseDtos, teamUser, userId);
+        getTeamAndComment(teamId, resultTeamDto, userId);
 
         return resultTeamDto;
     }
     /**
-     * 팀상세 게시글 댓글 조회 상세 로직
+     * 팀상세 게시글 대댓글 조회 상세 로직
      * */
-    public void getTeamAndComment(Long teamId, TeamDetailResponseDto dto) {
+    public void getTeamAndComment(Long teamId, TeamDetailResponseDto dto, Long userId) {
         dto.getTeamComments()
                 .forEach(teamComment -> {
                     List<TeamComment> teamComments = teamCommentRepository.findTeamCommentsByTeamIdAndId(teamId, teamComment.getId());
                     List<TeamChildrenCommentResponse> teamChildrenCommentResponses = teamComments.stream()
-                            .map(TeamChildrenCommentResponse::new)
+                            .map(v -> new TeamChildrenCommentResponse(v, userId))
                             .collect(Collectors.toList());
                     teamComment.setCommentChildren(teamChildrenCommentResponses);
                 });
@@ -270,11 +269,13 @@ public class TeamService {
      *  팀 좋아요 기능
      * */
     @Transactional
-    public void teamLike(Long teamId, String authHeader) {
-        Long userId = tokenProvider.getUserIdFromToken(authHeader);
+    public void teamLike(Long teamId) {
+        //Long userId = tokenProvider.getUserIdFromToken(authHeader);
+
+        Long userId = 1L;
 
         TeamLike teamLike = teamLikeRepository.findTeamLikeByTeamAndUser(teamId, userId)
-                .orElseGet(() -> new TeamLike());
+                .orElseGet(TeamLike::new);
 
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new NullPointerException("not found team"));
@@ -289,13 +290,15 @@ public class TeamService {
             teamLikeRepository.save(new TeamLike(team, user));
         }
     }
-
-    public void commentLike(Long teamId, CommentLikeRequestDto dto, String authHeader) {
+    /**
+     *  댓글 좋아요 기능
+     * */
+    public void commentLike(Long teamId, CommentLikeRequestDto dto) {
         Long commentId = dto.getCommentId();
-        Long userId = tokenProvider.getUserIdFromToken(authHeader);
+        Long userId = 1L; //tokenProvider.getUserIdFromToken(authHeader);
 
         CommentLike commentLike = commentLikeRepository.findCommentLikeByTeamAndUserAndTeamComment(teamId, userId, commentId)
-                .orElseGet(() -> new CommentLike());
+                .orElseGet(CommentLike::new);
 
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new NullPointerException("not found team"));
@@ -313,4 +316,11 @@ public class TeamService {
         }
 
     }
+
+//    public boolean teamLikeCheck(Long teamId, Long userId) {
+//        TeamLike teamLike = teamLikeRepository.findTeamLikeByTeamAndUser(teamId, userId)
+//                .orElseGet(TeamLike::new);
+//
+//        return teamLike.getId() != null;
+//    }
 }

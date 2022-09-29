@@ -249,9 +249,9 @@ public class TeamController {
     @PostMapping("/team/{teamId}/team-like")
     public ResponseEntity createTeamLike(
             @PathVariable(value = "teamId") Long teamId
-            ,@RequestHeader("Authorization") String authHeader
+            //,@RequestHeader("Authorization") String authHeader
     ) {
-        teamService.teamLike(teamId, authHeader);
+        teamService.teamLike(teamId);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -269,9 +269,9 @@ public class TeamController {
     public ResponseEntity createCommnetLike(
             @PathVariable(value = "teamId") Long teamId
             ,@RequestBody @Valid CommentLikeRequestDto dto
-            ,@RequestHeader("Authorization") String authHeader
+            //,@RequestHeader("Authorization") String authHeader
     ) {
-        teamService.commentLike(teamId, dto, authHeader);
+        teamService.commentLike(teamId, dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

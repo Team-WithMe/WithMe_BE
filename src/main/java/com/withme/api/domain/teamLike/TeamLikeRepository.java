@@ -14,4 +14,5 @@ public interface TeamLikeRepository extends JpaRepository<TeamLike, Long> {
     @Query(value = "SELECT * FROM TEAM_LIKE TL WHERE TL.TEAM_IDX =:team_id AND TL.USER_IDX =:user_id", nativeQuery = true)
     Optional<TeamLike> findTeamLikeByTeamAndUser(@Param("team_id") Long team_id, @Param("user_id") Long user_id);
 
+
 }

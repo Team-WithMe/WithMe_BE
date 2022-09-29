@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.withme.api.domain.skill.SkillName;
 import com.withme.api.domain.team.Team;
 import com.withme.api.domain.team.TeamCategory;
+import com.withme.api.domain.teamLike.TeamLike;
 import com.withme.api.domain.teamUser.TeamUser;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 
 @Schema(description = "팀 게시물 상세정보 응답 DTO 객체")
@@ -46,6 +48,9 @@ public class TeamDetailResponseDto {
     @Schema(description = "팀 좋아요 카운트", example = "10")
     private Integer teamLikeCount;
 
+    @Schema(description = "팀 좋아요 여부", example = "true")
+    private Boolean teamLike;
+
     @Schema(description = "팀 스킬", example = "{'java', 'mysql'}")
     private List<SkillName> teamSkills;
 
@@ -66,7 +71,7 @@ public class TeamDetailResponseDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime updateDate;
 
-    public TeamDetailResponseDto(Team team, List<TeamCommentResponseDto> teamComments, TeamUser teamUser) {
+    public TeamDetailResponseDto(Team team, List<TeamCommentResponseDto> teamComments, TeamUser teamUser, Long userId) {
         this.id = team.getId();
         this.title = team.getTitle();
         this.content = team.getContent();
@@ -91,5 +96,21 @@ public class TeamDetailResponseDto {
         }else {
             this.updateDate = team.getModifiedTime();
         }
+
+        // NOTE 팀 좋아요 여부
+        if (team.getTeamLike().size() != 0){
+            TeamLike teamLike = team.getTeamLike().stream()
+                    .filter(v -> v.getUser().getId() == userId)
+                    .findAny().orElseGet(TeamLike::new);
+
+            if (teamLike.getId() != null){
+                this.teamLike = true;
+            }else {
+                this.teamLike = false;
+            }
+        }else {
+            this.teamLike = false;
+        }
+
     }
 }

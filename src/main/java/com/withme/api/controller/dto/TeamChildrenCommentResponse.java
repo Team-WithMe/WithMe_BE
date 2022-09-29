@@ -1,6 +1,7 @@
 package com.withme.api.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.withme.api.domain.commentLike.CommentLike;
 import com.withme.api.domain.teamComment.TeamComment;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -32,13 +33,16 @@ public class TeamChildrenCommentResponse {
     @Schema(description = "팀 댓글 좋아요 카운트")
     private Integer commentLikeCount;
 
+    @Schema(description = "팀 댓글 좋아요 여부")
+    private Boolean commentLike;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createDate;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime updateDate;
 
-    public TeamChildrenCommentResponse(TeamComment teamComment) {
+    public TeamChildrenCommentResponse(TeamComment teamComment, Long userId) {
         if (teamComment.getParent() == null || teamComment.getParent().getId() == null){
             this.parentId = 0L;
         }else{
@@ -51,6 +55,21 @@ public class TeamChildrenCommentResponse {
         this.createDate = teamComment.getCreatedTime();
         this.updateDate = teamComment.getModifiedTime();
         this.commentLikeCount = teamComment.getCommentLikeCount();
+
+        // NOTE 대댓글 좋아요 여부
+        if (teamComment.getCommentLike().size() != 0){
+            CommentLike commentLike = teamComment.getCommentLike().stream()
+                    .filter(v -> v.getUser().getId() == userId)
+                    .findAny().orElseGet(CommentLike::new);
+
+            if (commentLike.getId() != null){
+                this.commentLike = true;
+            }else {
+                this.commentLike = false;
+            }
+        }else {
+            this.commentLike = false;
+        }
     }
 
 }

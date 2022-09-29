@@ -62,11 +62,13 @@ public class Team extends BaseTimeEntity {
    @Column(name = "view_count", length = 100000)
    private Integer viewCount;
 
+   // NOTE 팀 댓글 개수
    @Formula("(select count(1) from team_comment tc where tc.team_id = team_idx)")
    @ColumnDefault("0")
    @Column(name = "comment_count", length = 1000)
    private Integer commentCount;
 
+   // NOTE 팀 좋아요 개수
    @Formula("(select count(1) from team_like tl where tl.team_idx = team_idx)")
    @ColumnDefault("0")
    @Column(name = "team_like_count", length = 1000)
@@ -86,11 +88,11 @@ public class Team extends BaseTimeEntity {
    @OneToMany(mappedBy = "team", orphanRemoval = true)
    private List<TeamComment> comments = new ArrayList<>();
 
-   // NOTE 팀 추천
+   // NOTE 팀 좋아요
    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
    private List<TeamLike> teamLike = new ArrayList<>();
 
-   // NOTE 댓글 추천
+   // NOTE 댓글 좋아요
    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
    private List<CommentLike> commentLike = new ArrayList<>();
 
