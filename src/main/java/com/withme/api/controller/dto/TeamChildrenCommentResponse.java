@@ -62,11 +62,7 @@ public class TeamChildrenCommentResponse {
                     .filter(v -> v.getUser().getId() == userId)
                     .findAny().orElseGet(CommentLike::new);
 
-            if (commentLike.getId() != null){
-                this.commentLike = true;
-            }else {
-                this.commentLike = false;
-            }
+            this.commentLike = commentLike.getId() != null;
         }else {
             this.commentLike = false;
         }

@@ -70,4 +70,8 @@ public class TeamComment extends BaseTimeEntity {
         this.user = user;
         this.team = team;
     }
+
+    public void setTeamCommentByContent(String content){
+        this.content = content;
+    }
 }

@@ -253,6 +253,21 @@ public class TeamService {
         return teamId;
     }
     /**
+     *  팀 댓글 수정
+     * */
+    @Transactional
+    public Long modifyTeamComment(TeamCommentModifyRequestDto dto, Long teamId) {
+        Long userId = 1L;
+        // NOTE 자신이 쓴 댓글인지 확인
+        if (!dto.getTeamUserId().equals(userId)) return 0L;
+
+        // NOTE 수정할 댓글 조회 및 수정
+        teamCommentRepository.findTeamCommentByTeamIdAndId(teamId, dto.getCommentId())
+                .setTeamCommentByContent(dto.getContent());
+
+        return teamId;
+    }
+    /**
      *  팀 추천 (조회수순으로 가져와서 섞음)
      * */
     public List<TeamDetailRecommendReaponseDto> getTeamRecommend(Long teamId) {
@@ -317,10 +332,4 @@ public class TeamService {
 
     }
 
-//    public boolean teamLikeCheck(Long teamId, Long userId) {
-//        TeamLike teamLike = teamLikeRepository.findTeamLikeByTeamAndUser(teamId, userId)
-//                .orElseGet(TeamLike::new);
-//
-//        return teamLike.getId() != null;
-//    }
 }

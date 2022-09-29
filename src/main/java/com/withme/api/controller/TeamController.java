@@ -203,8 +203,9 @@ public class TeamController {
             )
     })
     @PostMapping("/team/{teamId}/comment")
-    public ResponseEntity teamCommentRegister(@Valid @RequestBody TeamCommentAddRequestDto dto,
-                                         @PathVariable(value = "teamId") Long teamId){
+    public ResponseEntity teamCommentRegister(
+            @Valid @RequestBody TeamCommentAddRequestDto dto,
+            @PathVariable(value = "teamId") Long teamId){
         Map<String, Object> result = new HashMap<>();
         Long teamIdx = teamService.addTeamComment(dto, teamId);
         result.put("teamIdx", teamIdx);
@@ -212,28 +213,21 @@ public class TeamController {
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
-
-
     @Operation(
-            summary = "공지사항 작성"
-            , description = "팀 공지사항을 작성한다."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "201"
-            , description = "팀 공지사항 작성 성공"
-        )
+            summary = "팀 게시물 댓글 수정"
+            , description = "팀 댓글을 수정한다."
+    )@ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201"
+                    , description = "팀 댓글 수정 성공"
+            )
     })
-    @PostMapping("/team/{teamId}/notice")
-    public ResponseEntity<Object> createTeamNotice(
-            @PathVariable Long teamId
-            , @Valid @RequestBody TeamNoticeCreateRequestDto dto
-            , @RequestHeader("Authorization") String authHeader
-    ) {
-        log.debug("createTeamNotice {}, {} invoked", teamId, dto);
-
-        teamService.createTeamNotice(teamId, dto, authHeader);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    @PutMapping("/team/{teamId}/comment")
+    public ResponseEntity teamCommentModify(
+            @Valid @RequestBody TeamCommentModifyRequestDto dto,
+            @PathVariable(value = "teamId") Long teamId) {
+        Long resultTeamId = teamService.modifyTeamComment(dto, teamId);
+        return new ResponseEntity<>(resultTeamId, HttpStatus.CREATED);
     }
 
     @Operation(
@@ -274,5 +268,29 @@ public class TeamController {
         teamService.commentLike(teamId, dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
+
+    @Operation(
+            summary = "공지사항 작성"
+            , description = "팀 공지사항을 작성한다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201"
+                    , description = "팀 공지사항 작성 성공"
+            )
+    })
+    @PostMapping("/team/{teamId}/notice")
+    public ResponseEntity<Object> createTeamNotice(
+            @PathVariable Long teamId
+            , @Valid @RequestBody TeamNoticeCreateRequestDto dto
+            , @RequestHeader("Authorization") String authHeader
+    ) {
+        log.debug("createTeamNotice {}, {} invoked", teamId, dto);
+
+        teamService.createTeamNotice(teamId, dto, authHeader);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+
 
 }

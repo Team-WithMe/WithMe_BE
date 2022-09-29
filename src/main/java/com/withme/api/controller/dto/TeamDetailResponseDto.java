@@ -103,11 +103,7 @@ public class TeamDetailResponseDto {
                     .filter(v -> v.getUser().getId() == userId)
                     .findAny().orElseGet(TeamLike::new);
 
-            if (teamLike.getId() != null){
-                this.teamLike = true;
-            }else {
-                this.teamLike = false;
-            }
+            this.teamLike = teamLike.getId() != null;
         }else {
             this.teamLike = false;
         }
