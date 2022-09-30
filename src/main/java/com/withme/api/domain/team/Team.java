@@ -74,10 +74,10 @@ public class Team extends BaseTimeEntity {
    @Column(name = "team_like_count", length = 1000)
    private Integer teamLikeCount;
 
-   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+   @OneToMany(mappedBy = "team", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
    private List<TeamSkill> teamSkills = new ArrayList<>();
 
-   @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, fetch = FetchType.LAZY)// NOTE cascade = CascadeType.ALL 해야 팀 생성시 팀 유저 정보도 저장됨
+   @OneToMany(mappedBy = "team", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)// NOTE cascade = CascadeType.ALL 해야 팀 생성시 팀 유저 정보도 저장됨
    private List<TeamUser> teamUsers = new ArrayList<>();
 
    @OneToMany(mappedBy = "team")

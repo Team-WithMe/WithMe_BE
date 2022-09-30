@@ -214,7 +214,7 @@ public class TeamController {
     }
 
     @Operation(
-            summary = "팀 게시물 댓글 수정"
+            summary = "팀 댓글 수정"
             , description = "팀 댓글을 수정한다."
     )@ApiResponses(value = {
             @ApiResponse(
@@ -227,6 +227,23 @@ public class TeamController {
             @Valid @RequestBody TeamCommentModifyRequestDto dto,
             @PathVariable(value = "teamId") Long teamId) {
         Long resultTeamId = teamService.modifyTeamComment(dto, teamId);
+        return new ResponseEntity<>(resultTeamId, HttpStatus.CREATED);
+    }
+
+    @Operation(
+            summary = "팀 댓글 삭제"
+            , description = "팀 댓글을 삭제한다."
+    )@ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201"
+                    , description = "팀 댓글 삭제 성공"
+            )
+    })
+    @DeleteMapping("/team/{teamId}/comment")
+    public ResponseEntity teamCommentDelete(
+            @Valid @RequestBody TeamCommentDeleteRequestDto dto,
+            @PathVariable(value = "teamId") Long teamId) {
+        Long resultTeamId = teamService.deleteTeamComment(dto, teamId);
         return new ResponseEntity<>(resultTeamId, HttpStatus.CREATED);
     }
 

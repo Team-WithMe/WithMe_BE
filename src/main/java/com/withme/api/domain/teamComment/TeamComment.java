@@ -49,7 +49,7 @@ public class TeamComment extends BaseTimeEntity {
     private TeamComment parent;
 
     @JsonManagedReference
-    @OneToMany(mappedBy = "parent")// , orphanRemoval = true
+    @OneToMany(mappedBy = "parent", orphanRemoval = true)
     private List<TeamComment> children = new ArrayList<>();
 
     @JsonIgnore
@@ -62,7 +62,7 @@ public class TeamComment extends BaseTimeEntity {
     @JoinColumn(name = "team_id")
     private Team team;
 
-    @OneToMany(mappedBy = "teamComment", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "teamComment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommentLike> commentLike = new ArrayList<>();
 
     public TeamComment(String content, User user, Team team) {

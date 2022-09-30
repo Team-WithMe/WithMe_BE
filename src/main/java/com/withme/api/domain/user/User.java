@@ -60,11 +60,11 @@ public class User extends BaseTimeEntity {
     private List<TeamNotice> teamNotice = new ArrayList<>();
 
     // NOTE 팀 추천
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
     private List<TeamLike> teamLike = new ArrayList<>();
 
     // NOTE 댓글 추천
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
     private List<CommentLike> commentLike = new ArrayList<>();
 
     @Builder
