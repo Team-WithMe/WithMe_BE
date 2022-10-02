@@ -17,5 +17,5 @@ public interface TeamCommentRepository extends JpaRepository<TeamComment, Long> 
     List<TeamComment> findTeamCommentsByTeamIdAndId(@Param("team_id") Long team_id, @Param("comment_id") Long comment_id);
 
     @Query("SELECT TC FROM TeamComment TC WHERE TC.team.id =:team_id AND TC.id =:comment_id ORDER BY TC.id ASC")
-    TeamComment findTeamCommentByTeamIdAndId(@Param("team_id") Long team_id, @Param("comment_id") Long comment_id);
+    Optional<TeamComment> findTeamCommentByTeamIdAndId(@Param("team_id") Long team_id, @Param("comment_id") Long comment_id);
 }

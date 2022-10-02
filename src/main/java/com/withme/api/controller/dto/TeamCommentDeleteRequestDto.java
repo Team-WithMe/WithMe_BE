@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Schema(description = "팀 댓글 수정 요청 DTO 객체")
+@Schema(description = "팀 댓글 삭제 요청 DTO 객체")
 @Getter
 @Setter
 @NoArgsConstructor

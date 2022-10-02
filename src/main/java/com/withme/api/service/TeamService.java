@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.function.Function;
+
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -120,10 +120,10 @@ public class TeamService {
      * */
     @Transactional
     public Long createTeam(CreateTeamRequestDto createTeamDto
-            , String authHeader
+            //, String authHeader
     ) {
         // NOTE 현재 접속한 유저 ID 구해서 적용필요
-        Long user_idx = tokenProvider.getUserIdFromToken(authHeader);
+        Long user_idx = 1L;//tokenProvider.getUserIdFromToken(authHeader);
         // NOTE 팀으로 변경
         //Long user_idx = 1L;
         Team team = createTeamDto.setTeamSkill();
@@ -175,13 +175,15 @@ public class TeamService {
     public TeamDetailResponseDto getTeamListByTeamId(Long teamId) {
         Long userId = 1L;
         Team resultTeam = teamRepository.findTeamById(teamId)
-                .orElseThrow(() -> new NullPointerException("Team not found"))
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"))
                 .addViewCount();
 
         TeamUser teamUser = teamUserRepository.findTeamUserByTeamAndMemberType(resultTeam, MemberType.LEADER)
-                .orElseThrow(() -> new NullPointerException("TeamUser not found"));
+                .orElseThrow(() -> new IllegalArgumentException("TeamUser not found"));
 
-        List<TeamComment> teamComments = teamCommentRepository.findTeamCommentByTeamAndParentIsNullOrderByIdDesc(resultTeam).get();
+        List<TeamComment> teamComments = teamCommentRepository.findTeamCommentByTeamAndParentIsNullOrderByIdDesc(resultTeam)
+                .orElseThrow(() -> new IllegalArgumentException("TeamUser not found"));
+
 
         List<TeamCommentResponseDto> teamCommentResponseDtos = teamComments.stream()
                 .map(v -> new TeamCommentResponseDto(v, userId))
@@ -214,7 +216,7 @@ public class TeamService {
         String content = teamPostUpdateRequestDto.getContent();
 
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new NullPointerException("Team not found"))
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"))
                 .toTeamByTeamPost(title, content);
 
         return teamRepository.save(team).getId();
@@ -223,25 +225,27 @@ public class TeamService {
      * 팀 댓글 추가
      * */
     @Transactional
-    public Long addTeamComment(TeamCommentAddRequestDto dto, Long teamId) {
+    public TeamCommentAddResponseDto addTeamComment(TeamCommentAddRequestDto dto, Long teamId) {
         // NOTE 팀 검색
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new NullPointerException("Team not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
 
         // NOTE 접속한 사용자
         Long user_id = 1L;
         User user = userRepository.findById(user_id)
-                .orElseThrow(() -> new NullPointerException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         // NOTE 댓글 등록
         if (dto.getParentId() == 0){
         TeamComment teamComment = new TeamComment(dto.getContent(), user, team);
         teamCommentRepository.save(teamComment);
         // NOTE 대댓글 등록
         }else if (dto.getParentId() != 0){
-            TeamComment teamComment = teamCommentRepository.findTeamCommentByTeamIdAndId(teamId, dto.getParentId());
+            TeamComment teamComment = teamCommentRepository.findTeamCommentByTeamIdAndId(teamId, dto.getParentId())
+                    .orElseThrow(() -> new IllegalArgumentException("comment not found"));
+
             // NOTE 대댓글의 댓글은 불가
             if (teamComment.getParent() != null){
-                throw new NullPointerException("대대댓글은 불가");
+                throw new IllegalArgumentException("you cant post comment of comments");
             }
             TeamComment teamComment2 = new TeamComment(dto.getContent(), user, team);
             List<TeamComment> teamComments = new ArrayList<>();
@@ -250,35 +254,40 @@ public class TeamService {
             teamComment2.setChildren(teamComments);
             teamCommentRepository.save(teamComment2);
         }
-        return teamId;
+        return new TeamCommentAddResponseDto(201, teamId);
     }
     /**
      *  팀 댓글 수정
      * */
     @Transactional
-    public Long modifyTeamComment(TeamCommentModifyRequestDto dto, Long teamId) {
+    public TeamCommentModifyResponseDto modifyTeamComment(TeamCommentModifyRequestDto dto, Long teamId) {
         Long userId = 1L;
         // NOTE 자신이 쓴 댓글인지 확인
-        if (!dto.getTeamUserId().equals(userId)) return 0L;
+        if (!dto.getTeamUserId().equals(userId)) return new TeamCommentModifyResponseDto(421, teamId, dto.getCommentId());
 
         // NOTE 수정할 댓글 조회 및 수정
-        teamCommentRepository.findTeamCommentByTeamIdAndId(teamId, dto.getCommentId())
-                .setTeamCommentByContent(dto.getContent());
+        TeamComment teamComment = teamCommentRepository.findTeamCommentByTeamIdAndId(teamId, dto.getCommentId())
+                .orElseGet(TeamComment::new);
+        // NOTE 수정할 댓글이 조회되지않음
+        if (teamComment.getId() == null) return new TeamCommentModifyResponseDto(420, teamId, dto.getCommentId());
+        teamComment.setTeamCommentByContent(dto.getContent());
 
-        return teamId;
+        return new TeamCommentModifyResponseDto(201, teamId, dto.getCommentId());
     }
     /**
      *  팀 댓글 삭제
      * */
     @Transactional
-    public Long deleteTeamComment(TeamCommentDeleteRequestDto dto, Long teamId) {
+    public TeamCommentDeleteResponseDto deleteTeamComment(TeamCommentDeleteRequestDto dto, Long teamId) {
         Long userId = 1L;
         // NOTE 자신이 쓴 댓글인지 확인
-        if (!dto.getTeamUserId().equals(userId)) return 0L;
+        if (!dto.getTeamUserId().equals(userId)) return new TeamCommentDeleteResponseDto(421, teamId, dto.getCommentId());
         
-        // NOTE 삭제할 댓글 조희 및 삭제
-        teamCommentRepository.deleteById(dto.getCommentId());
-        return teamId;
+        // NOTE 삭제할 댓글 조희 및 삭제 (find 후 delete 해야 커스텀 에러 가능)
+        TeamComment teamComment = teamCommentRepository.findById(dto.getCommentId())
+                .orElseThrow(() -> new NullPointerException("not found comment"));
+        teamCommentRepository.delete(teamComment);
+        return new TeamCommentDeleteResponseDto(201, teamId, dto.getCommentId());
     }
     /**
      *  팀 추천 (조회수순으로 가져와서 섞음)

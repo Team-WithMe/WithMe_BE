@@ -15,18 +15,13 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import static javax.persistence.FetchType.EAGER;
 import static javax.persistence.FetchType.LAZY;
 import static javax.persistence.GenerationType.IDENTITY;
-import static lombok.AccessLevel.PROTECTED;
-
 @Getter
 @Setter
-@NoArgsConstructor(access = PROTECTED)
+@NoArgsConstructor
 @Entity
 public class TeamComment extends BaseTimeEntity {
 

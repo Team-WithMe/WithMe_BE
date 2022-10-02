@@ -107,13 +107,13 @@ public class TeamController {
     @PostMapping("/team")
     private ResponseEntity createTeam(
            @Valid @RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto
-         , @RequestHeader("Authorization") String authHeader
+         //, @RequestHeader("Authorization") String authHeader
     ) {
         Map<String, Object> res = new HashMap<>();
         try {
             // NOTE 팀 생성
             Long teamIdx = teamService.createTeam(createTeamRequestDto
-                    ,authHeader
+                    //,authHeader
             );
             res.put("status", 201);
             res.put("teamIdx", teamIdx);
@@ -200,17 +200,22 @@ public class TeamController {
             @ApiResponse(
                     responseCode = "201"
                     , description = "팀 댓글 추가 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "420"
+                    , description = "팀 댓글 추가 실패 (등록할 대댓글의 부모댓글이 조회되지않음)"
+            ),
+            @ApiResponse(
+                    responseCode = "421"
+                    , description = "팀 댓글 추가 실패 (대댓글의 댓글은 등록X)"
             )
     })
     @PostMapping("/team/{teamId}/comment")
     public ResponseEntity teamCommentRegister(
             @Valid @RequestBody TeamCommentAddRequestDto dto,
             @PathVariable(value = "teamId") Long teamId){
-        Map<String, Object> result = new HashMap<>();
-        Long teamIdx = teamService.addTeamComment(dto, teamId);
-        result.put("teamIdx", teamIdx);
-        result.put("status", 201);
-        return new ResponseEntity<>(result, HttpStatus.CREATED);
+        return new ResponseEntity<>(teamService.addTeamComment(dto, teamId)
+                , HttpStatus.CREATED);
     }
 
     @Operation(
@@ -220,14 +225,18 @@ public class TeamController {
             @ApiResponse(
                     responseCode = "201"
                     , description = "팀 댓글 수정 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "421"
+                    , description = "팀 댓글 수정 실패 (자신이 쓴 댓글만 수정가능)"
             )
     })
     @PutMapping("/team/{teamId}/comment")
     public ResponseEntity teamCommentModify(
             @Valid @RequestBody TeamCommentModifyRequestDto dto,
             @PathVariable(value = "teamId") Long teamId) {
-        Long resultTeamId = teamService.modifyTeamComment(dto, teamId);
-        return new ResponseEntity<>(resultTeamId, HttpStatus.CREATED);
+        return new ResponseEntity<>(teamService.modifyTeamComment(dto, teamId)
+                , HttpStatus.CREATED);
     }
 
     @Operation(
@@ -237,14 +246,18 @@ public class TeamController {
             @ApiResponse(
                     responseCode = "201"
                     , description = "팀 댓글 삭제 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "421"
+                    , description = "팀 댓글 삭제 실패 (자신이 쓴 댓글만 삭제가능)"
             )
     })
     @DeleteMapping("/team/{teamId}/comment")
     public ResponseEntity teamCommentDelete(
             @Valid @RequestBody TeamCommentDeleteRequestDto dto,
             @PathVariable(value = "teamId") Long teamId) {
-        Long resultTeamId = teamService.deleteTeamComment(dto, teamId);
-        return new ResponseEntity<>(resultTeamId, HttpStatus.CREATED);
+        return new ResponseEntity<>(teamService.deleteTeamComment(dto, teamId)
+                , HttpStatus.CREATED);
     }
 
     @Operation(
