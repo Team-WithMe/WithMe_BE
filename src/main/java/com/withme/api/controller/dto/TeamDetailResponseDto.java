@@ -54,9 +54,6 @@ public class TeamDetailResponseDto {
     @Schema(description = "팀 스킬", example = "{'java', 'mysql'}")
     private List<SkillName> teamSkills;
 
-    @Schema(description = "팀 댓글", example = "{'comment' : {}")
-    private List<TeamCommentResponseDto> teamComments;
-
     @Schema(description = "팀 게시물 작성자 id", example = "userId")
     private Long teamUserid;
 
@@ -70,6 +67,9 @@ public class TeamDetailResponseDto {
     @Schema(description = "팀 게시물 수정 날짜", example = "2022-01-01 14:21:12")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime updateDate;
+
+    @Schema(description = "팀 댓글", example = "{'comment' : {}")
+    private List<TeamCommentResponseDto> teamComments;
 
     public TeamDetailResponseDto(Team team, List<TeamCommentResponseDto> teamComments, TeamUser teamUser, Long userId) {
         this.id = team.getId();

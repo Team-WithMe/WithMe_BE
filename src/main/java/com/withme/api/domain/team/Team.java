@@ -1,6 +1,7 @@
 package com.withme.api.domain.team;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.withme.api.domain.BaseTimeCustomEntity;
 import com.withme.api.domain.BaseTimeEntity;
 import com.withme.api.domain.commentLike.CommentLike;
 import com.withme.api.domain.skill.SkillName;
@@ -18,7 +19,10 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 @DynamicInsert
@@ -28,7 +32,7 @@ import java.util.stream.Collectors;
         @UniqueConstraint(name = "TEAM_TEAMNAME_UNIQUE", columnNames = "teamName")
 })
 @Entity
-public class Team extends BaseTimeEntity {
+public class Team extends BaseTimeCustomEntity {
 
    @Id
    @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -137,11 +141,12 @@ public class Team extends BaseTimeEntity {
     /**
      * 팀 게시물 dto 입력
      * */
-    public Team toTeamByTeamPost(String title, String content) {
+    public Long toTeamByTeamPost(String title, String content) {
        this.title = title;
        this.content = content;
        this.status = Status.DISPLAYED;
-       return this;
+       this.setModifiedTime(LocalDateTime.now());
+       return this.getId();
     }
     /**
      * 조회수 증가
@@ -155,7 +160,8 @@ public class Team extends BaseTimeEntity {
      * */
     public List<SkillName> getTeamSkillNameList() {
        return this.getTeamSkills().stream()
-               .map(v -> v.getSkill().getSkillName()).collect(Collectors.toList());
+               .map(v -> v.getSkill().getSkillName())
+               .collect(Collectors.toList());
     }
 
 }
