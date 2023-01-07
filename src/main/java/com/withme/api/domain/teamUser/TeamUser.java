@@ -1,5 +1,7 @@
 package com.withme.api.domain.teamUser;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.withme.api.domain.team.Team;
 import com.withme.api.domain.user.User;
 import lombok.Builder;
@@ -29,7 +31,8 @@ public class TeamUser {
     @JoinColumn(name = "team_idx")
     private Team team;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@JsonManagedReference
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_idx")
     private User user;
 
@@ -43,4 +46,5 @@ public class TeamUser {
         team.getTeamUsers().add(this);
         user.getUserTeams().add(this);
     }
+
 }
