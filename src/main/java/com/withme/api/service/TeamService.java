@@ -18,6 +18,7 @@ import com.withme.api.domain.teamUser.TeamUser;
 import com.withme.api.domain.teamUser.TeamUserRepository;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
+import com.withme.api.exception.BusinessException;
 import com.withme.api.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
-import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityNotFoundException;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -123,9 +128,9 @@ public class TeamService {
             //, String authHeader
     ) {
         // NOTE 현재 접속한 유저 ID 구해서 적용필요
-        Long user_idx = 1L;//tokenProvider.getUserIdFromToken(authHeader);
+        Long user_idx = tokenProvider.getUserIdFromToken(authHeader);
+        
         // NOTE 팀으로 변경
-        //Long user_idx = 1L;
         Team team = createTeamDto.setTeamSkill();
 
         User user = userRepository.findById(user_idx).orElseThrow(
@@ -150,24 +155,35 @@ public class TeamService {
     }
 
     @Transactional
-    public TeamNotice createTeamNotice(Long teamId, TeamNoticeCreateRequestDto dto, String authHeader) {
-        /**
-         * 1. authHeader 파싱해서 user id 가져오기
-         * 2. team에 uesr가 있는지 확인하기 -> 없으면 exception 발생
-         * 3. team에 공지사항 등록
-         */
-
+    public TeamNotice createTeamNotice(Long teamId, TeamNoticeCreateRequestDto dto, Long userIdFromToken) {
         Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new IllegalArgumentException("Team Id not exist."));
+                .orElseThrow(() -> new EntityNotFoundException("Team Not Found. id : " + teamId));
 
-        Long userIdFromToken = tokenProvider.getUserIdFromToken(authHeader);
-        team.isUserJoined(userIdFromToken);
+        if(!team.IsUserTeamLeader(userIdFromToken)) {
+            throw new BusinessException("This User is not the Leader of this Team.");
+        };
 
         User user = userRepository.findById(userIdFromToken)
-                .orElseThrow(() -> new UsernameNotFoundException("User not exist."));
+                .orElseThrow(() -> new EntityNotFoundException("User Not Found. id :" + userIdFromToken));
 
         return teamNoticeRepository.save(dto.toEntity(team, user));
     }
+
+    @Transactional
+    public List<TeamNoticeResponseDto> selectTeamNoticeList(Long teamId) {
+        List<TeamNoticeResponseDto> teamNoticeResponseDtoList = new ArrayList<>();
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new EntityNotFoundException("Team Not Found. id : " + teamId));
+
+        List<TeamNotice> teamNoticeList = team.getTeamNotice();
+        teamNoticeList.forEach(teamNotice -> {
+            teamNoticeResponseDtoList.add(new TeamNoticeResponseDto(teamNotice));
+        });
+
+        return teamNoticeResponseDtoList;
+    }
+
     /**
      * 팀 게시물 상세 정보 조회
      * */
@@ -354,5 +370,17 @@ public class TeamService {
 
     }
 
-    
+    @Transactional
+    public List<UserResponseDto> selectTeamMemberList(Long teamId) {
+        List<UserResponseDto> userResponseDtoList = new ArrayList<>();
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new EntityNotFoundException("Team Not Found. id : " + teamId));
+        List<TeamUser> teamUserList = team.getTeamUsers();
+        teamUserList.forEach(teamUser -> {
+            userResponseDtoList.add(new UserResponseDto(teamUser.getUser()));
+        });
+
+        return userResponseDtoList;
+    }
 }

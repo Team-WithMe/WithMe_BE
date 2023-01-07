@@ -1,11 +1,10 @@
 package com.withme.api.controller;
 
 import com.withme.api.controller.dto.ExceptionResponseDto;
-import com.withme.api.exception.UserAlreadyExistException;
+import com.withme.api.exception.BusinessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,40 +21,28 @@ import java.util.Map;
 @ControllerAdvice
 public class CustomizedResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(UserAlreadyExistException.class)
-    public final ResponseEntity<Object> handleUserAlreadyExistException(UserAlreadyExistException ex) {
-        Map<String, Object> errorDetailsMap = new HashMap<>();
-        errorDetailsMap.put(ex.getDuplicated(), false);
-
-        ExceptionResponseDto exceptionResponseDto = new ExceptionResponseDto(ex.getMessage(), errorDetailsMap);
-
-        return ResponseEntity.badRequest().body(exceptionResponseDto);
+    @ExceptionHandler(BusinessException.class)
+    public final ResponseEntity<Object> handleBusinessException(BusinessException ex) {
+        return ResponseEntity.badRequest().body(new ExceptionResponseDto(400, ex.getMessage()));
     }
 
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public final ResponseEntity<Object> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-        ExceptionResponseDto exceptionResponseDto = new ExceptionResponseDto(ex.getMessage(), null);
-        return ResponseEntity.status(460).body(exceptionResponseDto);
+    @ExceptionHandler(EntityNotFoundException.class)
+    public final ResponseEntity<Object> handleEntityNotFoundException(EntityNotFoundException ex) {
+        return ResponseEntity.status(404).body(new ExceptionResponseDto(404, ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public final ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex) {
-        ExceptionResponseDto exceptionResponseDto = new ExceptionResponseDto(ex.getMessage(), null);
-        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(exceptionResponseDto);
+        return ResponseEntity.status(406).body(new ExceptionResponseDto(406, ex.getMessage()));
     }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        Map<String, Object> errorDetailsMap = new HashMap<>();
+        Map<String, String> errorDetailsMap = new HashMap<>();
         ex.getBindingResult().getAllErrors()
-                .forEach(c -> errorDetailsMap.put( ((FieldError) c).getField(), false));
+                .forEach(error -> errorDetailsMap.put( ((FieldError)error).getField(), error.getDefaultMessage() ));
 
-        ExceptionResponseDto exceptionResponseDto = new ExceptionResponseDto("Validation Failed", errorDetailsMap);
-
-        return ResponseEntity.unprocessableEntity().body(exceptionResponseDto);
-
-
-
+        return ResponseEntity.status(417).body(new ExceptionResponseDto(417, "Validation Failed", errorDetailsMap));
     }
 
 }

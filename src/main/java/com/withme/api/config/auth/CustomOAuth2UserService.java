@@ -40,7 +40,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         User user = saveOrUpdate(oAuthAttributes, registrationId);
 
-        return new CustomOauth2User(Collections.singleton(new SimpleGrantedAuthority(user.getRole())), oAuthAttributes.getAttributes(), oAuthAttributes.getNameAttributeKey());
+        return new CustomOauth2User(
+                Collections.singleton(new SimpleGrantedAuthority(user.getRole()))
+                , oAuthAttributes.getAttributes()
+                , oAuthAttributes.getNameAttributeKey()
+                , userRepository);
     }
 
     private User saveOrUpdate(OAuthAttributes oAuthAttributes, String registrationId){

@@ -1,7 +1,7 @@
 package com.withme.api.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.withme.api.config.auth.CustomAuthenticationSuccessHandler;
+import com.withme.api.config.auth.CustomAuthenticationSuccessHandler;
 import com.withme.api.config.auth.CustomOAuth2UserService;
 import com.withme.api.filter.JwtAuthenticationFilter;
 import com.withme.api.filter.JwtAuthorizationFilter;
@@ -11,6 +11,7 @@ import com.withme.api.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,7 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final CorsFilter corsFilter;
     private final TokenProvider tokenProvider;
     private final ObjectMapper objectMapper;
-    //private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
     private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
@@ -62,13 +63,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(new JwtAuthorizationFilter(authenticationManager(), tokenProvider))
 
                 .authorizeRequests()
-                .antMatchers("/api/v1/user/**").authenticated()
-                .antMatchers("/api/v1/admin/**").access("hasRole('ROLE_ADMIN')")
-                .anyRequest().permitAll()
+                /** UserController */
+                .antMatchers(HttpMethod.POST,"/api/v1/user").permitAll()
+                /** MyPageController */
+                .antMatchers(HttpMethod.GET, "/api/v1/user/mypage/{userId}").authenticated()
+                .antMatchers(HttpMethod.PUT, "/api/v1/user/nickname/{userId}").authenticated()
+                /** TeamController */
+                .antMatchers(HttpMethod.GET, "/api/v1/team/{teamId}/notice").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/team/{teamId}/notice").authenticated()
+                .antMatchers(HttpMethod.GET, "/api/v1/team/{teamId}/team-member").permitAll()
+               .anyRequest().permitAll()
 
                 .and()
                 .oauth2Login()
-                //.successHandler(customAuthenticationSuccessHandler)
+                .successHandler(customAuthenticationSuccessHandler)
                 .userInfoEndpoint()
                 .userService(customOAuth2UserService);
     }

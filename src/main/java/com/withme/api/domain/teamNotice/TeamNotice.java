@@ -39,6 +39,10 @@ public class TeamNotice extends BaseTimeEntity {
         this.content = content;
         this.team = team;
         this.writer = writer;
+
+        //양방향 연관관계를 위한 로직
+        team.getTeamNotice().add(this);
+        writer.getTeamNotice().add(this);
     }
 
 }

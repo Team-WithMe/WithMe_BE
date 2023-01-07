@@ -41,6 +41,10 @@ public class TeamUser {
         this.memberType = memberType;
         this.team = team;
         this.user = user;
+
+        //양방향 연관관계를 위한 로직
+        team.getTeamUsers().add(this);
+        user.getUserTeams().add(this);
     }
 
 }

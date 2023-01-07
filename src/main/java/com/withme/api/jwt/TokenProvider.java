@@ -3,8 +3,9 @@ package com.withme.api.jwt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.withme.api.config.auth.CustomOauth2User;
 import com.withme.api.config.auth.PrincipalDetails;
-import com.withme.api.controller.dto.LoginResponseDto;
+import com.withme.api.controller.dto.UserResponseDto;
 import com.withme.api.domain.user.User;
 import com.withme.api.domain.user.UserRepository;
 import io.jsonwebtoken.*;
@@ -14,11 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletResponse;
@@ -75,12 +75,15 @@ public class TokenProvider implements InitializingBean {
      * @throws IOException
      */
     public void sendRedirectWithBase64EncodedToken(HttpServletResponse response, Authentication authResult) throws IOException {
-        String jwt = "Bearer " + this.createToken(authResult);
+        User user = ((CustomOauth2User) authResult.getPrincipal()).getUser();
+
+        String jwt = "Bearer " + this.createToken(authResult, user.getId());
+        log.debug("jwt : " + jwt);
 
         response.sendRedirect("http://localhost:3000/successOauth?"
                 + RandomString.make(5)
                 + "="
-                + Base64.getEncoder().encodeToString(jwt.getBytes())
+                + Base64.getEncoder().encodeToString(this.setBody(user, jwt).getBytes())
         );
     }
 
@@ -91,28 +94,26 @@ public class TokenProvider implements InitializingBean {
      * @throws IOException
      */
     public void sendResponseWithToken(HttpServletResponse response, Authentication authResult) throws IOException {
-        UserDetails userDetails = (UserDetails) authResult.getPrincipal();
-        String jwt = "Bearer " + this.createToken(authResult);
+        PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
+
+        String jwt = "Bearer " + this.createToken(authResult, principalDetails.getUserId());
+        log.debug("jwt : " + jwt);
 
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
         response.addHeader(AUTHORIZATION_HEADER, jwt);
-        response.getWriter().write(this.setBody(userDetails, jwt));
+        response.getWriter().write(this.setBody(principalDetails.getUser(), jwt));
     }
 
     /**
-     * 일반 로그인 성공 후 응답 바디에 담을 내용을 생성하는 메서드
-     * @param userDetails 인증된 유저 정보
+     * 로그인 성공 후 응답에 담을 내용을 생성하는 메서드
+     * @param user 인증된 유저 정보
      * @param jwt 클라이언트로 전달한 JWT 토큰
-     * @return 응답 바디에 담길 내용
+     * @return 응답에 담길 내용 - 일반 로그인 : ResponseBody, 소셜 로그인 : QueryString
      * @throws JsonProcessingException
      */
-    private String setBody(UserDetails userDetails, String jwt) throws JsonProcessingException {
-        LoginResponseDto loginResponseDto = LoginResponseDto.builder()
-                .nickname(userDetails.getUsername())
-                .token(jwt)
-                .build();
-        return objectMapper.writeValueAsString(loginResponseDto);
+    private String setBody(User user, String jwt) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(new UserResponseDto(user, jwt));
     }
 
 
@@ -121,12 +122,12 @@ public class TokenProvider implements InitializingBean {
      * @param authentication
      * @return jwt 토큰
      */
-    private String createToken(Authentication authentication) {
+    private String createToken(Authentication authentication, Long id) {
         return Jwts.builder()
-                .setSubject(authentication.getName())
+                .setSubject(authentication.getName())   //소셜로그인일 경우 sub값, 일반 로그인일경우 닉네임
                 .setIssuer("WithMe")
-                .claim(AUTHORITIES_KEY, this.getAuthoritiesFromAuthentication(authentication))
-                .claim(USER_ID, ((PrincipalDetails)authentication.getPrincipal()).getUserId())
+                .claim(AUTHORITIES_KEY, this.getAuthoritiesFromAuthentication(authentication))  //권한
+                .claim(USER_ID, id) //userId
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(this.getValidity())
                 .compact();
@@ -157,9 +158,10 @@ public class TokenProvider implements InitializingBean {
      * @param token
      * @return Authentication 객체
      */
-    public Authentication getAuthentication(String token) {
-        User user = userRepository.findById(this.getUserIdFromToken(token))
-                .orElseThrow(() -> new UsernameNotFoundException("User not exist."));
+    public Authentication getAuthentication(String token) throws AccessDeniedException{
+        Long userIdFromToken = this.getUserIdFromToken(token);
+        User user = userRepository.findById(userIdFromToken)
+                .orElseThrow(() -> new AccessDeniedException("User In Token Not Found. id : " + userIdFromToken));
 
         PrincipalDetails principalDetails = new PrincipalDetails(user);
 
@@ -194,12 +196,11 @@ public class TokenProvider implements InitializingBean {
      * @return
      */
     public boolean validateToken(String token) {
-        token = token.substring(7);
         try {
             if(token.equals("No Token")){
                 return false;
             } else {
-                Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+                Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token.substring(7));
                 return true;
             }
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {

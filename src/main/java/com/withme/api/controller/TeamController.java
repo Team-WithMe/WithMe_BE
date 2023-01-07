@@ -28,8 +28,8 @@ import java.util.Map;
 public class TeamController {
 
     private final TeamService teamService;
-
     private final TokenProvider tokenProvider;
+
     @Operation(
             summary = "팀 리스트 조회"
             , description = "팀 리스트를 검색, 정렬 기능으로 조회한다."
@@ -299,15 +299,12 @@ public class TeamController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Operation(
-            summary = "공지사항 작성"
-            , description = "팀 공지사항을 작성한다."
-    )
+    @Operation(summary = "공지사항 작성", description = "팀 공지사항을 작성한다.")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201"
-                    , description = "팀 공지사항 작성 성공"
-            )
+        @ApiResponse(responseCode = "201", description = "팀 공지사항 작성 성공")
+        , @ApiResponse(responseCode = "400", description = "팀 리더가 아님", content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class)))
+        , @ApiResponse(responseCode = "401", description = "접근 권한 없음")
+        , @ApiResponse(responseCode = "404", description = "id에 일치하는 엔티티 없음", content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class)))
     })
     @PostMapping("/team/{teamId}/notice")
     public ResponseEntity<Object> createTeamNotice(
@@ -317,10 +314,34 @@ public class TeamController {
     ) {
         log.debug("createTeamNotice {}, {} invoked", teamId, dto);
 
-        teamService.createTeamNotice(teamId, dto, authHeader);
+        teamService.createTeamNotice(teamId, dto, tokenProvider.getUserIdFromToken(authHeader));
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @Operation(summary = "공지사항 목록 조회", description = "팀 공지사항 목록을 조회한다.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "팀 공지사항 목록 조회 성공", content = @Content(schema = @Schema(implementation = TeamNoticeResponseDto.class)))
+        , @ApiResponse(responseCode = "404", description = "id에 일치하는 엔티티 없음", content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class)))
+    })
+    @GetMapping("/team/{teamId}/notice")
+    public ResponseEntity<Object> selectTeamNoticeList(@PathVariable Long teamId) {
+        log.debug("selectTeamNotice {} invoked", teamId);
 
+        List<TeamNoticeResponseDto> teamNoticeResponseDtoList = teamService.selectTeamNoticeList(teamId);
+        return ResponseEntity.ok().body(teamNoticeResponseDtoList);
+    }
+
+    @Operation(summary = "팀원 목록 조회", description = "팀원 목록을 조회한다.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "팀원 목록 조회 성공", content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
+        , @ApiResponse(responseCode = "404", description = "id에 일치하는 엔티티 없음", content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class)))
+    })
+    @GetMapping("/team/{teamId}/team-member")
+    public ResponseEntity<Object> selectTeamMember(@PathVariable Long teamId) {
+        log.debug("selectTeamMember {} invoked.", teamId);
+
+        List<UserResponseDto> userResponseDtoList = teamService.selectTeamMemberList(teamId);
+        return ResponseEntity.ok(userResponseDtoList);
+    }
 
 }

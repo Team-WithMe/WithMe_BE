@@ -94,9 +94,6 @@ public class User extends BaseTimeEntity {
                 .user(this)
                 .memberType(MemberType.MEMBER)
                 .build();
-
-        this.userTeams.add(teamUser);
-        team.newUserJoined(teamUser);
     }
 
     public List<Team> joinedTeamList() {
