@@ -107,14 +107,12 @@ public class TeamController {
     @PostMapping("/team")
     private ResponseEntity createTeam(
            @Valid @RequestBody(required = false) CreateTeamRequestDto createTeamRequestDto
-         //, @RequestHeader("Authorization") String authHeader
+         , @RequestHeader("Authorization") String authHeader
     ) {
         Map<String, Object> res = new HashMap<>();
         try {
             // NOTE 팀 생성
-            Long teamIdx = teamService.createTeam(createTeamRequestDto
-                    //,authHeader
-            );
+            Long teamIdx = teamService.createTeam(createTeamRequestDto,authHeader);
             res.put("status", 201);
             res.put("teamIdx", teamIdx);
             return new ResponseEntity<>(res, HttpStatus.CREATED);
@@ -158,10 +156,10 @@ public class TeamController {
     })
     @GetMapping("/team/{teamId}/detail")
     public ResponseEntity teamDetail(@PathVariable(value = "teamId") Long teamId, HttpServletRequest request
-            ) {
+            , @RequestHeader("Authorization") String authHeader) {
         Map<String, Object> result = new HashMap<>();
         try{
-            result.put("teamDetail", teamService.getTeamListByTeamId(teamId));
+            result.put("teamDetail", teamService.getTeamListByTeamId(teamId, authHeader));
             result.put("teamReco", teamService.getTeamRecommend(teamId));
             result.put("status", 201);
             return new ResponseEntity<>(result, HttpStatus.CREATED);
@@ -213,8 +211,10 @@ public class TeamController {
     @PostMapping("/team/{teamId}/comment")
     public ResponseEntity teamCommentRegister(
             @Valid @RequestBody TeamCommentAddRequestDto dto,
-            @PathVariable(value = "teamId") Long teamId){
-        return new ResponseEntity<>(teamService.addTeamComment(dto, teamId)
+            @PathVariable(value = "teamId") Long teamId
+            , @RequestHeader("Authorization") String authHeader
+    ){
+        return new ResponseEntity<>(teamService.addTeamComment(dto, teamId, authHeader)
                 , HttpStatus.CREATED);
     }
 
@@ -234,8 +234,9 @@ public class TeamController {
     @PutMapping("/team/{teamId}/comment")
     public ResponseEntity teamCommentModify(
             @Valid @RequestBody TeamCommentModifyRequestDto dto,
-            @PathVariable(value = "teamId") Long teamId) {
-        return new ResponseEntity<>(teamService.modifyTeamComment(dto, teamId)
+            @PathVariable(value = "teamId") Long teamId
+            , @RequestHeader("Authorization") String authHeader) {
+        return new ResponseEntity<>(teamService.modifyTeamComment(dto, teamId, authHeader)
                 , HttpStatus.CREATED);
     }
 
@@ -255,8 +256,9 @@ public class TeamController {
     @DeleteMapping("/team/{teamId}/comment")
     public ResponseEntity teamCommentDelete(
             @Valid @RequestBody TeamCommentDeleteRequestDto dto,
-            @PathVariable(value = "teamId") Long teamId) {
-        return new ResponseEntity<>(teamService.deleteTeamComment(dto, teamId)
+            @PathVariable(value = "teamId") Long teamId
+            , @RequestHeader("Authorization") String authHeader) {
+        return new ResponseEntity<>(teamService.deleteTeamComment(dto, teamId, authHeader)
                 , HttpStatus.CREATED);
     }
 
@@ -273,9 +275,9 @@ public class TeamController {
     @PostMapping("/team/{teamId}/team-like")
     public ResponseEntity createTeamLike(
             @PathVariable(value = "teamId") Long teamId
-            //,@RequestHeader("Authorization") String authHeader
+            ,@RequestHeader("Authorization") String authHeader
     ) {
-        teamService.teamLike(teamId);
+        teamService.teamLike(teamId, authHeader);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -293,9 +295,9 @@ public class TeamController {
     public ResponseEntity createCommnetLike(
             @PathVariable(value = "teamId") Long teamId
             ,@RequestBody @Valid CommentLikeRequestDto dto
-            //,@RequestHeader("Authorization") String authHeader
+            ,@RequestHeader("Authorization") String authHeader
     ) {
-        teamService.commentLike(teamId, dto);
+        teamService.commentLike(teamId, dto, authHeader);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

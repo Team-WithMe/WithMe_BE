@@ -16,6 +16,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
+import java.util.stream.Collectors;
+
 @Schema(description = "팀 생성 요청 DTO")
 @Getter
 @Setter
@@ -55,22 +57,16 @@ public class CreateTeamRequestDto {
                 .status(Status.HIDDEN)
                 .build();
     }
-
+    // NOTE TeamSkill 세팅
     public Team setTeamSkill() {
         Team team = toTeam();
-        Skill skill = new Skill();
-        TeamSkill teamSkill = new TeamSkill();
-        for (SkillName skillName : this.getSkills()) {
-            skill = Skill.builder()
-                    .skillName(skillName)
-                    .build();
-            teamSkill = TeamSkill.builder()
-                    .team(team)
-                    .skill(skill)
-                    .build();
-            team.addTeamSkill(teamSkill);
-        }
+        this.getSkills().forEach(
+                v -> this.setTeamSkillAndSkill(v, team));
         return team;
+    }
+
+    public void setTeamSkillAndSkill(SkillName skillName, Team team) {
+        team.addTeamSkill(new TeamSkill(team, new Skill(skillName)));
     }
 
 }

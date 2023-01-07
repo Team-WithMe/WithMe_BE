@@ -28,7 +28,7 @@ public class TeamSkill {
     @JoinColumn(name = "team_idx")
     private Team team;
 
-    @ManyToOne(fetch = FetchType.EAGER) // NOTE FetchType.EAGER 로 Skill안의 모든 정보를 바로 조회해서 무한루프 안걸리도록함
+    @ManyToOne(fetch = FetchType.LAZY) // NOTE FetchType.EAGER 로 Skill안의 모든 정보를 바로 조회해서 무한루프 안걸리도록함
     @JoinColumn(name = "skill_name")
     private Skill skill;
 
