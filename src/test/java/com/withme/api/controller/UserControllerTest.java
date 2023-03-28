@@ -7,13 +7,11 @@ import com.withme.api.domain.user.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -23,10 +21,10 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("local")
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest {
 
@@ -44,8 +42,8 @@ public class UserControllerTest {
 
     private MockMvc mvc;
 
-    private final String dupEmail = "dup@check.com";
-    private final String dupNick = "dupNick";
+    private final String setupEmail = "set@up.com";
+    private final String setupNick = "setNick";
 
     @BeforeEach
     public void setup(){
@@ -53,20 +51,13 @@ public class UserControllerTest {
                 .webAppContextSetup(this.context)
                 .apply(springSecurity())
                 .build();
-
-        JoinRequestDto dto = JoinRequestDto.builder()
-                .email(this.dupEmail)
-                .password("1234qwer%T")
-                .nickname(this.dupNick)
-                .build();
-
-        userController.join(dto);
     }
 
     @AfterEach
     public void tearDown() {
-        userRepository.findAll().forEach(user -> userRepository.delete(user));
+        userRepository.deleteAll();
     }
+
 
     @Test
     public void 회원가입_성공() throws Exception{
@@ -75,7 +66,7 @@ public class UserControllerTest {
         String password = "1234qwer%T";
         String nickname = "vV위드미Vv";
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)
@@ -98,7 +89,7 @@ public class UserControllerTest {
         //then
                 .andExpect(status().isCreated());
 
-        assertThat(userRepository.findByEmail(email)
+        assertThat(userRepository.findByEmailAndPasswordIsNotNull(email)
                 .map(User::getNickname)).isEqualTo(Optional.of(nickname));
     }
 
@@ -109,7 +100,7 @@ public class UserControllerTest {
         String password = "12345";
         String nickname = "v";
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)
@@ -130,19 +121,28 @@ public class UserControllerTest {
                         ))
 
                 //then
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.message").value("Validation Failed"));
+
+
     }
 
 
     @Test
     public void 회원가입_실패_이메일_중복() throws Exception{
         //given
+        JoinRequestDto alreadyJoined = JoinRequestDto.builder()
+                .email(this.setupEmail)
+                .password("1234qwer%T")
+                .nickname(this.setupNick)
+                .build();
+        userController.createUser(alreadyJoined);
 
-        String email = this.dupEmail;
+        String email = this.setupEmail;
         String password = "1234qwer%T";
         String nickname = "vV위드미VvV";
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)
@@ -163,18 +163,29 @@ public class UserControllerTest {
                         ))
 
                 //then
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is4xxClientError())
+//                .andExpect(content().json("{\"message\": \"Email Duplicated\"}"));
+                .andExpect(jsonPath("$.message").value("Email Duplicated"));
+
+
     }
 
 
     @Test
     public void 회원가입_실패_닉네임_중복() throws Exception{
         //given
+        JoinRequestDto alreadyJoined = JoinRequestDto.builder()
+                .email(this.setupEmail)
+                .password("1234qwer%T")
+                .nickname(this.setupNick)
+                .build();
+        userController.createUser(alreadyJoined);
+
         String email = "joinTest1@withme.com";
         String password = "1234qwer%T";
-        String nickname = this.dupNick;
+        String nickname = this.setupNick;
 
-        String apiUrl = "/api/v1/join";
+        String apiUrl = "/api/v1/user";
 
         JoinRequestDto dto = JoinRequestDto.builder()
                 .email(email)
@@ -195,8 +206,9 @@ public class UserControllerTest {
                         ))
 
                 //then
-                .andExpect(status().is4xxClientError());
-    }
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.message").value("Nickname Duplicated"));
 
+    }
 
 }

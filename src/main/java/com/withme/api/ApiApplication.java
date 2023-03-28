@@ -2,9 +2,10 @@ package com.withme.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-@SpringBootApplication(exclude = {OAuth2ClientAutoConfiguration.class})
+
+@SpringBootApplication
 public class ApiApplication {
 
 	public static void main(String[] args) {

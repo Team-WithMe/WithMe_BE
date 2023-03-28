@@ -20,8 +20,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ActiveProfiles("local")
 @ExtendWith(SpringExtension.class)
@@ -61,18 +60,22 @@ public class LoginTest{
                 .nickname(this.nickname)
                 .build();
 
-        userController.join(dto);
+        userController.createUser(dto);
     }
 
     @AfterEach
     public void tearDown(){
-        userRepository.delete(userRepository.findByEmail(this.email)
+        userRepository.delete(userRepository.findByEmailAndPasswordIsNotNull(this.email)
                 .orElseThrow(() -> new UsernameNotFoundException(this.email + "not exist.")));
     }
 
     @Test
     public void 로그인_성공() throws Exception{
         String loginUrl = "http://localhost:" + port + "/login";
+
+        String expectedId = "$.[?(@.id == '%s')]";
+        String expectedNickname = "$.[?(@.nickname == '%s')]";
+        String expectedUserImage = "$.[?(@.userImage == '%s')]";
 
         //when
         mvc.perform(post(loginUrl)
@@ -85,9 +88,13 @@ public class LoginTest{
 
         //then
                 .andExpect(status().isOk())
-                .andExpect(header().exists("Authorization"));
-
+                .andExpect(header().exists("Authorization"))
+                .andExpect(jsonPath(expectedId, userRepository.findByNickname(this.nickname).orElseThrow().getId()).exists())
+                .andExpect(jsonPath(expectedNickname, this.nickname).exists())
+                .andExpect(jsonPath(expectedUserImage, userRepository.findByNickname(this.nickname).orElseThrow().getUserImage()).exists())
+                ;
     }
+
 
     @Test
     public void 로그인_실패_잘못된_비밀번호() throws Exception{
